@@ -30,7 +30,7 @@ public class MAttribute extends MElement {
 		this.type_pt = new MTypePointer(type);
 		this.clazz.addAttribute(this);
 		
-		MDatabase.getInstance().createElement(this);
+		MDatabase.getDB().createElement(this);
 	}
 	
 	protected MAttribute(long id) {

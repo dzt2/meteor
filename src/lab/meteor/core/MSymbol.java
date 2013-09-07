@@ -27,7 +27,7 @@ public class MSymbol extends MElement {
 		this.name = name;
 		this.envm.addSymbol(this);
 		
-		MDatabase.getInstance().createElement(this);
+		MDatabase.getDB().createElement(this);
 	}
 	
 	protected MSymbol(long id) {

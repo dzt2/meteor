@@ -60,7 +60,7 @@ public class MClass extends MElement implements MType {
 		this.parent = pkg;
 		this.parent.addClass(this);
 		
-		MDatabase.getInstance().createElement(this);
+		MDatabase.getDB().createElement(this);
 	}
 	
 	/**

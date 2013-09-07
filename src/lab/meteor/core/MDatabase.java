@@ -23,7 +23,7 @@ public class MDatabase {
 	 */
 	private static MDatabase database = null;
 	
-	public static MDatabase getInstance() {
+	public static MDatabase getDB() {
 		if (database == null)
 			database = new MDatabase();
 		return database;

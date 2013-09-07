@@ -43,19 +43,19 @@ public class MElementPointer {
 	public MElement getElement() {
 		switch (this.eType) {
 		case Class:
-			return MDatabase.getInstance().getClass(id);
+			return MDatabase.getDB().getClass(id);
 		case Attribute:
-			return MDatabase.getInstance().getAttribute(id);
+			return MDatabase.getDB().getAttribute(id);
 		case Enum:
-			return MDatabase.getInstance().getEnum(id);
+			return MDatabase.getDB().getEnum(id);
 		case Symbol:
-			return MDatabase.getInstance().getSymbol(id);
+			return MDatabase.getDB().getSymbol(id);
 		case Package:
-			return MDatabase.getInstance().getPackage(id);
+			return MDatabase.getDB().getPackage(id);
 		case Object:
-			return MDatabase.getInstance().getLazyObject(id);
+			return MDatabase.getDB().getLazyObject(id);
 		case Tag:
-			return MDatabase.getInstance().getLazyTag(id);
+			return MDatabase.getDB().getLazyTag(id);
 		default:
 			return null;
 		}

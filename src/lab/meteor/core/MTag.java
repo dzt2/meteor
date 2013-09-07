@@ -35,7 +35,7 @@ public class MTag extends MElement {
 			this.value = value;
 		}
 
-		MDatabase.getInstance().createElement(this);
+		MDatabase.getDB().createElement(this);
 		this.addTarget(target);
 	}
 	
@@ -66,7 +66,7 @@ public class MTag extends MElement {
 			this.value = value;
 		}
 		
-		MDatabase.getInstance().createElement(this);
+		MDatabase.getDB().createElement(this);
 		
 		for (MElement target : targets) {
 			this.addTarget(target);
@@ -145,7 +145,7 @@ public class MTag extends MElement {
 		this.name = tagDBInfo.name;
 		this.value = tagDBInfo.value;
 		for (Long target_id : tagDBInfo.targets_id) {
-			MElementType eType = MDatabase.getInstance().getElementType(target_id);
+			MElementType eType = MDatabase.getDB().getElementType(target_id);
 			this.targets.add(new MElementPointer(target_id, eType));
 		}
 	}

@@ -2,10 +2,13 @@ package lab.meteor.core;
 
 public class MPrimitiveType implements MType {
 
+	private static final String primitiveTypePrefix = "#";
+	
 	private MNativeDataType nType;
 	
-	private MPrimitiveType(MNativeDataType nType) {
+	MPrimitiveType(MNativeDataType nType) {
 		this.nType = nType;
+		MTypeManager.getLib().register(this);
 	}
 	
 	public MNativeDataType getNativeDataType() {
@@ -14,8 +17,7 @@ public class MPrimitiveType implements MType {
 
 	@Override
 	public String getTypeIdentifier() {
-		// TODO Auto-generated method stub
-		return null;
+		return primitiveTypePrefix + this.nType.toString();
 	}
 
 }

@@ -45,7 +45,7 @@ public class MPackage extends MElement {
 		this.parent = DEFAULT_PACKAGE;
 		this.parent.addPackage(this);
 		
-		MDatabase.getInstance().createElement(this);
+		MDatabase.getDB().createElement(this);
 	}
 	
 	protected MPackage(long id) {

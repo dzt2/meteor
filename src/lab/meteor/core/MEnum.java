@@ -32,7 +32,7 @@ public class MEnum extends MElement implements MType {
 		this.parent = pkg;
 		this.parent.addEnum(this);
 		
-		MDatabase.getInstance().createElement(this);
+		MDatabase.getDB().createElement(this);
 	}
 	
 	protected MEnum(long id) {

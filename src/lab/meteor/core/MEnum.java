@@ -119,7 +119,7 @@ public class MEnum extends MElement implements MType {
 
 	@Override
 	public String getTypeIdentifier() {
-		return null;
+		return "@" + MUtility.idEncode(this.id);
 	}
 
 	@Override

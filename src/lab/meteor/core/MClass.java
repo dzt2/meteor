@@ -11,7 +11,7 @@ public class MClass extends MElement implements MType {
 	
 	private Map<String, MAttribute> attributes = null;
 	
-	private MClass superclazz;
+	private MClass superclass;
 	private MPackage parent;
 	
 	private Set<MClass> subclasses;
@@ -54,9 +54,9 @@ public class MClass extends MElement implements MType {
 		
 		this.initialize();
 		this.name = name;
-		this.superclazz = supercls;
-		if (this.superclazz != null)
-			this.superclazz.getSubclasses().add(this);
+		this.superclass = supercls;
+		if (this.superclass != null)
+			this.superclass.getSubclasses().add(this);
 		this.parent = pkg;
 		this.parent.addClass(this);
 		
@@ -88,11 +88,11 @@ public class MClass extends MElement implements MType {
 		// unlink super-sub relations
 		if (this.subclasses != null) {
 			for (MClass cls : this.subclasses) {
-				cls.superclazz = this.superclazz;
+				cls.superclass = this.superclass;
 			}
 		}
-		if (this.superclazz != null)
-			this.superclazz.getSubclasses().remove(this);
+		if (this.superclass != null)
+			this.superclass.getSubclasses().remove(this);
 		
 		// package
 		this.parent.removeClass(this);
@@ -141,7 +141,7 @@ public class MClass extends MElement implements MType {
 	 * @throws MException 
 	 */
 	public MClass getSuperClass() {
-		return this.superclazz;
+		return this.superclass;
 	}
 	
 	/**
@@ -150,25 +150,25 @@ public class MClass extends MElement implements MType {
 	 * @param clazz
 	 */
 	public void setSuperClass(MClass clazz) {
-		if (this.superclazz == clazz)
+		if (this.superclass == clazz)
 			return;
 		MClass cp = clazz;
 		while (cp != null) {
 			if (cp == this)
 				throw new MException(MException.Reason.INVALID_SUPER_CLASS);
-			cp = cp.superclazz;
+			cp = cp.superclass;
 		}
 		
-		if (this.superclazz != null)
-			this.superclazz.getSubclasses().remove(this);
-		this.superclazz = clazz;
-		if (this.superclazz != null)
-			this.superclazz.getSubclasses().add(this);
+		if (this.superclass != null)
+			this.superclass.getSubclasses().remove(this);
+		this.superclass = clazz;
+		if (this.superclass != null)
+			this.superclass.getSubclasses().add(this);
 		this.setChanged();
 	}
 	
 	public boolean asSubClass(MClass clazz) {
-		MClass cp = this.superclazz;
+		MClass cp = this.superclass;
 		do {
 			if (cp == clazz)
 				return true;
@@ -225,7 +225,7 @@ public class MClass extends MElement implements MType {
 		MClass cls = this;
 		while (cls != null) {
 			names.addAll(cls.getAttributes().keySet());
-			cls = cls.superclazz;
+			cls = cls.superclass;
 		}
 		return names;
 	}
@@ -243,7 +243,7 @@ public class MClass extends MElement implements MType {
 			atb = cls.getAttribute(attrib);
 			if (atb != null)
 				break;
-			cls = cls.superclazz;
+			cls = cls.superclass;
 		}
 		return atb;
 	}
@@ -253,7 +253,7 @@ public class MClass extends MElement implements MType {
 		while (cls != null) {
 			if (cls.getAttributes().containsKey(name))
 				return true;
-			cls = cls.superclazz;
+			cls = cls.superclass;
 		}
 		return false;
 	}
@@ -283,8 +283,7 @@ public class MClass extends MElement implements MType {
 
 	@Override
 	public String getTypeIdentifier() {
-		// TODO
-		return null;
+		return "@" + MUtility.idEncode(this.id);
 	}
 	
 	/*

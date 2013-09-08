@@ -1,5 +1,6 @@
 package lab.meteor.core;
 
+
 public class MAttribute extends MElement {
 
 	private String name;

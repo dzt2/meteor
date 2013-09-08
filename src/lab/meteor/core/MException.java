@@ -66,7 +66,8 @@ public class MException extends RuntimeException {
 		 * The type of value set to an object's attribute is different with the attribute's type.
 		 */
 		INVALID_VALUE_TYPE,
-		UNKNOWN_VALUE_TYPE
+		UNKNOWN_VALUE_TYPE,
+		NOT_SUPPORT_YET
 	}
 	
 	/**

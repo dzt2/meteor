@@ -1,6 +1,7 @@
 package lab.meteor.core;
 
 class MTypePointer {
+	
 	private String typeIdentifier;
 	
 	public MTypePointer(MType type) {

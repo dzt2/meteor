@@ -1,5 +1,16 @@
 package lab.meteor.core;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import lab.meteor.core.type.MBinary;
+import lab.meteor.core.type.MCode;
+import lab.meteor.core.type.MDictionary;
+import lab.meteor.core.type.MList;
+import lab.meteor.core.type.MRef;
+import lab.meteor.core.type.MSet;
+
 public class MUtility {
 	
 	private static char[] alphabet = {
@@ -43,5 +54,115 @@ public class MUtility {
 			_id |= v;
 		}
 		return _id;
+	}
+	
+	private static Map<Class<?>, MPrimitiveType> classes;
+	
+	{
+		classes = new HashMap<Class<?>, MPrimitiveType>();
+		// Number
+		classes.put(java.lang.Integer.class, MPrimitiveType.Int32);
+		classes.put(java.lang.Long.class, MPrimitiveType.Int64);
+		classes.put(java.lang.Float.class, MPrimitiveType.Number);
+		classes.put(java.lang.Double.class, MPrimitiveType.Number);
+		classes.put(java.lang.Short.class, MPrimitiveType.Number);
+		classes.put(java.lang.Byte.class, MPrimitiveType.Number);
+		// String
+		classes.put(java.lang.String.class, MPrimitiveType.String);
+		// Boolean
+		classes.put(java.lang.Boolean.class, MPrimitiveType.Boolean);
+		// DateTime
+		classes.put(java.util.Date.class, MPrimitiveType.DateTime);
+		classes.put(java.sql.Timestamp.class, MPrimitiveType.DateTime);
+		// List
+		classes.put(MList.class, MPrimitiveType.List);
+		// Set
+		classes.put(MSet.class, MPrimitiveType.Set);
+		// Dict
+		classes.put(MDictionary.class, MPrimitiveType.Dictionary);
+		// Bin
+		classes.put(MBinary.class, MPrimitiveType.Binary);
+		// Regex
+		classes.put(java.util.regex.Pattern.class, MPrimitiveType.Regex);
+		// Code
+		classes.put(MCode.class, MPrimitiveType.Code);
+		// Ref
+		classes.put(MRef.class, MPrimitiveType.Ref);
+	}
+	
+	public static boolean checkType(MType type, Object value) {
+		if (value == null)
+			return true;
+		MNativeDataType nType = type.getNativeDataType();
+		switch (nType) {
+		case Any:
+			MPrimitiveType t = classes.get(value.getClass());
+			if (t == null)
+				return false;
+			return true;
+		case Number:
+			if (value instanceof java.lang.Number)
+				return true;
+			break;
+		case Boolean:
+			if (value instanceof java.lang.Boolean)
+				return true;
+			break;
+		case String:
+			if (value instanceof java.lang.String)
+				return true;
+			break;
+		case DateTime:
+			if (value instanceof java.util.Date)
+				return true;
+			break;
+		case Object:
+			if (value instanceof MObject)
+				return true;
+			break;
+		case Enum:
+			if (value instanceof MSymbol)
+				return true;
+			break;
+		case List:
+			if (value instanceof MList)
+				return true;
+			break;
+		case Set:
+			if (value instanceof MSet)
+				return true;
+			break;
+		case Dictionary:
+			if (value instanceof MDictionary)
+				return true;
+			break;
+		case Binary:
+			if (value instanceof MBinary)
+				return true;
+			break;
+		case Regex:
+			if (value instanceof Pattern)
+				return true;
+			break;
+		case Int32:
+			if (value instanceof java.lang.Integer)
+				return true;
+			break;
+		case Int64:
+			if (value instanceof java.lang.Long)
+				return true;
+			break;
+		case Code:
+			if (value instanceof MCode)
+				return true;
+			break;
+		case Ref:
+			if (value instanceof MRef)
+				return true;
+			break;
+		default:
+			return false;
+		}
+		return false;
 	}
 }

@@ -29,6 +29,14 @@ public class MRole extends MElement {
 	protected MRole(long id) {
 		super(id, MElementType.Role);
 	}
+	
+	@Override
+	public void delete() throws MException {
+		// class
+		this.class_a.removeRole(this);
+		this.class_b.removeRole(this);
+		super.delete();
+	}
 
 	private MClass class_a;
 	private String name_a;
@@ -57,7 +65,15 @@ public class MRole extends MElement {
 	}
 	
 	public void setNameA(String name) {
-		// TODO
+		if (name.equals(this.name_a))
+			return;
+		if (this.class_a.hasChild(name))
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		
+		this.class_a.removeRole(this);
+		this.name_a = name;
+		this.class_a.addRole(this);
+		this.setChanged();
 	}
 	
 	public String getNameB() {
@@ -65,7 +81,15 @@ public class MRole extends MElement {
 	}
 	
 	public void setNameB(String name) {
-		// TODO
+		if (name.equals(this.name_b))
+			return;
+		if (this.class_b.hasChild(name))
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		
+		this.class_b.removeRole(this);
+		this.name_b = name;
+		this.class_b.addRole(this);
+		this.setChanged();
 	}
 	
 	public Multiplicity getMultiplicityA() {

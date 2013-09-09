@@ -16,6 +16,6 @@ class MTypePointer {
 	}
 	
 	public MType getType() {
-		return null;
+		return MTypeManager.getManager().getType(typeIdentifier);
 	}
 }

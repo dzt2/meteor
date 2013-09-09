@@ -22,7 +22,7 @@ public class MAttribute extends MElement {
 			throw new MException(MException.Reason.NULL_ELEMENT);
 		if (clazz.isDeleted())
 			throw new MException(MException.Reason.ELEMENT_MISSED);
-		if (clazz.hasAttribute(name))
+		if (clazz.hasChild(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.initialize();
@@ -64,7 +64,7 @@ public class MAttribute extends MElement {
 	public void setName(String name) throws MException {
 		if (name.equals(this.name))
 			return;
-		if (this.clazz.hasAttribute(name))
+		if (this.clazz.hasChild(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.clazz.removeAtttribute(this);

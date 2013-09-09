@@ -25,6 +25,7 @@ public class MPrimitiveType implements MType {
 	
 	MPrimitiveType(MNativeDataType nType) {
 		this.nType = nType;
+		MTypeManager.getManager().register(this);
 	}
 	
 	public MNativeDataType getNativeDataType() {

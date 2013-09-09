@@ -85,6 +85,14 @@ public class MClass extends MElement implements MType {
 			for (MAttribute atb : this.attributes.values()) {
 				atb.delete();
 			}
+			this.attributes.clear();
+		}
+		// delete roles
+		if (this.roles != null) {
+			for (MRole rol : this.roles.values()) {
+				rol.delete();
+			}
+			this.roles.clear();
 		}
 		// unlink super-sub relations
 		if (this.subclasses != null) {
@@ -336,7 +344,7 @@ public class MClass extends MElement implements MType {
 			this.getRoles().put(rol.getNameB(), rol);
 	}
 	
-	protected void romoveRole(MRole rol) {
+	protected void removeRole(MRole rol) {
 		if (rol.getClassA() == this)
 			this.getRoles().remove(rol.getNameA());
 		if (rol.getClassB() == this)
@@ -350,7 +358,7 @@ public class MClass extends MElement implements MType {
 
 	@Override
 	public String getTypeIdentifier() {
-		return "@" + MUtility.idEncode(this.id);
+		return String.valueOf(MElement.ID_PREFIX) + MUtility.idEncode(this.id);
 	}
 	
 	/*

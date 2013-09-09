@@ -10,9 +10,7 @@ public class MPackage extends MElement {
 	public static MPackage DEFAULT_PACKAGE = new MPackage();
 	
 	private Map<String, MClass> classes;
-	
 	private Map<String, MEnum> enumes;
-	
 	private Map<String, MPackage> packages;
 	
 	private String name;
@@ -65,18 +63,21 @@ public class MPackage extends MElement {
 			for (MClass cls : this.classes.values()) {
 				cls.delete();
 			}
+			this.classes.clear();
 		}
 		// delete enumes
 		if (this.enumes != null) {
 			for (MEnum enm : this.enumes.values()) {
 				enm.delete();
 			}
+			this.enumes.clear();
 		}
 		// delete packages
 		if (this.packages != null) {
 			for (MPackage pkg : this.packages.values()) {
 				pkg.delete();
 			}
+			this.packages.clear();
 		}
 		
 		this.parent.removePackage(this);

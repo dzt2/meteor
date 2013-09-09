@@ -26,6 +26,8 @@ public abstract class MElement {
 	
 	public static final long NULL_ID = 0x0000000000000000L;
 	
+	public static final char ID_PREFIX = '@';
+	
 	private boolean loaded = false;
 	
 	private boolean changed = false;

@@ -568,6 +568,12 @@ public class MongoDBAdapter implements MDBAdapter {
 		}
 		return list;
 	}
+	
+	@Override
+	public void resetDB() {
+		// TODO Auto-generated method stub
+		
+	}
 
 	@Override
 	public void loadElementTags(ElementTagDBInfo dbInfo) {
@@ -577,6 +583,30 @@ public class MongoDBAdapter implements MDBAdapter {
 
 	@Override
 	public void saveElementTags(ElementTagDBInfo dbInfo) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void loadRole(RoleDBInfo rol) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void createRole(RoleDBInfo rol) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateRole(RoleDBInfo rol) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteRole(RoleDBInfo rol) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -12,6 +12,7 @@ public abstract class MElement {
 		Primitive,
 		Class,
 		Attribute,
+		Role,
 		Enum,
 		Symbol,
 		Package,

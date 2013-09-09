@@ -279,6 +279,13 @@ public class MDatabase {
 			dbAdapter.loadSymbol(symDBInfo);
 			sym.loadFromDBInfo(symDBInfo);
 			break;
+		case Role:
+			MRole rol = (MRole) ele;
+			MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+			rolDBInfo.id = rol.id;
+			dbAdapter.loadRole(rolDBInfo);
+			rol.loadFromDBInfo(rolDBInfo);
+			break;
 		case Object:
 			MObject obj = (MObject) ele;
 			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
@@ -294,7 +301,7 @@ public class MDatabase {
 			tag.loadFromDBInfo(tagDBInfo);
 			break;
 		default:
-				break;
+			throw new MException(MException.Reason.NOT_SUPPORT_YET);
 		}
 	}
 	
@@ -340,6 +347,12 @@ public class MDatabase {
 				sym.saveToDBInfo(symDBInfo);
 				dbAdapter.updateSymbol(symDBInfo);
 				break;
+			case Role:
+				MRole rol = (MRole) ele;
+				MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+				rol.saveToDBInfo(rolDBInfo);
+				dbAdapter.updateRole(rolDBInfo);
+				break;
 			case Object:
 				MObject obj = (MObject) ele;
 				MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
@@ -353,7 +366,7 @@ public class MDatabase {
 				dbAdapter.updateTag(tagDBInfo);
 				break;
 			default:
-				break;
+				throw new MException(MException.Reason.NOT_SUPPORT_YET);
 			}
 		}
 	}
@@ -394,6 +407,12 @@ public class MDatabase {
 			sym.saveToDBInfo(symDBInfo);
 			dbAdapter.createSymbol(symDBInfo);
 			break;
+		case Role:
+			MRole rol = (MRole) ele;
+			MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+			rol.saveToDBInfo(rolDBInfo);
+			dbAdapter.createRole(rolDBInfo);
+			break;
 		case Object:
 			MObject obj = (MObject) ele;
 			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
@@ -407,7 +426,7 @@ public class MDatabase {
 			dbAdapter.createTag(tagDBInfo);
 			break;
 		default:
-			break;
+			throw new MException(MException.Reason.NOT_SUPPORT_YET);
 		}
 	}
 	
@@ -446,6 +465,11 @@ public class MDatabase {
 			symDBInfo.id = ele.id;
 			dbAdapter.deleteSymbol(symDBInfo);
 			break;
+		case Role:
+			MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+			rolDBInfo.id = ele.id;
+			dbAdapter.deleteRole(rolDBInfo);
+			break;
 		case Object:
 			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
 			objDBInfo.id = ele.id;
@@ -457,7 +481,7 @@ public class MDatabase {
 			dbAdapter.deleteTag(tagDBInfo);
 			break;
 		default:
-			break;
+			throw new MException(MException.Reason.NOT_SUPPORT_YET);
 		}
 	}
 	

@@ -10,6 +10,7 @@ public class MClass extends MElement implements MType {
 	private String name;
 	
 	private Map<String, MAttribute> attributes = null;
+	private Map<String, MRole> roles = null;
 	
 	private MClass superclass;
 	private MPackage parent;
@@ -210,6 +211,10 @@ public class MClass extends MElement implements MType {
 		this.setChanged();
 	}
 	
+	public boolean hasChild(String name) {
+		return this.hasAttribute(name) || this.hasRole(name);
+	}
+	
 	/* 
 	 * ********************************
 	 *      ATTRIBUTE OPERATIONS
@@ -267,6 +272,54 @@ public class MClass extends MElement implements MType {
 			this.attributes = new TreeMap<String, MAttribute>();
 		return this.attributes;
 	}
+	
+	/* 
+	 * ********************************
+	 *         ROLE OPERATIONS
+	 * ********************************
+	 */
+	
+	public Set<String> getRoleNames() {
+		return new TreeSet<String>(this.getRoles().keySet());
+	}
+	
+	public Set<String> getAllRoleNames() {
+		Set<String> names = new TreeSet<String>();
+		MClass cls = this;
+		while (cls != null) {
+			names.addAll(cls.getRoles().keySet());
+			cls = cls.superclass;
+		}
+		return names;
+	}
+	
+	public MRole getRole(String role) {
+		MRole rol = null;
+		MClass cls = this;
+		while (cls != null) {
+			rol = cls.getRole(role);
+			if (rol != null)
+				break;
+			cls = cls.superclass;
+		}
+		return rol;
+	}
+	
+	public boolean hasRole(String role) {
+		MClass cls = this;
+		while (cls != null) {
+			if (cls.getRoles().containsKey(name))
+				return true;
+			cls = cls.superclass;
+		}
+		return false;
+	}
+	
+	private Map<String, MRole> getRoles() {
+		if (this.roles == null)
+			this.roles = new TreeMap<String, MRole>();
+		return this.roles;
+	}
 
 	protected void addAttribute(MAttribute atb) {
 		this.getAttributes().put(atb.getName(), atb);
@@ -274,6 +327,20 @@ public class MClass extends MElement implements MType {
 	
 	protected void removeAtttribute(MAttribute atb) {
 		this.getAttributes().remove(atb.getName());
+	}
+	
+	protected void addRole(MRole rol) {
+		if (rol.getClassA() == this)
+			this.getRoles().put(rol.getNameA(), rol);
+		if (rol.getClassB() == this)
+			this.getRoles().put(rol.getNameB(), rol);
+	}
+	
+	protected void romoveRole(MRole rol) {
+		if (rol.getClassA() == this)
+			this.getRoles().remove(rol.getNameA());
+		if (rol.getClassB() == this)
+			this.getRoles().remove(rol.getNameB());
 	}
 
 	@Override

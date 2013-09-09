@@ -43,6 +43,21 @@ public interface MDBAdapter {
 	void updateAttribute(AttributeDBInfo atb);
 	void deleteAttribute(AttributeDBInfo atb);
 	
+	public static class RoleDBInfo {
+		public long id;
+		public long class_a_id;
+		public long class_b_id;
+		public String name_a;
+		public String name_b;
+		public MRole.Multiplicity multi_a;
+		public MRole.Multiplicity multi_b;
+	}
+	
+	void loadRole(RoleDBInfo rol);
+	void createRole(RoleDBInfo rol);
+	void updateRole(RoleDBInfo rol);
+	void deleteRole(RoleDBInfo rol);
+	
 	public static class EnumDBInfo {
 		public long id;
 		public String name;
@@ -99,6 +114,7 @@ public interface MDBAdapter {
 	
 	void checkAndPrepareDB();
 	long loadLastIDAndIncrement();
+	void resetDB();
 
 	List<Long> listAllPackageIDs();
 	List<Long> listAllClassIDs();

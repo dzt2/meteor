@@ -26,6 +26,7 @@ public class MException extends RuntimeException {
 	 *
 	 */
 	public enum Reason {
+		NOT_SUPPORT_YET,
 		/**
 		 * When execute CURD operations, the DB adapter has not been attached to MDatabase.
 		 */
@@ -67,7 +68,7 @@ public class MException extends RuntimeException {
 		 */
 		INVALID_VALUE_TYPE,
 		UNKNOWN_VALUE_TYPE,
-		NOT_SUPPORT_YET
+		INVALID_MULTIPLICITY
 	}
 	
 	/**

@@ -116,10 +116,10 @@ public class MUtility {
 			if (value instanceof java.util.Date)
 				return true;
 			break;
-		case Object:
-			if (value instanceof MObject)
-				return true;
-			break;
+//		case Object:
+//			if (value instanceof MObject)
+//				return true;
+//			break;
 		case Enum:
 			if (value instanceof MSymbol)
 				return true;

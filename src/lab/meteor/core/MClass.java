@@ -5,17 +5,19 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class MClass extends MElement implements MType {
+public class MClass extends MElement {
 
 	private String name;
 	
-	private Map<String, MAttribute> attributes = null;
-	private Map<String, MRole> roles = null;
+	private Map<String, MAttribute> attributes;
+	private Map<String, MReference> references;
 	
 	private MClass superclass;
 	private MPackage parent;
 	
 	private Set<MClass> subclasses;
+	
+	private Set<MReference> utilizers;
 	
 	/* 
 	 * ********************************
@@ -87,12 +89,19 @@ public class MClass extends MElement implements MType {
 			}
 			this.attributes.clear();
 		}
-		// delete roles
-		if (this.roles != null) {
-			for (MRole rol : this.roles.values()) {
-				rol.delete();
+		// delete references
+		if (this.references != null) {
+			for (MReference ref : this.references.values()) {
+				ref.delete();
 			}
-			this.roles.clear();
+			this.references.clear();
+		}
+		// delete utilizers
+		if (this.utilizers != null) {
+			for (MReference ref : this.utilizers) {
+				ref.delete();
+			}
+			this.utilizers.clear();
 		}
 		// unlink super-sub relations
 		if (this.subclasses != null) {
@@ -288,21 +297,21 @@ public class MClass extends MElement implements MType {
 	 */
 	
 	public Set<String> getRoleNames() {
-		return new TreeSet<String>(this.getRoles().keySet());
+		return new TreeSet<String>(this.getReferences().keySet());
 	}
 	
 	public Set<String> getAllRoleNames() {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
-			names.addAll(cls.getRoles().keySet());
+			names.addAll(cls.getReferences().keySet());
 			cls = cls.superclass;
 		}
 		return names;
 	}
 	
-	public MRole getRole(String role) {
-		MRole rol = null;
+	public MReference getRole(String role) {
+		MReference rol = null;
 		MClass cls = this;
 		while (cls != null) {
 			rol = cls.getRole(role);
@@ -316,17 +325,17 @@ public class MClass extends MElement implements MType {
 	public boolean hasRole(String role) {
 		MClass cls = this;
 		while (cls != null) {
-			if (cls.getRoles().containsKey(name))
+			if (cls.getReferences().containsKey(name))
 				return true;
 			cls = cls.superclass;
 		}
 		return false;
 	}
 	
-	private Map<String, MRole> getRoles() {
-		if (this.roles == null)
-			this.roles = new TreeMap<String, MRole>();
-		return this.roles;
+	private Map<String, MReference> getReferences() {
+		if (this.references == null)
+			this.references = new TreeMap<String, MReference>();
+		return this.references;
 	}
 
 	protected void addAttribute(MAttribute atb) {
@@ -337,28 +346,26 @@ public class MClass extends MElement implements MType {
 		this.getAttributes().remove(atb.getName());
 	}
 	
-	protected void addRole(MRole rol) {
-		if (rol.getClassA() == this)
-			this.getRoles().put(rol.getNameA(), rol);
-		if (rol.getClassB() == this)
-			this.getRoles().put(rol.getNameB(), rol);
+	protected void addReference(MReference rol) {
+		this.getReferences().put(rol.getName(), rol);
 	}
 	
-	protected void removeRole(MRole rol) {
-		if (rol.getClassA() == this)
-			this.getRoles().remove(rol.getNameA());
-		if (rol.getClassB() == this)
-			this.getRoles().remove(rol.getNameB());
+	protected void removeReference(MReference rol) {
+		this.getReferences().remove(rol.getName());
 	}
-
-	@Override
-	public MNativeDataType getNativeDataType() {
-		return MNativeDataType.Object;
+	
+	private Set<MReference> getUtilizers() {
+		if (this.utilizers == null)
+			this.utilizers = new TreeSet<MReference>();
+		return this.utilizers;
 	}
-
-	@Override
-	public String getTypeIdentifier() {
-		return String.valueOf(MElement.ID_PREFIX) + MUtility.idEncode(this.id);
+	
+	void addUtilizer(MReference utilizer) {
+		this.getUtilizers().add(utilizer);
+	}
+	
+	void removeUtilizer(MReference utilizer) {
+		this.getUtilizers().remove(utilizer);
 	}
 	
 	/*
@@ -369,14 +376,24 @@ public class MClass extends MElement implements MType {
 
 	@Override
 	void loadFromDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
+		MDBAdapter.ClassDBInfo clsDBInfo = (MDBAdapter.ClassDBInfo) dbInfo;
+		this.name = clsDBInfo.name;
+		this.superclass = MDatabase.getDB().getClass(clsDBInfo.superclass_id);
+		this.parent = MDatabase.getDB().getPackage(clsDBInfo.package_id);
 		
+		// link
+		this.parent.addClass(this);
+		if (this.superclass != null)
+			this.superclass.getSubclasses().add(this);
 	}
 
 	@Override
 	void saveToDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
-		
+		MDBAdapter.ClassDBInfo clsDBInfo = (MDBAdapter.ClassDBInfo) dbInfo;
+		clsDBInfo.id = this.id;
+		clsDBInfo.name = this.name;
+		clsDBInfo.superclass_id = MElement.getElementID(this.superclass);
+		clsDBInfo.package_id = MElement.getElementID(this.parent);
 	}
 
 }

@@ -43,20 +43,19 @@ public interface MDBAdapter {
 	void updateAttribute(AttributeDBInfo atb);
 	void deleteAttribute(AttributeDBInfo atb);
 	
-	public static class RoleDBInfo {
+	public static class ReferenceDBInfo {
 		public long id;
-		public long class_a_id;
-		public long class_b_id;
-		public String name_a;
-		public String name_b;
-		public MRole.Multiplicity multi_a;
-		public MRole.Multiplicity multi_b;
+		public long class_id;
+		public String name;
+		public long reference_id;
+		public MReference.Multiplicity multi;
+		public long opposite_id;
 	}
 	
-	void loadRole(RoleDBInfo rol);
-	void createRole(RoleDBInfo rol);
-	void updateRole(RoleDBInfo rol);
-	void deleteRole(RoleDBInfo rol);
+	void loadReference(ReferenceDBInfo rol);
+	void createReference(ReferenceDBInfo rol);
+	void updateReference(ReferenceDBInfo rol);
+	void deleteReference(ReferenceDBInfo rol);
 	
 	public static class EnumDBInfo {
 		public long id;

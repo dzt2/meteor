@@ -19,6 +19,6 @@ public enum MNativeDataType {
 	Dictionary,
 	Set,
 	
-	Object,
+//	Object,
 	Enum
 }

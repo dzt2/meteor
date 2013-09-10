@@ -74,14 +74,20 @@ public class MSymbol extends MElement {
 
 	@Override
 	void loadFromDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
+		MDBAdapter.SymbolDBInfo symDBInfo = (MDBAdapter.SymbolDBInfo) dbInfo;
+		this.name = symDBInfo.name;
+		this.envm = MDatabase.getDB().getEnum(symDBInfo.enum_id);
 		
+		// link
+		this.envm.addSymbol(this);
 	}
 
 	@Override
 	void saveToDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
-		
+		MDBAdapter.SymbolDBInfo symDBInfo = (MDBAdapter.SymbolDBInfo) dbInfo;
+		symDBInfo.id = this.id;
+		symDBInfo.name = this.name;
+		symDBInfo.enum_id = MElement.getElementID(this.envm);		
 	}
 	
 }

@@ -1,9 +1,14 @@
 package lab.meteor.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class MPrimitiveType implements MType {
 
 //	private static final String primitiveTypePrefix = "#";
+	
+	private static Map<String, MPrimitiveType> types = new HashMap<String, MPrimitiveType>();
 	
 	public static final MPrimitiveType Any = new MPrimitiveType(MNativeDataType.Any);
 	public static final MPrimitiveType Number = new MPrimitiveType(MNativeDataType.Number);
@@ -25,7 +30,7 @@ public class MPrimitiveType implements MType {
 	
 	MPrimitiveType(MNativeDataType nType) {
 		this.nType = nType;
-		MTypeManager.getManager().register(this);
+		types.put(this.getTypeIdentifier(), this);
 	}
 	
 	public MNativeDataType getNativeDataType() {
@@ -35,6 +40,10 @@ public class MPrimitiveType implements MType {
 	@Override
 	public String getTypeIdentifier() {
 		return this.nType.toString();
+	}
+	
+	public static MPrimitiveType getPrimitiveType(String identifier) {
+		return types.get(identifier);
 	}
 
 }

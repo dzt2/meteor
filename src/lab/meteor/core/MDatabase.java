@@ -279,11 +279,11 @@ public class MDatabase {
 			dbAdapter.loadSymbol(symDBInfo);
 			sym.loadFromDBInfo(symDBInfo);
 			break;
-		case Role:
-			MRole rol = (MRole) ele;
-			MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+		case Reference:
+			MReference rol = (MReference) ele;
+			MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
 			rolDBInfo.id = rol.id;
-			dbAdapter.loadRole(rolDBInfo);
+			dbAdapter.loadReference(rolDBInfo);
 			rol.loadFromDBInfo(rolDBInfo);
 			break;
 		case Object:
@@ -347,11 +347,11 @@ public class MDatabase {
 				sym.saveToDBInfo(symDBInfo);
 				dbAdapter.updateSymbol(symDBInfo);
 				break;
-			case Role:
-				MRole rol = (MRole) ele;
-				MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+			case Reference:
+				MReference rol = (MReference) ele;
+				MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
 				rol.saveToDBInfo(rolDBInfo);
-				dbAdapter.updateRole(rolDBInfo);
+				dbAdapter.updateReference(rolDBInfo);
 				break;
 			case Object:
 				MObject obj = (MObject) ele;
@@ -407,11 +407,11 @@ public class MDatabase {
 			sym.saveToDBInfo(symDBInfo);
 			dbAdapter.createSymbol(symDBInfo);
 			break;
-		case Role:
-			MRole rol = (MRole) ele;
-			MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+		case Reference:
+			MReference rol = (MReference) ele;
+			MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
 			rol.saveToDBInfo(rolDBInfo);
-			dbAdapter.createRole(rolDBInfo);
+			dbAdapter.createReference(rolDBInfo);
 			break;
 		case Object:
 			MObject obj = (MObject) ele;
@@ -465,10 +465,10 @@ public class MDatabase {
 			symDBInfo.id = ele.id;
 			dbAdapter.deleteSymbol(symDBInfo);
 			break;
-		case Role:
-			MDBAdapter.RoleDBInfo rolDBInfo = new MDBAdapter.RoleDBInfo();
+		case Reference:
+			MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
 			rolDBInfo.id = ele.id;
-			dbAdapter.deleteRole(rolDBInfo);
+			dbAdapter.deleteReference(rolDBInfo);
 			break;
 		case Object:
 			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
@@ -564,6 +564,23 @@ public class MDatabase {
 			throw new MException(MException.Reason.MISMATCHED_ELEMENT_TYPE);
 		}
 		return atb;
+	}
+	
+	public MReference getReference(long id) {
+		if (id == MElement.NULL_ID)
+			return null;
+		MElement meta = metaElements.get(id);
+		MReference ref = null;
+		if (meta == null) {
+			ref = new MReference(id);
+			metaElements.put(id, ref);
+			ref.load();
+		} else if (meta instanceof MAttribute) {
+			ref = (MReference) meta;
+		} else {
+			throw new MException(MException.Reason.MISMATCHED_ELEMENT_TYPE);
+		}
+		return ref;
 	}
 	
 	public MEnum getEnum(long id) {

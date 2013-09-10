@@ -68,7 +68,7 @@ public class MException extends RuntimeException {
 		 */
 		INVALID_VALUE_TYPE,
 		UNKNOWN_VALUE_TYPE,
-		INVALID_MULTIPLICITY
+		INVALID_OPPOSITE
 	}
 	
 	/**

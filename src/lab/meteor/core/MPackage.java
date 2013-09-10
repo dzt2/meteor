@@ -212,16 +212,28 @@ public class MPackage extends MElement {
 		this.getPackages().remove(pkg.getName());
 	}
 
+	/*
+	 * ********************************
+	 *        DATA LOAD & SAVE
+	 * ********************************
+	 */
+	
 	@Override
 	void loadFromDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
+		MDBAdapter.PackageDBInfo pkgDBInfo = (MDBAdapter.PackageDBInfo) dbInfo;
+		this.name = pkgDBInfo.name;
+		this.parent = MDatabase.getDB().getPackage(pkgDBInfo.package_id);
 		
+		// link
+		this.parent.addPackage(this);
 	}
 
 	@Override
 	void saveToDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
-		
+		MDBAdapter.PackageDBInfo pkgDBInfo = (MDBAdapter.PackageDBInfo) dbInfo;
+		pkgDBInfo.id = this.id;
+		pkgDBInfo.name = this.name;
+		pkgDBInfo.package_id = MElement.getElementID(this.parent);
 	}
 	
 }

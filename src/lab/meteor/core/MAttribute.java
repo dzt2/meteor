@@ -5,7 +5,7 @@ public class MAttribute extends MElement {
 
 	private String name;
 	
-	private MTypePointer type_pt;
+	private MType type;
 
 	private MClass clazz;
 	
@@ -28,8 +28,11 @@ public class MAttribute extends MElement {
 		this.initialize();
 		this.clazz = clazz;
 		this.name = name;
-		this.type_pt = new MTypePointer(type);
+		this.type = type;
 		this.clazz.addAttribute(this);
+		if (this.type instanceof MEnum) {
+			((MEnum) this.type).addUtilizer(this);
+		}
 		
 		MDatabase.getDB().createElement(this);
 	}
@@ -48,6 +51,9 @@ public class MAttribute extends MElement {
 	public void delete() throws MException {
 		// class
 		this.clazz.removeAtttribute(this);
+		if (this.type instanceof MEnum) {
+			((MEnum) this.type).removeUtilizer(this);
+		}
 		super.delete();
 	}
 	
@@ -74,11 +80,20 @@ public class MAttribute extends MElement {
 	}
 	
 	public MType getType() {
-		return type_pt.getType();
+		return type;
 	}
 	
 	public void setType(MType type) {
-		this.type_pt = new MTypePointer(type);
+		if (type == this.type)
+			return;
+		
+		if (this.type instanceof MEnum) {
+			((MEnum) this.type).removeUtilizer(this);
+		}
+		this.type = type;
+		if (this.type instanceof MEnum) {
+			((MEnum) this.type).addUtilizer(this);
+		}
 		this.setChanged();
 	}
 
@@ -94,14 +109,30 @@ public class MAttribute extends MElement {
 
 	@Override
 	void loadFromDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
+		MDBAdapter.AttributeDBInfo atbDBInfo = (MDBAdapter.AttributeDBInfo) dbInfo;
+		this.name = atbDBInfo.name;
+		this.clazz = MDatabase.getDB().getClass(atbDBInfo.class_id);
+		if (atbDBInfo.type_id.charAt(0) == MElement.ID_PREFIX) {
+			long id = MUtility.idDecode(atbDBInfo.type_id.substring(1));
+			this.type = MDatabase.getDB().getEnum(id);
+		} else {
+			this.type = MPrimitiveType.getPrimitiveType(atbDBInfo.type_id);
+		}
 		
+		// link
+		this.clazz.addAttribute(this);
+		if (this.type instanceof MEnum) {
+			((MEnum) this.type).addUtilizer(this);
+		}
 	}
 
 	@Override
 	void saveToDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
-		
+		MDBAdapter.AttributeDBInfo atbDBInfo = (MDBAdapter.AttributeDBInfo) dbInfo;
+		atbDBInfo.id = this.id;
+		atbDBInfo.name = this.name;
+		atbDBInfo.type_id = this.type.getTypeIdentifier();
+		atbDBInfo.class_id = MElement.getElementID(this.clazz);
 	}
 
 }

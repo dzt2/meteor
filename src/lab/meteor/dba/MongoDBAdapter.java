@@ -588,25 +588,25 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 
 	@Override
-	public void loadRole(RoleDBInfo rol) {
+	public void loadReference(ReferenceDBInfo rol) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void createRole(RoleDBInfo rol) {
+	public void createReference(ReferenceDBInfo rol) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void updateRole(RoleDBInfo rol) {
+	public void updateReference(ReferenceDBInfo rol) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void deleteRole(RoleDBInfo rol) {
+	public void deleteReference(ReferenceDBInfo rol) {
 		// TODO Auto-generated method stub
 		
 	}

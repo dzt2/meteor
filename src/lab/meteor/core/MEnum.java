@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class MEnum extends MElement implements MType {
 
@@ -12,6 +13,8 @@ public class MEnum extends MElement implements MType {
 	private String name;
 	
 	private Map<String, MSymbol> symbols;
+	
+	private Set<MAttribute> utilizers;
 	
 	public MEnum(String name) throws MException {
 		this(name, null);
@@ -46,6 +49,14 @@ public class MEnum extends MElement implements MType {
 			for (MSymbol sym : this.symbols.values()) {
 				sym.delete();
 			}
+			this.symbols.clear();
+		}
+		// delete utilizers
+		if (this.utilizers != null) {
+			for (MAttribute atb : this.utilizers) {
+				atb.delete();
+			}
+			this.utilizers.clear();
 		}
 		// package
 		this.parent.removeEnum(this);
@@ -111,6 +122,20 @@ public class MEnum extends MElement implements MType {
 		this.parent.addEnum(this);
 		this.setChanged();
 	}
+	
+	void addUtilizer(MAttribute atb) {
+		this.getUtilizers().add(atb);
+	}
+	
+	void removeUtilizer(MAttribute atb) {
+		this.getUtilizers().remove(atb);
+	}
+	
+	private Set<MAttribute> getUtilizers() {
+		if (this.utilizers == null)
+			this.utilizers = new TreeSet<MAttribute>();
+		return this.utilizers;
+	}
 
 	@Override
 	public MNativeDataType getNativeDataType() {
@@ -121,17 +146,29 @@ public class MEnum extends MElement implements MType {
 	public String getTypeIdentifier() {
 		return String.valueOf(MElement.ID_PREFIX) + MUtility.idEncode(this.id);
 	}
+	
+	/*
+	 * ********************************
+	 *        DATA LOAD & SAVE
+	 * ********************************
+	 */
 
 	@Override
 	void loadFromDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
+		MDBAdapter.EnumDBInfo enmDBInfo = (MDBAdapter.EnumDBInfo) dbInfo;
+		this.name = enmDBInfo.name;
+		this.parent = MDatabase.getDB().getPackage(enmDBInfo.package_id);
 		
+		// link
+		this.parent.addEnum(this);
 	}
 
 	@Override
 	void saveToDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
-		
+		MDBAdapter.EnumDBInfo enmDBInfo = (MDBAdapter.EnumDBInfo) dbInfo;
+		enmDBInfo.id = this.id;
+		enmDBInfo.name = this.name;
+		enmDBInfo.package_id = MElement.getElementID(this.parent);
 	}
 
 }

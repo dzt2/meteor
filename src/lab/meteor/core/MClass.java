@@ -229,7 +229,7 @@ public class MClass extends MElement {
 	}
 	
 	public boolean hasChild(String name) {
-		return this.hasAttribute(name) || this.hasRole(name);
+		return this.hasAttribute(name) || this.hasReference(name);
 	}
 	
 	/* 
@@ -258,11 +258,11 @@ public class MClass extends MElement {
 	 * @return attribute with specific name
 	 * @throws MException 
 	 */
-	public MAttribute getAttribute(String attrib) {
+	public MAttribute getAttribute(String name) {
 		MAttribute atb = null;
 		MClass cls = this;
 		while (cls != null) {
-			atb = cls.getAttribute(attrib);
+			atb = cls.getAttribute(name);
 			if (atb != null)
 				break;
 			cls = cls.superclass;
@@ -292,15 +292,15 @@ public class MClass extends MElement {
 	
 	/* 
 	 * ********************************
-	 *         ROLE OPERATIONS
+	 *       REFERENCE OPERATIONS
 	 * ********************************
 	 */
 	
-	public Set<String> getRoleNames() {
+	public Set<String> getReferenceNames() {
 		return new TreeSet<String>(this.getReferences().keySet());
 	}
 	
-	public Set<String> getAllRoleNames() {
+	public Set<String> getAllReferenceNames() {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
@@ -310,11 +310,11 @@ public class MClass extends MElement {
 		return names;
 	}
 	
-	public MReference getRole(String role) {
+	public MReference getReference(String name) {
 		MReference rol = null;
 		MClass cls = this;
 		while (cls != null) {
-			rol = cls.getRole(role);
+			rol = cls.getReference(name);
 			if (rol != null)
 				break;
 			cls = cls.superclass;
@@ -322,7 +322,7 @@ public class MClass extends MElement {
 		return rol;
 	}
 	
-	public boolean hasRole(String role) {
+	public boolean hasReference(String name) {
 		MClass cls = this;
 		while (cls != null) {
 			if (cls.getReferences().containsKey(name))

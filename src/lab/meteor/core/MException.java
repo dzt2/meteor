@@ -35,6 +35,7 @@ public class MException extends RuntimeException {
 		 * When assign a value to a object'attribute, the attribute does not exist.
 		 */
 		ATTRIBUTE_NOT_FOUND,
+		REFERENCE_NOT_FOUND,
 		/**
 		 * The type of element (Class, Attribute, Enum, etc.) in memory is different with the
 		 * element in DB.
@@ -67,6 +68,7 @@ public class MException extends RuntimeException {
 		 * The type of value set to an object's attribute is different with the attribute's type.
 		 */
 		INVALID_VALUE_TYPE,
+		INVALID_VALUE_CLASS,
 		UNKNOWN_VALUE_TYPE,
 		INVALID_OPPOSITE
 	}

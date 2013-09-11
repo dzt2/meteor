@@ -97,9 +97,11 @@ public class MUtility {
 		switch (nType) {
 		case Any:
 			MPrimitiveType t = classes.get(value.getClass());
-			if (t == null)
-				return false;
-			return true;
+			if (t != null)
+				return true;
+			if (value instanceof MSymbol)
+				return true;
+			break;
 		case Number:
 			if (value instanceof java.lang.Number)
 				return true;
@@ -116,13 +118,12 @@ public class MUtility {
 			if (value instanceof java.util.Date)
 				return true;
 			break;
-//		case Object:
-//			if (value instanceof MObject)
-//				return true;
-//			break;
 		case Enum:
-			if (value instanceof MSymbol)
-				return true;
+			if (value instanceof MSymbol) {
+				MSymbol sym = (MSymbol) value;
+				if (sym.getEnum() == type)
+					return true;
+			}
 			break;
 		case List:
 			if (value instanceof MList)

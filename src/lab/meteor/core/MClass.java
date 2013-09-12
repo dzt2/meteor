@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class MClass extends MElement {
+public class MClass extends MElement implements MNotifiable {
 
 	private String name;
 	
@@ -394,6 +394,11 @@ public class MClass extends MElement {
 		clsDBInfo.name = this.name;
 		clsDBInfo.superclass_id = MElement.getElementID(this.superclass);
 		clsDBInfo.package_id = MElement.getElementID(this.parent);
+	}
+
+	@Override
+	public void notifyChanged() {
+		this.setChanged();
 	}
 
 }

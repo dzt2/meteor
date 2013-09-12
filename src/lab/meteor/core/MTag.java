@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class MTag extends MElement {
+public class MTag extends MElement implements MNotifiable {
 	
 	private String name;
 	
@@ -23,8 +23,8 @@ public class MTag extends MElement {
 			throw new MException(MException.Reason.NULL_ELEMENT);
 		if (target.isDeleted())
 			throw new MException(MException.Reason.ELEMENT_MISSED);
-//		if (!MUtil.checkType(type, value))
-//			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
+		if (!MUtility.isValidValue(value))
+			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		
 		this.initialize();
 		this.name = name;
@@ -48,8 +48,8 @@ public class MTag extends MElement {
 		
 		if (targets == null)
 			throw new MException(MException.Reason.NULL_ELEMENT);
-//		if (!MUtil.checkType(type, value))
-//			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
+		if (!MUtility.isValidValue(value))
+			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		for (MElement target : targets) {
 			if (target == null || target.getID() == MElement.NULL_ID)
 				throw new MException(MException.Reason.NULL_ELEMENT);
@@ -78,7 +78,11 @@ public class MTag extends MElement {
 	}
 	
 	public void delete() {
-		// TODO
+		for (MElementPointer pt : this.targets) {
+			MElement ele = pt.getElement();
+			ele.removeTag(this);
+		}
+		this.targets.clear();
 		super.delete();
 	}
 	
@@ -108,10 +112,8 @@ public class MTag extends MElement {
 	}
 	
 	public void setValue(Object value) {
-//		if (type == this.type && value.equals(this.value))
-//			return;
-//		if (!MUtil.checkType(type, value))
-//			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
+		if (!MUtility.isValidValue(value))
+			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		if (value instanceof MElement) {
 			this.value = new MElementPointer((MElement) value);
 		} else {
@@ -158,6 +160,11 @@ public class MTag extends MElement {
 		for (MElementPointer target_pt : this.targets) {
 			tagDBInfo.targets_id.add(target_pt.getID());
 		}
+	}
+
+	@Override
+	public void notifyChanged() {
+		this.setChanged();
 	}
 
 }

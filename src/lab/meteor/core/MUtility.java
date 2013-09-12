@@ -90,6 +90,14 @@ public class MUtility {
 		classes.put(MRef.class, MPrimitiveType.Ref);
 	}
 	
+	public static boolean isValidValue(Object value) {
+		if (classes.containsKey(value.getClass()))
+			return true;
+		if (value instanceof MObject)
+			return true;
+		return false;
+	}
+	
 	public static boolean checkType(MType type, Object value) {
 		if (value == null)
 			return true;

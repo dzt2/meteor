@@ -70,7 +70,8 @@ public class MException extends RuntimeException {
 		INVALID_VALUE_TYPE,
 		INVALID_VALUE_CLASS,
 		UNKNOWN_VALUE_TYPE,
-		INVALID_OPPOSITE
+		INVALID_OPPOSITE,
+		NULL_NOTIFICABLE
 	}
 	
 	/**

@@ -12,6 +12,7 @@ import com.mongodb.DBObject;
 import lab.meteor.core.MDBAdapter;
 import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MException;
+import lab.meteor.core.MUtility;
 
 public class MongoDBAdapter implements MDBAdapter {
 
@@ -21,7 +22,6 @@ public class MongoDBAdapter implements MDBAdapter {
 	private static final String COLLECT_NAME_SYMBOL = "symbols";
 	private static final String COLLECT_NAME_PACKAGE = "packages";
 	// TODO
-	private static final String COLLECT_NAME_OBJECT = "objects";
 	private static final String COLLECT_NAME_TAG = "tags";
 	private static final String COLLECT_NAME_SYSTEM = "global";
 	private static final String COLLECT_NAME_ELEMENT = "elements";
@@ -39,6 +39,15 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBObject typeObj = new BasicDBObject();
 		typeObj.put("_id", new Long(id));
 		typeObj.put("type", type.toString());
+		typeCol.insert(typeObj);
+	}
+	
+	private void writeObject(long id, long class_id) {
+		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject typeObj = new BasicDBObject();
+		typeObj.put("_id", new Long(id));
+		typeObj.put("type", MElementType.Object.toString());
+		typeObj.put("class", classIDToString(class_id));
 		typeCol.insert(typeObj);
 	}
 	
@@ -397,8 +406,14 @@ public class MongoDBAdapter implements MDBAdapter {
 
 	@Override
 	public void createObject(ObjectDBInfo obj) {
-		// TODO Auto-generated method stub
-		
+		// create : 1. type collection
+		writeObject(obj.id, obj.class_id);
+		// create : 2. specific class collection
+		String class_id = classIDToString(obj.class_id);
+		DBCollection objCol = db.getCollection(class_id);
+		DBObject objObj = new BasicDBObject();
+		objObj.put("_id", new Long(obj.id));
+		objCol.insert(objObj);
 	}
 
 	@Override
@@ -469,8 +484,6 @@ public class MongoDBAdapter implements MDBAdapter {
 		}
 		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		typeCol.ensureIndex("type");
-		DBCollection objCol = db.getCollection(COLLECT_NAME_OBJECT);
-		objCol.ensureIndex("class");
 		// TODO
 		
 	}
@@ -557,9 +570,9 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	@Override
 	public List<Long> listAllObjectIDs(long id) {
-		DBCollection col = db.getCollection(COLLECT_NAME_OBJECT);
+		DBCollection col = db.getCollection(classIDToString(id));
 		DBObject projection = new BasicDBObject().append("_id", true);
-		DBObject query = new BasicDBObject().append("class", new Long(id));
+		DBObject query = new BasicDBObject();
 		DBCursor cursor = col.find(query, projection);
 		List<Long> list = new LinkedList<Long>();
 		while (cursor.hasNext()) {
@@ -569,10 +582,14 @@ public class MongoDBAdapter implements MDBAdapter {
 		return list;
 	}
 	
+	private static String classIDToString(long id) {
+		return "_" + MUtility.idEncode(id);
+	}
+	
 	@Override
 	public void resetDB() {
-		// TODO Auto-generated method stub
-		
+		this.db.dropDatabase();
+		this.checkAndPrepareDB();
 	}
 
 	@Override

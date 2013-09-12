@@ -81,6 +81,7 @@ public interface MDBAdapter {
 	
 	public static class ObjectDBInfo {
 		public long id;
+		public long class_id;
 		public Map<Long, Object> values;
 	}
 

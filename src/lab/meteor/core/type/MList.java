@@ -1,152 +1,182 @@
 package lab.meteor.core.type;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 
-public class MList implements List<Object> {
+import lab.meteor.core.MCollection;
+import lab.meteor.core.MNotifiable;
 
-private LinkedList<Object> list = new LinkedList<Object>();
-	
-	public MList() {
+public class MList extends MCollection {
+
+	public MList(MNotifiable parent) {
+		super(parent);
 	}
+
+	private LinkedList<Object> list = new LinkedList<Object>();
 	
-	@Override
 	public boolean add(Object e) {
-//		if (!validValue(e))
-//			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
-		// TODO
-		return list.add(e);
+		checkType(e);
+		
+		e = toInputObject(e);
+		boolean b = this.list.add(e);
+		if (b)
+			this.notifyChanged();
+		return b;
 	}
 
-	@Override
 	public void add(int index, Object element) {
-//		if (!validValue(element))
-//			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
-		// TODO
+		checkType(element);
+		
+		element = toInputObject(element);
 		list.add(index, element);
+		this.notifyChanged();
 	}
 
-	@Override
-	public boolean addAll(Collection<? extends Object> c) {
-//		for (Object o : c) {
-//			if (validValue(o))
-//				list.add(o);
-//		}
-		// TODO
-		return true;
+	public boolean remove(Object o) {
+		o = toInputObject(o);
+		boolean b = list.remove(o);
+		if (b)
+			this.notifyChanged();
+		return b;
 	}
 
-	@Override
-	public boolean addAll(int index, Collection<? extends Object> c) {
-//		List<Object> objs = new LinkedList<Object>();
-//		for (Object o : c) {
-//			if (validValue(o))
-//				objs.add(o);
-//		}
-		// TODO
-//		return list.addAll(index, objs);
-		return false;
+	public Object remove(int index) {
+		Object o = list.remove(index);
+		this.notifyChanged();
+		return o;
 	}
 
-	@Override
+	public Object set(int index, Object element) {
+		checkType(element);
+		
+		element = toInputObject(element);
+		Object o = list.set(index, element);
+		this.notifyChanged();
+		return o;
+	}
+
+	public Object get(int index) {
+		Object o = list.get(index);
+		o = toOutputObject(o);
+		return o;
+	}
+
 	public void clear() {
 		list.clear();
+		this.notifyChanged();
 	}
 
-	@Override
 	public boolean contains(Object o) {
+		o = toInputObject(o);
 		return list.contains(o);
 	}
 
-	@Override
-	public boolean containsAll(Collection<?> c) {
-		return list.containsAll(c);
-	}
-
-	@Override
-	public Object get(int index) {
-		return list.get(index);
-	}
-
-	@Override
 	public int indexOf(Object o) {
+		o = toInputObject(o);
 		return list.indexOf(o);
 	}
 
-	@Override
+	public int lastIndexOf(Object o) {
+		o = toInputObject(0);
+		return list.lastIndexOf(o);
+	}
+
 	public boolean isEmpty() {
 		return list.isEmpty();
 	}
 
-	@Override
-	public Iterator<Object> iterator() {
-		return list.iterator();
-	}
-
-	@Override
-	public int lastIndexOf(Object o) {
-		return list.lastIndexOf(o);
-	}
-
-	@Override
-	public ListIterator<Object> listIterator() {
-		return list.listIterator();
-	}
-
-	@Override
-	public ListIterator<Object> listIterator(int index) {
-		return list.listIterator(index);
-	}
-
-	@Override
-	public boolean remove(Object o) {
-		return list.remove(o);
-	}
-
-	@Override
-	public Object remove(int index) {
-		return list.remove(index);
-	}
-
-	@Override
-	public boolean removeAll(Collection<?> c) {
-		return list.removeAll(c);
-	}
-
-	@Override
-	public boolean retainAll(Collection<?> c) {
-		return list.retainAll(c);
-	}
-
-	@Override
-	public Object set(int index, Object element) {
-//		if (!validValue(element))
-//			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
-		// TODO
-		return list.set(index, element);
-	}
-
-	@Override
 	public int size() {
 		return list.size();
 	}
 
-	@Override
-	public List<Object> subList(int fromIndex, int toIndex) {
-		return list.subList(fromIndex, toIndex);
+	public Iterator<Object> iterator() {
+		return listIterator();
+	}
+
+	public ListIterator<Object> listIterator() {
+		return listIterator(0);
+	}
+
+	public ListIterator<Object> listIterator(int index) {
+		return new ListItr(index);
+	}
+
+	private class ListItr implements ListIterator<Object> {
+		private final ListIterator<Object> it;
+		
+		public ListItr(int index) {
+			this.it = MList.this.list.listIterator(index);
+		}
+		
+		@Override
+		public void add(Object e) {
+			checkType(e);
+			
+			e = MList.toInputObject(e);
+			it.add(e);
+			MList.this.notifyChanged();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return it.hasNext();
+		}
+
+		@Override
+		public boolean hasPrevious() {
+			return it.hasPrevious();
+		}
+
+		@Override
+		public Object next() {
+			Object o = it.next();
+			o = MList.toOutputObject(o);
+			return o;
+		}
+
+		@Override
+		public int nextIndex() {
+			return it.nextIndex();
+		}
+
+		@Override
+		public Object previous() {
+			Object o = it.previous();
+			o = MList.toOutputObject(o);
+			return o;
+		}
+
+		@Override
+		public int previousIndex() {
+			return it.previousIndex();
+		}
+
+		@Override
+		public void remove() {
+			it.remove();
+			MList.this.notifyChanged();
+		}
+
+		@Override
+		public void set(Object e) {
+			checkType(e);
+			
+			e = MList.toInputObject(e);
+			it.add(e);
+			MList.this.notifyChanged();
+		}
+		
 	}
 
 	@Override
-	public Object[] toArray() {
-		return list.toArray();
-	}
-
-	@Override
-	public <T> T[] toArray(T[] a) {
-		return list.toArray(a);
+	public void forEach(ForEachCallback callback) {
+		if (callback == null)
+			return;
+		for (Object o : list) {
+			o = toOutputObject(o);
+			callback.function(o);
+		}
 	}
 	
 }

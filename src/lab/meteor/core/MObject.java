@@ -1,6 +1,5 @@
 package lab.meteor.core;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -317,7 +316,7 @@ public class MObject extends MElement {
 
 	@Override
 	void loadFromDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
+		MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
 		
 	}
 
@@ -327,7 +326,7 @@ public class MObject extends MElement {
 		
 	}
 	
-	private static class MPointerSet extends TreeSet<MElementPointer> {
+	static class MPointerSet extends TreeSet<MElementPointer> {
 
 		/**
 		 * 

@@ -6,10 +6,7 @@ import java.util.regex.Pattern;
 
 import lab.meteor.core.type.MBinary;
 import lab.meteor.core.type.MCode;
-import lab.meteor.core.type.MDictionary;
-import lab.meteor.core.type.MList;
 import lab.meteor.core.type.MRef;
-import lab.meteor.core.type.MSet;
 
 public class MUtility {
 	

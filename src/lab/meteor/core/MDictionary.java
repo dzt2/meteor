@@ -1,4 +1,4 @@
-package lab.meteor.core.type;
+package lab.meteor.core;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -7,12 +7,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import lab.meteor.core.MCollection;
-import lab.meteor.core.MNotifiable;
-
 public class MDictionary extends MCollection {
 	
-	public MDictionary(MNotifiable parent) {
+	MDictionary(MNotifiable parent) {
 		super(parent);
 	}
 

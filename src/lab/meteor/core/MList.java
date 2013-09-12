@@ -1,15 +1,12 @@
-package lab.meteor.core.type;
+package lab.meteor.core;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-import lab.meteor.core.MCollection;
-import lab.meteor.core.MNotifiable;
-
 public class MList extends MCollection {
 
-	public MList(MNotifiable parent) {
+	MList(MNotifiable parent) {
 		super(parent);
 	}
 
@@ -113,7 +110,7 @@ public class MList extends MCollection {
 		public void add(Object e) {
 			checkType(e);
 			
-			e = MList.toInputObject(e);
+			e = MList.this.toInputObject(e);
 			it.add(e);
 			MList.this.notifyChanged();
 		}
@@ -131,7 +128,7 @@ public class MList extends MCollection {
 		@Override
 		public Object next() {
 			Object o = it.next();
-			o = MList.toOutputObject(o);
+			o = MList.this.toOutputObject(o);
 			return o;
 		}
 
@@ -143,7 +140,7 @@ public class MList extends MCollection {
 		@Override
 		public Object previous() {
 			Object o = it.previous();
-			o = MList.toOutputObject(o);
+			o = MList.this.toOutputObject(o);
 			return o;
 		}
 
@@ -162,7 +159,7 @@ public class MList extends MCollection {
 		public void set(Object e) {
 			checkType(e);
 			
-			e = MList.toInputObject(e);
+			e = MList.this.toInputObject(e);
 			it.add(e);
 			MList.this.notifyChanged();
 		}

@@ -1,16 +1,13 @@
-package lab.meteor.core.type;
+package lab.meteor.core;
 
 import java.util.Iterator;
 import java.util.TreeSet;
-
-import lab.meteor.core.MCollection;
-import lab.meteor.core.MNotifiable;
 
 public class MSet extends MCollection {
 
 	private TreeSet<Object> set = new TreeSet<Object>();
 	
-	public MSet(MNotifiable parent) {
+	MSet(MNotifiable parent) {
 		super(parent);
 	}
 

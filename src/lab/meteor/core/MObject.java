@@ -6,9 +6,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import lab.meteor.core.MCollection.Creator;
 import lab.meteor.core.MReference.Multiplicity;
 
-public class MObject extends MElement {
+public class MObject extends MElement implements MNotifiable {
 
 	private Map<Long, Object> values = null;
 	
@@ -63,7 +64,46 @@ public class MObject extends MElement {
 	}
 	
 	private Object getAttribute(MAttribute atb) {
-		return this.getValues().get(atb.id);
+		boolean changeFlag = false;
+		Object o = this.getValues().get(atb.id);
+		if (o != null) {
+			if (!MUtility.checkType(atb.getType(), o)) {
+				this.getValues().remove(atb.id);
+				changeFlag = true;
+			}
+		}
+		
+		MNativeDataType nType = atb.getType().getNativeDataType();
+		switch (nType) {
+		case List:
+			if (o == null) {
+				o = MCollection.createCollection(Creator.List, this);
+				this.getValues().put(atb.id, o);
+			}
+			break;
+		case Set:
+			if (o == null) {
+				o = MCollection.createCollection(Creator.Set, this);
+				this.getValues().put(atb.id, o);
+			}
+			break;
+		case Dictionary:
+			if (o == null) {
+				o = MCollection.createCollection(Creator.Dictionary, this);
+				this.getValues().put(atb.id, o);
+			}
+			break;
+		case Enum:
+			if (o != null) {
+				o = ((MElementPointer) o).getElement();
+			}
+			break;
+		default:
+			break;
+		}
+		if (changeFlag)
+			this.setChanged();
+		return o;
 	}
 	
 	public void setAttribute(MAttribute atb, Object obj) {
@@ -332,6 +372,12 @@ public class MObject extends MElement {
 		 * 
 		 */
 		private static final long serialVersionUID = -4911228345476040087L;
+		
+	}
+
+	@Override
+	public void notifyChanged() {
+		// TODO Auto-generated method stub
 		
 	}
 

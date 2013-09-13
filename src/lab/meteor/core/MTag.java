@@ -1,6 +1,8 @@
 package lab.meteor.core;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -147,7 +149,7 @@ public class MTag extends MElement implements MNotifiable {
 	void loadFromDBInfo(Object dbInfo) {
 		MDBAdapter.TagDBInfo tagDBInfo = (MDBAdapter.TagDBInfo) dbInfo;
 		this.name = tagDBInfo.name;
-		this.value = tagDBInfo.value;
+		fromDBObject(this, tagDBInfo.value, null);
 		for (Long target_id : tagDBInfo.targets_id) {
 			MElementType eType = MDatabase.getDB().getElementType(target_id);
 			this.targets.add(new MElementPointer(target_id, eType));
@@ -158,9 +160,78 @@ public class MTag extends MElement implements MNotifiable {
 		MDBAdapter.TagDBInfo tagDBInfo = (MDBAdapter.TagDBInfo) dbInfo;
 		tagDBInfo.id = this.id;
 		tagDBInfo.name = this.name;
-		tagDBInfo.value = this.value;
+		tagDBInfo.value = toDBObject(this.value);
 		for (MElementPointer target_pt : this.targets) {
 			tagDBInfo.targets_id.add(target_pt.getID());
+		}
+	}
+	
+	private static void fromDBObject(MNotifiable parent, Object value, Object key) {
+		if (value instanceof MDBAdapter.DataList) {
+			MList list = new MList(parent);
+			MDBAdapter.DataList dl = (MDBAdapter.DataList) value;
+			for (Object o : dl) {
+				fromDBObject(list, o, null);
+			}
+			value = list;
+		} else if (value instanceof MDBAdapter.DataSet) {
+			MSet set = new MSet(parent);
+			MDBAdapter.DataSet ds = (MDBAdapter.DataSet) value;
+			for (Object o : ds) {
+				fromDBObject(set, o, null);
+			}
+			value = set;
+		} else if (value instanceof MDBAdapter.DataDict) {
+			MDictionary dict = new MDictionary(parent);
+			MDBAdapter.DataDict dd = (MDBAdapter.DataDict) value;
+			Iterator<Map.Entry<String, Object>> it = dd.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, Object> entry = it.next();
+				String k = entry.getKey();
+				Object o = entry.getValue();
+				fromDBObject(dict, o, k);
+			}
+			value = dict;
+		}
+		
+		if (parent instanceof MTag) {
+			((MTag) parent).value = value;
+		} else if (parent instanceof MList) {
+			((MList) parent).list.add(value);
+		} else if (parent instanceof MSet) {
+			((MSet) parent).set.add(value);
+		} else if (parent instanceof MDictionary) {
+			((MDictionary) parent).dict.put((String)key, value);
+		}
+	}
+	
+	private static Object toDBObject(Object value) {
+		if (value instanceof MList) {
+			MDBAdapter.DataList dl = new MDBAdapter.DataList();
+			Iterator<Object> it = ((MList) value).list.iterator();
+			while (it.hasNext()) {
+				dl.add(toDBObject(it.next()));
+			}
+			return dl;
+		} else if (value instanceof MSet) {
+			MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
+			Iterator<Object> it = ((MSet) value).set.iterator();
+			while (it.hasNext()) {
+				ds.add(toDBObject(it.next()));
+			}
+			return ds;
+		} else if (value instanceof MDictionary) {
+			MDBAdapter.DataDict dd = new MDBAdapter.DataDict();
+			Iterator<Map.Entry<String, Object>> it = ((MDictionary) value).dict.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, Object> entry = it.next();
+				dd.put(entry.getKey(), toDBObject(entry.getValue()));
+			}
+			return dd;
+		} else if (value instanceof MElement) {
+			return new MElementPointer((MElement) value);
+		} else {
+			return value;
 		}
 	}
 

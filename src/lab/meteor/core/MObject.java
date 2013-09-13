@@ -2,11 +2,12 @@ package lab.meteor.core;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import lab.meteor.core.MCollection.Creator;
+import lab.meteor.core.MCollection.Factory;
 import lab.meteor.core.MReference.Multiplicity;
 
 public class MObject extends MElement implements MNotifiable {
@@ -77,19 +78,19 @@ public class MObject extends MElement implements MNotifiable {
 		switch (nType) {
 		case List:
 			if (o == null) {
-				o = MCollection.createCollection(Creator.List, this);
+				o = MCollection.createCollection(Factory.List, this);
 				this.getValues().put(atb.id, o);
 			}
 			break;
 		case Set:
 			if (o == null) {
-				o = MCollection.createCollection(Creator.Set, this);
+				o = MCollection.createCollection(Factory.Set, this);
 				this.getValues().put(atb.id, o);
 			}
 			break;
 		case Dictionary:
 			if (o == null) {
-				o = MCollection.createCollection(Creator.Dictionary, this);
+				o = MCollection.createCollection(Factory.Dictionary, this);
 				this.getValues().put(atb.id, o);
 			}
 			break;
@@ -106,8 +107,16 @@ public class MObject extends MElement implements MNotifiable {
 		return o;
 	}
 	
-	public void setAttribute(MAttribute atb, Object obj) {
-		this.getValues().put(atb.id, obj);
+	private void setAttribute(MAttribute atb, Object obj) {
+		Object o;
+		if (obj instanceof MElement) {
+			o = new MElementPointer((MElement) obj);
+		} else if (obj instanceof MCollection.Factory) {
+			o =  MCollection.createCollection((MCollection.Factory) obj, this);
+		} else {
+			o = obj;
+		}
+		this.getValues().put(atb.id, o);
 	}
 	
 	public Object getAttribute(String name) {
@@ -136,6 +145,7 @@ public class MObject extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		
 		this.setAttribute(atb, obj);
+		this.notifyChanged();
 	}
 	
 	private Object getReference(MReference ref) {
@@ -356,29 +366,159 @@ public class MObject extends MElement implements MNotifiable {
 
 	@Override
 	void loadFromDBInfo(Object dbInfo) {
-		MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
+		boolean changeFlag = false;
 		
-	}
-
-	@Override
-	void saveToDBInfo(Object dbInfo) {
-		// TODO Auto-generated method stub
+		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
+		this.class_pt = new MElementPointer(objDBInfo.class_id, MElementType.Class);
 		
+		Iterator<Map.Entry<String, Object>> it = objDBInfo.values.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, Object> entry = it.next();
+			long id = MUtility.idDecode(entry.getKey());
+			MElement ele = MDatabase.getDB().getElement(id);
+			Object value = entry.getValue();
+			
+			// if attribute
+			if (ele.getElementType() == MElementType.Attribute) {
+				MAttribute atb = (MAttribute) ele;
+				if (!MUtility.checkType(atb.getType(), value)) {
+					changeFlag = true;
+				}
+				fromDBObject(this, value, id);
+			// if reference
+			} else if (ele.getElementType() == MElementType.Reference) {
+				MReference ref = (MReference) ele;
+				// multiplicity one
+				if (value instanceof MElementPointer) {
+					if (ref.getMultiplicity() == Multiplicity.One) {
+						this.getValues().put(id, value);
+					} else {
+						changeFlag = true;
+					}
+				// multiplicity multiple
+				} else if (value instanceof MDBAdapter.DataSet) {
+					if (ref.getMultiplicity() == Multiplicity.Multiple) {
+						MPointerSet ps = new MPointerSet();
+						MDBAdapter.DataSet ds = (MDBAdapter.DataSet) value;
+						for (Object o : ds) {
+							ps.add((MElementPointer) o);
+						}
+						this.getValues().put(id, ps);
+					} else {
+						changeFlag = true;
+					}
+				}
+			} else {
+				changeFlag = true;
+			}
+		}
+		
+		if (changeFlag)
+			this.setChanged();
 	}
 	
+	@Override
+	void saveToDBInfo(Object dbInfo) {
+		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
+		objDBInfo.class_id = this.class_pt.getID();
+		
+		if (this.values != null) {
+			Iterator<Map.Entry<Long, Object>> it = this.values.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<Long, Object> entry = it.next();
+				long id = entry.getKey();
+				Object value = entry.getValue();
+				
+				if (value instanceof MPointerSet) {
+					MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
+					for (MElementPointer pt : (MPointerSet) value) {
+						ds.add(pt);
+					}
+					objDBInfo.values.put(MUtility.idEncode(id), ds);
+				} else {
+					Object o = toDBObject(value);
+					objDBInfo.values.put(MUtility.idEncode(id), o);
+				}
+			}
+		}
+	}
+
+	private static void fromDBObject(MNotifiable parent, Object value, Object key) {
+		if (value instanceof MDBAdapter.DataList) {
+			MList list = new MList(parent);
+			MDBAdapter.DataList dl = (MDBAdapter.DataList) value;
+			for (Object o : dl) {
+				fromDBObject(list, o, null);
+			}
+			value = list;
+		} else if (value instanceof MDBAdapter.DataSet) {
+			MSet set = new MSet(parent);
+			MDBAdapter.DataSet ds = (MDBAdapter.DataSet) value;
+			for (Object o : ds) {
+				fromDBObject(set, o, null);
+			}
+			value = set;
+		} else if (value instanceof MDBAdapter.DataDict) {
+			MDictionary dict = new MDictionary(parent);
+			MDBAdapter.DataDict dd = (MDBAdapter.DataDict) value;
+			Iterator<Map.Entry<String, Object>> it = dd.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, Object> entry = it.next();
+				String k = entry.getKey();
+				Object o = entry.getValue();
+				fromDBObject(dict, o, k);
+			}
+			value = dict;
+		}
+		if (parent instanceof MObject) {
+			((MObject) parent).getValues().put((Long)key, value);
+		} else if (parent instanceof MList) {
+			((MList) parent).list.add(value);
+		} else if (parent instanceof MSet) {
+			((MSet) parent).set.add(value);
+		} else if (parent instanceof MDictionary) {
+			((MDictionary) parent).dict.put((String)key, value);
+		}
+	}
+	
+	private static Object toDBObject(Object value) {
+		if (value instanceof MList) {
+			MDBAdapter.DataList dl = new MDBAdapter.DataList();
+			Iterator<Object> it = ((MList) value).list.iterator();
+			while (it.hasNext()) {
+				dl.add(toDBObject(it.next()));
+			}
+			return dl;
+		} else if (value instanceof MSet) {
+			MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
+			Iterator<Object> it = ((MSet) value).set.iterator();
+			while (it.hasNext()) {
+				ds.add(toDBObject(it.next()));
+			}
+			return ds;
+		} else if (value instanceof MDictionary) {
+			MDBAdapter.DataDict dd = new MDBAdapter.DataDict();
+			Iterator<Map.Entry<String, Object>> it = ((MDictionary) value).dict.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, Object> entry = it.next();
+				dd.put(entry.getKey(), toDBObject(entry.getValue()));
+			}
+			return dd;
+		} else if (value instanceof MElement) {
+			return new MElementPointer((MElement) value);
+		} else {
+			return value;
+		}
+	}
+
+	@SuppressWarnings("serial")
 	static class MPointerSet extends TreeSet<MElementPointer> {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -4911228345476040087L;
-		
 	}
 
 	@Override
 	public void notifyChanged() {
-		// TODO Auto-generated method stub
-		
+		this.setChanged();
 	}
 
 }

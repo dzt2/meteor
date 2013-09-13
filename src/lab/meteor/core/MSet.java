@@ -5,7 +5,7 @@ import java.util.TreeSet;
 
 public class MSet extends MCollection {
 
-	private TreeSet<Object> set = new TreeSet<Object>();
+	final TreeSet<Object> set = new TreeSet<Object>();
 	
 	MSet(MNotifiable parent) {
 		super(parent);

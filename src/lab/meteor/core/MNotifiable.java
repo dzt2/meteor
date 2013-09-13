@@ -1,7 +1,7 @@
 package lab.meteor.core;
 
-public interface MNotifiable {
+interface MNotifiable {
 	
 	void notifyChanged();
-	
+		
 }

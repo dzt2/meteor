@@ -212,8 +212,17 @@ public class MDatabase {
 	public MElementType getElementType(long id) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
-		MElementType type = this.dbAdapter.getElementType(id);
-		return type;
+		if (this.metaElements.containsKey(id)) {
+			MElement e = this.metaElements.get(id);
+			return e.getElementType();
+		} else if (this.objectsCache.containsKey(id)) {
+			return MElementType.Object;
+		} else if (this.tagsCache.containsKey(id)) {
+			return MElementType.Tag;
+		} else {
+			MElementType type = this.dbAdapter.getElementType(id);
+			return type;
+		}
 	}
 	
 	private void checkExistenceAndType(long id, MElementType type) throws MException {

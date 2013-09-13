@@ -116,6 +116,8 @@ public class MTag extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		if (value instanceof MElement) {
 			this.value = new MElementPointer((MElement) value);
+		} else if (value instanceof MCollection.Factory) {
+			this.value = MCollection.createCollection((MCollection.Factory) value, this);
 		} else {
 			this.value = value;
 		}

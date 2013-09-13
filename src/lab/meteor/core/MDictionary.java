@@ -3,9 +3,7 @@ package lab.meteor.core;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 public class MDictionary extends MCollection {
 	
@@ -13,7 +11,7 @@ public class MDictionary extends MCollection {
 		super(parent);
 	}
 
-	private Map<String, Object> dict = new TreeMap<String, Object>();
+	final Map<String, Object> dict = new TreeMap<String, Object>();
 	
 	public Object add(String key, Object value) {
 		checkType(value);
@@ -55,9 +53,9 @@ public class MDictionary extends MCollection {
 	public boolean isEmpty() {
 		return dict.isEmpty();
 	}
-
-	public Set<String> keySet() {
-		return new TreeSet<String>(dict.keySet());
+	
+	public Iterator<String> keyIterator() {
+		return new KeyItr();
 	}
 
 	public int size() {
@@ -127,6 +125,32 @@ public class MDictionary extends MCollection {
 		}
 		
 	}
+	
+	private class KeyItr implements Iterator<String> {
+
+		private final Iterator<String> it;
+		
+		public KeyItr() {
+			it = MDictionary.this.dict.keySet().iterator();
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return it.hasNext();
+		}
+
+		@Override
+		public String next() {
+			return it.next();
+		}
+
+		@Override
+		public void remove() {
+			it.remove();
+			MDictionary.this.notifyChanged();
+		}
+		
+	}
 
 
 	@Override
@@ -141,4 +165,5 @@ public class MDictionary extends MCollection {
 			callback.function(o);
 		}
 	}
+	
 }

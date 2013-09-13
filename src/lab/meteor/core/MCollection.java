@@ -3,9 +3,11 @@ package lab.meteor.core;
 
 public abstract class MCollection implements MNotifiable {
 	
-	public static Creator List = Creator.List;
-	public static Creator Set = Creator.Set;
-	public static Creator Dictionary = Creator.Dictionary;
+	public enum Factory {
+		List,
+		Set,
+		Dictionary
+	}
 	
 	private MNotifiable parent;
 	
@@ -28,8 +30,8 @@ public abstract class MCollection implements MNotifiable {
 	protected Object toInputObject(Object o) {
 		if (o instanceof MElement) {
 			return new MElementPointer((MElement) o);
-		} else if (o instanceof MCollection.Creator) {
-			return MCollection.createCollection((MCollection.Creator) o, this);
+		} else if (o instanceof MCollection.Factory) {
+			return MCollection.createCollection((MCollection.Factory) o, this);
 		}
 		return o;
 	}
@@ -41,14 +43,14 @@ public abstract class MCollection implements MNotifiable {
 	}
 	
 	protected static void checkType(Object o) {
-		if (o instanceof MCollection.Creator)
+		if (o instanceof MCollection.Factory)
 			return;
 		if (!MUtility.isValidValue(o))
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 	}
 	
-	protected static MCollection createCollection(Creator creator, MNotifiable parent) {
-		switch (creator) {
+	protected static MCollection createCollection(Factory factory, MNotifiable parent) {
+		switch (factory) {
 		case List:
 			return new MList(parent);
 		case Set:
@@ -57,11 +59,5 @@ public abstract class MCollection implements MNotifiable {
 			return new MDictionary(parent);
 		}
 		return null;
-	}
-	
-	public enum Creator {
-		List,
-		Set,
-		Dictionary
 	}
 }

@@ -3,6 +3,8 @@ package lab.meteor.core;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import lab.meteor.core.MElement.MElementType;
 
@@ -82,7 +84,7 @@ public interface MDBAdapter {
 	public static class ObjectDBInfo {
 		public long id;
 		public long class_id;
-		public Map<Long, Object> values;
+		public DataDict values = new DataDict();
 	}
 
 	void loadObject(ObjectDBInfo obj);
@@ -94,7 +96,7 @@ public interface MDBAdapter {
 		public long id;
 		public String name;
 		public Object value;
-		public List<Long> targets_id = new LinkedList<Long>();
+		public IDList targets_id = new IDList();
 	}
 	
 	void loadTag(TagDBInfo tag);
@@ -104,7 +106,7 @@ public interface MDBAdapter {
 	
 	public static class ElementTagDBInfo {
 		public long id;
-		public List<Long> tags_id = new LinkedList<Long>();
+		public IDList tags_id = new IDList();
 	}
 	
 	void loadElementTags(ElementTagDBInfo dbInfo);
@@ -116,10 +118,30 @@ public interface MDBAdapter {
 	long loadLastIDAndIncrement();
 	void resetDB();
 
-	List<Long> listAllPackageIDs();
-	List<Long> listAllClassIDs();
-	List<Long> listAllAttributeIDs();
-	List<Long> listAllEnumIDs();
-	List<Long> listAllSymbolIDs();
-	List<Long> listAllObjectIDs(long classID);
+	IDList listAllPackageIDs();
+	IDList listAllClassIDs();
+	IDList listAllAttributeIDs();
+	IDList listAllEnumIDs();
+	IDList listAllSymbolIDs();
+	IDList listAllObjectIDs(long classID);
+	
+	@SuppressWarnings("serial")
+	public static class DataList extends LinkedList<Object> {
+		
+	}
+	
+	@SuppressWarnings("serial")
+	public static class DataDict extends TreeMap<String, Object> {
+		
+	}
+	
+	@SuppressWarnings("serial")
+	public static class DataSet extends TreeSet<Object> {
+		
+	}
+	
+	@SuppressWarnings("serial")
+	public static class IDList extends LinkedList<Long> {
+		
+	}
 }

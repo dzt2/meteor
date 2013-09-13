@@ -71,12 +71,6 @@ public class MUtility {
 		// DateTime
 		classes.put(java.util.Date.class, MPrimitiveType.DateTime);
 		classes.put(java.sql.Timestamp.class, MPrimitiveType.DateTime);
-		// List
-		classes.put(MList.class, MPrimitiveType.List);
-		// Set
-		classes.put(MSet.class, MPrimitiveType.Set);
-		// Dict
-		classes.put(MDictionary.class, MPrimitiveType.Dictionary);
 		// Bin
 		classes.put(MBinary.class, MPrimitiveType.Binary);
 		// Regex
@@ -131,15 +125,15 @@ public class MUtility {
 			}
 			break;
 		case List:
-			if (value instanceof MList)
+			if (value == MCollection.Factory.List)
 				return true;
 			break;
 		case Set:
-			if (value instanceof MSet)
+			if (value == MCollection.Factory.Set)
 				return true;
 			break;
 		case Dictionary:
-			if (value instanceof MDictionary)
+			if (value == MCollection.Factory.Dictionary)
 				return true;
 			break;
 		case Binary:

@@ -12,18 +12,20 @@ import com.mongodb.DBObject;
 import lab.meteor.core.MDBAdapter;
 import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MException;
+import lab.meteor.core.MReference.Multiplicity;
 import lab.meteor.core.MUtility;
 
 public class MongoDBAdapter implements MDBAdapter {
 
 	private static final String COLLECT_NAME_CLASS = "classes";
 	private static final String COLLECT_NAME_ATTRIBUTE = "attributes";
+	private static final String COLLECT_NAME_REFERENCE = "references";
 	private static final String COLLECT_NAME_ENUM = "enumes";
 	private static final String COLLECT_NAME_SYMBOL = "symbols";
 	private static final String COLLECT_NAME_PACKAGE = "packages";
 	// TODO
 	private static final String COLLECT_NAME_TAG = "tags";
-	private static final String COLLECT_NAME_SYSTEM = "global";
+	private static final String COLLECT_NAME_GLOBAL = "global";
 	private static final String COLLECT_NAME_ELEMENT = "elements";
 	
 	public static boolean ENABLE_DOUBLE_CHECK_EXISTENCE = true;
@@ -37,7 +39,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	private void writeElementType(long id, MElementType type) {
 		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject typeObj = new BasicDBObject();
-		typeObj.put("_id", new Long(id));
+		typeObj.put("_id", id);
 		typeObj.put("type", type.toString());
 		typeCol.insert(typeObj);
 	}
@@ -45,7 +47,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	private void writeObject(long id, long class_id) {
 		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject typeObj = new BasicDBObject();
-		typeObj.put("_id", new Long(id));
+		typeObj.put("_id", id);
 		typeObj.put("type", MElementType.Object.toString());
 		typeObj.put("class", classIDToString(class_id));
 		typeCol.insert(typeObj);
@@ -56,7 +58,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		// load
 		DBCollection pkgCol = db.getCollection(COLLECT_NAME_PACKAGE);
 		long id = pkg.id;
-		DBObject pkgObj = pkgCol.findOne(new Long(id));
+		DBObject pkgObj = pkgCol.findOne(id);
 		// check existence
 		if (pkgObj == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -72,7 +74,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		// create : 2. class collection
 		DBCollection pkgCol = db.getCollection(COLLECT_NAME_PACKAGE);
 		DBObject pkgObj = new BasicDBObject();
-		pkgObj.put("_id", new Long(pkg.id));
+		pkgObj.put("_id", pkg.id);
 		pkgObj.put("name", pkg.name);
 		pkgObj.put("package", pkg.package_id);
 		pkgCol.insert(pkgObj);
@@ -83,11 +85,11 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBCollection pkgCol = db.getCollection(COLLECT_NAME_PACKAGE);
 		DBObject pkgQue = new BasicDBObject();
 		DBObject pkgObj = new BasicDBObject();
-		pkgQue.put("_id", new Long(pkg.id));
+		pkgQue.put("_id", pkg.id);
 		
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject pkgInDB = pkgCol.findOne(new Long(pkg.id));
+			DBObject pkgInDB = pkgCol.findOne(pkg.id);
 			if (pkgInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
@@ -106,13 +108,13 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject pkgInDB = pkgCol.findOne(new Long(pkg.id));
+			DBObject pkgInDB = pkgCol.findOne(pkg.id);
 			if (pkgInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
 		// delete
-		pkgQue.put("_id", new Long(pkg.id));
+		pkgQue.put("_id", pkg.id);
 		pkgCol.remove(pkgQue);
 		typeCol.remove(pkgQue);
 	}
@@ -122,7 +124,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		// load
 		DBCollection clsCol = db.getCollection(COLLECT_NAME_CLASS);
 		long id = cls.id;
-		DBObject clsObj = clsCol.findOne(new Long(id));
+		DBObject clsObj = clsCol.findOne(id);
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
 			if (clsObj == null)
@@ -143,10 +145,10 @@ public class MongoDBAdapter implements MDBAdapter {
 		// create : 2. class collection
 		DBCollection clsCol = db.getCollection(COLLECT_NAME_CLASS);
 		DBObject clsObj = new BasicDBObject();
-		clsObj.put("_id", new Long(cls.id));
+		clsObj.put("_id", cls.id);
 		clsObj.put("name", cls.name);
-		clsObj.put("superclass", new Long(cls.superclass_id));
-		clsObj.put("package", new Long(cls.package_id));
+		clsObj.put("superclass", cls.superclass_id);
+		clsObj.put("package", cls.package_id);
 		clsCol.insert(clsObj);
 	}
 
@@ -155,19 +157,19 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBCollection clsCol = db.getCollection(COLLECT_NAME_CLASS);
 		DBObject clsQue = new BasicDBObject();
 		DBObject clsObj = new BasicDBObject();
-		clsQue.put("_id", new Long(cls.id));
+		clsQue.put("_id", cls.id);
 		
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject clsInDB = clsCol.findOne(new Long(cls.id));
+			DBObject clsInDB = clsCol.findOne(cls.id);
 			if (clsInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
 		// update
 		clsObj.put("name", cls.name);
-		clsObj.put("superclass", new Long(cls.superclass_id));
-		clsObj.put("package", new Long(cls.package_id));
+		clsObj.put("superclass", cls.superclass_id);
+		clsObj.put("package", cls.package_id);
 		clsCol.update(clsQue, clsObj);
 	}
 
@@ -179,13 +181,13 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		// valid existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject clsInDB = clsCol.findOne(new Long(cls.id));
+			DBObject clsInDB = clsCol.findOne(cls.id);
 			if (clsInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
 		// delete
-		clsQue.put("_id", new Long(cls.id));
+		clsQue.put("_id", cls.id);
 		clsCol.remove(clsQue);
 		typeCol.remove(clsQue);
 	}
@@ -195,7 +197,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		// load
 		DBCollection atbCol = db.getCollection(COLLECT_NAME_ATTRIBUTE);
 		long id = atb.id;
-		DBObject atbObj = atbCol.findOne(new Long(id));
+		DBObject atbObj = atbCol.findOne(id);
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
 			if (atbObj == null)
@@ -203,8 +205,8 @@ public class MongoDBAdapter implements MDBAdapter {
 		}
 		// set name
 		atb.name = (String) atbObj.get("name");
-		// TODO set type
-//		atb.type = MPrimitiveType.valueOf((String) atbObj.get("type"));
+		// set type
+		atb.type_id = (String) atbObj.get("type");
 		// set class
 		atb.class_id = (Long) atbObj.get("class");
 	}
@@ -216,11 +218,10 @@ public class MongoDBAdapter implements MDBAdapter {
 		// create : 2. attribute collection
 		DBCollection atbCol = db.getCollection(COLLECT_NAME_ATTRIBUTE);
 		DBObject atbObj = new BasicDBObject();
-		atbObj.put("_id", new Long(atb.id));
+		atbObj.put("_id", atb.id);
 		atbObj.put("name", atb.name);
-		// TODO
-//		atbObj.put("type", atb.type.toString());
-		atbObj.put("class", new Long(atb.class_id));
+		atbObj.put("type", atb.type_id);
+		atbObj.put("class", atb.class_id);
 		atbCol.insert(atbObj);
 	}
 
@@ -229,20 +230,19 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBCollection atbCol = db.getCollection(COLLECT_NAME_ATTRIBUTE);
 		DBObject atbQue = new BasicDBObject();
 		DBObject atbObj = new BasicDBObject();
-		atbQue.put("_id", new Long(atb.id));
+		atbQue.put("_id", atb.id);
 		
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject atbInDB = atbCol.findOne(new Long(atb.id));
+			DBObject atbInDB = atbCol.findOne(atb.id);
 			if (atbInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
 		// update
 		atbObj.put("name", atb.name);
-		// TODO
-//		atbObj.put("type", atb.type.toString());
-		atbObj.put("class", new Long(atb.class_id));
+		atbObj.put("type", atb.type_id);
+		atbObj.put("class", atb.class_id);
 		atbCol.update(atbQue, atbObj);
 	}
 
@@ -254,21 +254,101 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		// valid existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject atbInDB = atbCol.findOne(new Long(atb.id));
+			DBObject atbInDB = atbCol.findOne(atb.id);
 			if (atbInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
-		atbQue.put("_id", new Long(atb.id));
+		atbQue.put("_id", atb.id);
 		atbCol.remove(atbQue);
 		typeCol.remove(atbQue);
+	}
+
+	@Override
+	public void loadReference(ReferenceDBInfo ref) {
+		// load
+		DBCollection refCol = db.getCollection(COLLECT_NAME_REFERENCE);
+		long id = ref.id;
+		DBObject refObj = refCol.findOne(id);
+		// double check existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			if (refObj == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		// set name
+		ref.name = (String) refObj.get("name");
+		// set class
+		ref.class_id = (Long) refObj.get("class");
+		// set reference
+		ref.reference_id = (Long) refObj.get("reference");
+		// set multiplicity
+		ref.multi = Multiplicity.valueOf((String) refObj.get("multiplicity"));
+		// set opposite
+		ref.opposite_id = (Long) refObj.get("opposite");
+	}
+
+	@Override
+	public void createReference(ReferenceDBInfo ref) {
+		// create : 1. type collection
+		writeElementType(ref.id, MElementType.Reference);
+		// create : 2. attribute collection
+		DBCollection refCol = db.getCollection(COLLECT_NAME_REFERENCE);
+		DBObject refObj = new BasicDBObject();
+		refObj.put("_id", ref.id);
+		refObj.put("name", ref.name);
+		refObj.put("calss", ref.class_id);
+		refObj.put("reference", ref.reference_id);
+		refObj.put("multiplicity", ref.multi);
+		refObj.put("opposite", ref.opposite_id);
+		refCol.insert(refObj);
+	}
+
+	@Override
+	public void updateReference(ReferenceDBInfo ref) {
+		DBCollection refCol = db.getCollection(COLLECT_NAME_REFERENCE);
+		DBObject refQue = new BasicDBObject();
+		DBObject refObj = new BasicDBObject();
+		refQue.put("_id", ref.id);
+		
+		// double check existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			DBObject refInDB = refCol.findOne(ref.id);
+			if (refInDB == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		
+		// update
+		refObj.put("name", ref.name);
+		refObj.put("calss", ref.class_id);
+		refObj.put("reference", ref.reference_id);
+		refObj.put("multiplicity", ref.multi);
+		refObj.put("opposite", ref.opposite_id);
+		refCol.update(refQue, refObj);
+	}
+
+	@Override
+	public void deleteReference(ReferenceDBInfo ref) {
+		DBCollection refCol = db.getCollection(COLLECT_NAME_REFERENCE);
+		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject refQue = new BasicDBObject();
+		
+		// valid existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			DBObject refInDB = refCol.findOne(ref.id);
+			if (refInDB == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		
+		refQue.put("_id", ref.id);
+		refCol.remove(refQue);
+		typeCol.remove(refQue);
 	}
 
 	@Override
 	public void loadEnum(EnumDBInfo enm) {
 		// load
 		DBCollection enmCol = db.getCollection(COLLECT_NAME_ENUM);
-		DBObject enmObj = enmCol.findOne(new Long(enm.id));
+		DBObject enmObj = enmCol.findOne(enm.id);
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
 			if (enmObj == null)
@@ -287,9 +367,9 @@ public class MongoDBAdapter implements MDBAdapter {
 		// create : 2. enm collection
 		DBCollection enmCol = db.getCollection(COLLECT_NAME_ENUM);
 		DBObject enmObj = new BasicDBObject();
-		enmObj.put("_id", new Long(enm.id));
+		enmObj.put("_id", enm.id);
 		enmObj.put("name", enm.name);
-		enmObj.put("package", new Long(enm.package_id));
+		enmObj.put("package", enm.package_id);
 		enmCol.insert(enmObj);
 	}
 
@@ -298,18 +378,18 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBCollection enmCol = db.getCollection(COLLECT_NAME_ENUM);
 		DBObject enmQue = new BasicDBObject();
 		DBObject enmObj = new BasicDBObject();
-		enmQue.put("_id", new Long(enm.id));
+		enmQue.put("_id", enm.id);
 		
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject enmInDB = enmCol.findOne(new Long(enm.id));
+			DBObject enmInDB = enmCol.findOne(enm.id);
 			if (enmInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
 		// update
 		enmObj.put("name", enm.name);
-		enmObj.put("package", new Long(enm.package_id));
+		enmObj.put("package", enm.package_id);
 		enmCol.update(enmQue, enmObj);
 	}
 
@@ -321,13 +401,13 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		// valid existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject enmInDB = enmCol.findOne(new Long(enm.id));
+			DBObject enmInDB = enmCol.findOne(enm.id);
 			if (enmInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
 		// delete
-		enmQue.put("_id", new Long(enm.id));
+		enmQue.put("_id", enm.id);
 		enmCol.remove(enmQue);
 		typeCol.remove(enmQue);
 	}
@@ -336,7 +416,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	public void loadSymbol(SymbolDBInfo sym) {
 		// load
 		DBCollection symCol = db.getCollection(COLLECT_NAME_SYMBOL);
-		DBObject symObj = symCol.findOne(new Long(sym.id));
+		DBObject symObj = symCol.findOne(sym.id);
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
 			if (symObj == null)
@@ -355,9 +435,9 @@ public class MongoDBAdapter implements MDBAdapter {
 		// create : 2. sym collection
 		DBCollection symCol = db.getCollection(COLLECT_NAME_SYMBOL);
 		DBObject symObj = new BasicDBObject();
-		symObj.put("_id", new Long(sym.id));
+		symObj.put("_id", sym.id);
 		symObj.put("name", sym.name);
-		symObj.put("enum", new Long(sym.enum_id));
+		symObj.put("enum", sym.enum_id);
 		symCol.insert(symObj);
 	}
 
@@ -366,17 +446,17 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBCollection symCol = db.getCollection(COLLECT_NAME_SYMBOL);
 		DBObject symQue = new BasicDBObject();
 		DBObject symObj = new BasicDBObject();
-		symObj.put("_id", new Long(sym.id));
+		symObj.put("_id", sym.id);
 	
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject symInDB = symCol.findOne(new Long(sym.id));
+			DBObject symInDB = symCol.findOne(sym.id);
 			if (symInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		//update
 		symObj.put("name", sym.name);
-		symObj.put("enum", new Long(sym.enum_id));
+		symObj.put("enum", sym.enum_id);
 		symCol.update(symQue, symObj);
 	}
 
@@ -388,12 +468,12 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		// valid existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			DBObject symInDB = symCol.findOne(new Long(sym.id));
+			DBObject symInDB = symCol.findOne(sym.id);
 			if (symInDB == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
-		symQue.put("_id", new Long(sym.id));
+		symQue.put("_id", sym.id);
 		symCol.remove(symQue);
 		typeCol.remove(symQue);
 	}
@@ -412,7 +492,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		String class_id = classIDToString(obj.class_id);
 		DBCollection objCol = db.getCollection(class_id);
 		DBObject objObj = new BasicDBObject();
-		objObj.put("_id", new Long(obj.id));
+		objObj.put("_id", obj.id);
 		objCol.insert(objObj);
 	}
 
@@ -453,12 +533,24 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 
 	@Override
+	public void loadElementTags(ElementTagDBInfo dbInfo) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void saveElementTags(ElementTagDBInfo dbInfo) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public long loadLastIDAndIncrement() {
-		DBCollection statecol = db.getCollection(COLLECT_NAME_SYSTEM);
+		DBCollection statecol = db.getCollection(COLLECT_NAME_GLOBAL);
 		DBObject query = new BasicDBObject();
 		DBObject update = new BasicDBObject();
 		DBObject increment = new BasicDBObject();
-		increment.put("lastID", new Long(1));
+		increment.put("lastID", 1L);
 		update.put("$inc", increment);
 		DBObject state = statecol.findAndModify(query, update);
 		Long id = (Long) state.get("lastID");
@@ -466,19 +558,19 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 	
 	public void checkAndPrepareDB() {
-		DBCollection statecol = db.getCollection(COLLECT_NAME_SYSTEM);
+		DBCollection statecol = db.getCollection(COLLECT_NAME_GLOBAL);
 		DBObject obj = statecol.findOne();
 		// create system state object
 		if (obj == null) {
 			DBObject stateObj = new BasicDBObject();
-			stateObj.put("_id", new Long(0));
-			stateObj.put("lastID", new Long(1));
+			stateObj.put("_id", 0L);
+			stateObj.put("lastID", 1L);
 			statecol.insert(stateObj);
 		} else {
 			// if no "lastID" field, create it.
 			if (!obj.containsField("lastID")) {
 				DBObject update = new BasicDBObject();
-				update.put("lastID", new Long(1));
+				update.put("lastID", 1L);
 				statecol.update(obj, update);
 			}
 		}
@@ -491,7 +583,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public MElementType getElementType(long id) {
 		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
-		DBObject typeObj = typeCol.findOne(new Long(id));
+		DBObject typeObj = typeCol.findOne(id);
 		if (typeObj == null)
 			return null;
 		String type = (String) typeObj.get("type");
@@ -499,12 +591,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 
 	@Override
-	public List<Long> listAllPackageIDs() {
+	public IDList listAllPackageIDs() {
 		DBCollection col = db.getCollection(COLLECT_NAME_PACKAGE);
 		DBObject projection = new BasicDBObject();
 		projection.put("_id", true);
 		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		List<Long> list = new LinkedList<Long>();
+		IDList list = new IDList();
 		while (cursor.hasNext()) {
 			DBObject o = cursor.next();
 			list.add((Long) o.get("_id"));
@@ -513,12 +605,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 
 	@Override
-	public List<Long> listAllClassIDs() {
+	public IDList listAllClassIDs() {
 		DBCollection col = db.getCollection(COLLECT_NAME_CLASS);
 		DBObject projection = new BasicDBObject();
 		projection.put("_id", true);
 		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		List<Long> list = new LinkedList<Long>();
+		IDList list = new IDList();
 		while (cursor.hasNext()) {
 			DBObject o = cursor.next();
 			list.add((Long) o.get("_id"));
@@ -527,12 +619,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 
 	@Override
-	public List<Long> listAllAttributeIDs() {
+	public IDList listAllAttributeIDs() {
 		DBCollection col = db.getCollection(COLLECT_NAME_ATTRIBUTE);
 		DBObject projection = new BasicDBObject();
 		projection.put("_id", true);
 		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		List<Long> list = new LinkedList<Long>();
+		IDList list = new IDList();
 		while (cursor.hasNext()) {
 			DBObject o = cursor.next();
 			list.add((Long) o.get("_id"));
@@ -541,12 +633,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 
 	@Override
-	public List<Long> listAllEnumIDs() {
+	public IDList listAllEnumIDs() {
 		DBCollection col = db.getCollection(COLLECT_NAME_ENUM);
 		DBObject projection = new BasicDBObject();
 		projection.put("_id", true);
 		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		List<Long> list = new LinkedList<Long>();
+		IDList list = new IDList();
 		while (cursor.hasNext()) {
 			DBObject o = cursor.next();
 			list.add((Long) o.get("_id"));
@@ -555,12 +647,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 
 	@Override
-	public List<Long> listAllSymbolIDs() {
+	public IDList listAllSymbolIDs() {
 		DBCollection col = db.getCollection(COLLECT_NAME_SYMBOL);
 		DBObject projection = new BasicDBObject();
 		projection.put("_id", true);
 		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		List<Long> list = new LinkedList<Long>();
+		IDList list = new IDList();
 		while (cursor.hasNext()) {
 			DBObject o = cursor.next();
 			list.add((Long) o.get("_id"));
@@ -569,12 +661,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 	
 	@Override
-	public List<Long> listAllObjectIDs(long id) {
+	public IDList listAllObjectIDs(long id) {
 		DBCollection col = db.getCollection(classIDToString(id));
 		DBObject projection = new BasicDBObject().append("_id", true);
 		DBObject query = new BasicDBObject();
 		DBCursor cursor = col.find(query, projection);
-		List<Long> list = new LinkedList<Long>();
+		IDList list = new IDList();
 		while (cursor.hasNext()) {
 			DBObject o = cursor.next();
 			list.add((Long) o.get("_id"));
@@ -590,42 +682,6 @@ public class MongoDBAdapter implements MDBAdapter {
 	public void resetDB() {
 		this.db.dropDatabase();
 		this.checkAndPrepareDB();
-	}
-
-	@Override
-	public void loadElementTags(ElementTagDBInfo dbInfo) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void saveElementTags(ElementTagDBInfo dbInfo) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void loadReference(ReferenceDBInfo rol) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void createReference(ReferenceDBInfo rol) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void updateReference(ReferenceDBInfo rol) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void deleteReference(ReferenceDBInfo rol) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 }

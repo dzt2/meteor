@@ -10,7 +10,7 @@ public class MList extends MCollection {
 		super(parent);
 	}
 
-	private LinkedList<Object> list = new LinkedList<Object>();
+	final LinkedList<Object> list = new LinkedList<Object>();
 	
 	public boolean add(Object e) {
 		checkType(e);

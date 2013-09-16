@@ -1,8 +1,11 @@
 package lab.meteor.dba;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -11,6 +14,7 @@ import com.mongodb.DBObject;
 
 import lab.meteor.core.MDBAdapter;
 import lab.meteor.core.MElement.MElementType;
+import lab.meteor.core.MElementPointer;
 import lab.meteor.core.MException;
 import lab.meteor.core.MReference.Multiplicity;
 import lab.meteor.core.MUtility;
@@ -446,7 +450,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBCollection symCol = db.getCollection(COLLECT_NAME_SYMBOL);
 		DBObject symQue = new BasicDBObject();
 		DBObject symObj = new BasicDBObject();
-		symObj.put("_id", sym.id);
+		symQue.put("_id", sym.id);
 	
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
@@ -480,8 +484,24 @@ public class MongoDBAdapter implements MDBAdapter {
 
 	@Override
 	public void loadObject(ObjectDBInfo obj) {
-		// TODO Auto-generated method stub
-		
+		// load
+		String class_id = classIDToString(obj.class_id);
+		DBCollection objCol = db.getCollection(class_id);
+		DBObject objObj = objCol.findOne(obj.id);
+		// double check existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			if (objObj == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		// load values
+		Iterator<String> it = objObj.keySet().iterator();
+		while (it.hasNext()) {
+			String key = it.next();
+			if (key.equals("_id"))
+				continue;
+			String k = key.substring(1);
+			obj.values.put(k, dbObjectToObject(objObj.get(key)));
+		}
 	}
 
 	@Override
@@ -498,16 +518,35 @@ public class MongoDBAdapter implements MDBAdapter {
 
 	@Override
 	public void updateObject(ObjectDBInfo obj) {
-		// TODO Auto-generated method stub
+		String class_id = classIDToString(obj.class_id);
+		DBCollection objCol = db.getCollection(class_id);
+		DBObject objObj = new BasicDBObject();
+		DBObject objQue = new BasicDBObject();
+		objQue.put("_id", obj.id);
 		
+		// valid existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			DBObject objInDB = objCol.findOne(obj.id, objQue);
+			if (objInDB == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		
+		objObj.put("_id", obj.id);
+		Iterator<Entry<String, Object>> it = obj.values.entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<String, Object> entry = it.next();
+			Object value = entry.getValue();
+			objObj.put("p" + entry.getKey(), objectToDBObject(value));
+		}
+		objCol.update(objQue, objObj);
 	}
-
+	
 	@Override
 	public void deleteObject(ObjectDBInfo obj) {
 		// TODO Auto-generated method stub
 		
 	}
-	
+
 	@Override
 	public void loadTag(TagDBInfo tag) {
 		// TODO Auto-generated method stub
@@ -530,6 +569,137 @@ public class MongoDBAdapter implements MDBAdapter {
 	public void deleteTag(TagDBInfo tag) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private static Object objectToDBObject(Object obj) {
+		Object value = obj;
+		if (value instanceof MElementPointer) {
+			value = elementPtToDBObject((MElementPointer) value);
+		} else if (value instanceof DataDict) {
+			value = dataDictToDBObject((DataDict) value);
+		} else if (value instanceof DataList) {
+			value = dataListToDBObject((DataList) value);
+		} else if (value instanceof DataSet) {
+			value = dataSetToDBObject((DataSet) value);
+		}
+		return value;
+	}
+	
+	private static Object dbObjectToObject(Object obj) {
+		if (obj instanceof DBObject) {
+			DBObject dbo = (DBObject) obj;
+			if (dbo.containsField("d")) {
+				return dbObjectToDataDict(dbo);
+			} else if (dbo.containsField("l")) {
+				return dbObjectToDataList(dbo);
+			} else if (dbo.containsField("s")) {
+				return dbObjectToDataSet(dbo);
+			} else {
+				return dbObjectToElementPt(dbo);
+			}
+		}
+		return obj;
+	}
+	
+	private static DBObject dataDictToDBObject(DataDict dd) {
+		DBObject obj = new BasicDBObject();
+		String key = "d";
+		DBObject dict = new BasicDBObject();
+		Iterator<Entry<String, Object>> it = dd.entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<String, Object> entry = it.next();
+			Object value = entry.getValue();
+			dict.put(entry.getKey(), objectToDBObject(value));
+		}
+		obj.put(key, dict);
+		return obj;
+	}
+	
+	private static DataDict dbObjectToDataDict(DBObject obj) {
+		DataDict dd = new DataDict();
+		DBObject dict = (DBObject) obj.get("d");
+		Iterator<String> it = dict.keySet().iterator();
+		while (it.hasNext()) {
+			String key = it.next();
+			dd.put(key, dbObjectToObject(dict.get(key)));
+		}
+		return dd;
+	}
+	
+	private static DBObject dataListToDBObject(DataList dl) {
+		DBObject obj = new BasicDBObject();
+		String key = "l";
+		BasicDBList list = new BasicDBList();
+		Iterator<Object> it = dl.iterator();
+		while (it.hasNext()) {
+			Object value = it.next();
+			list.add(objectToDBObject(value));
+		}
+		obj.put(key, list);
+		return obj;
+	}
+	
+	private static DataList dbObjectToDataList(DBObject obj) {
+		DataList dl = new DataList();
+		BasicDBList list = (BasicDBList) obj.get("l");
+		Iterator<Object> it = list.iterator();
+		while (it.hasNext()) {
+			Object value = it.next();
+			dl.add(dbObjectToObject(value));
+		}
+		return dl;
+	}
+	
+	private static DBObject dataSetToDBObject(DataSet ds) {
+		DBObject obj = new BasicDBObject();
+		String key = "s";
+		BasicDBList list = new BasicDBList();
+		Iterator<Object> it = ds.iterator();
+		while (it.hasNext()) {
+			Object value = it.next();
+			list.add(objectToDBObject(value));
+		}
+		obj.put(key, list);
+		return obj;
+	}
+	
+	private static DataSet dbObjectToDataSet(DBObject obj) {
+		DataSet ds = new DataSet();
+		BasicDBList list = (BasicDBList) obj.get("l");
+		Iterator<Object> it = list.iterator();
+		while (it.hasNext()) {
+			Object value = it.next();
+			ds.add(dbObjectToObject(value));
+		}
+		return ds;
+	}
+	
+	private static DBObject elementPtToDBObject(MElementPointer pt) {
+		DBObject obj = new BasicDBObject();
+		String key;
+		switch (pt.getElementType()) {
+		case Object:
+			key = "o";
+			break;
+		case Symbol:
+			key = "e";
+			break;
+		default:
+			throw new MException(MException.Reason.NOT_SUPPORT_YET);
+		}
+		obj.put(key, pt.getID());
+		return obj;
+	}
+	
+	private static MElementPointer dbObjectToElementPt(DBObject obj) {
+		if (obj.containsField("o")) {
+			Long id = (Long) obj.get("o");
+			return new MElementPointer(id, MElementType.Object);
+		} else if (obj.containsField("e")) {
+			Long id = (Long) obj.get("e");
+			return new MElementPointer(id, MElementType.Symbol);
+		}
+		return new MElementPointer();
 	}
 
 	@Override

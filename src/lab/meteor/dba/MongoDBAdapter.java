@@ -1,8 +1,6 @@
 package lab.meteor.dba;
 
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map.Entry;
 
 import com.mongodb.BasicDBList;
@@ -21,16 +19,17 @@ import lab.meteor.core.MUtility;
 
 public class MongoDBAdapter implements MDBAdapter {
 
+	private static final String COLLECT_NAME_GLOBAL = "global";
+	
+	private static final String COLLECT_NAME_ELEMENT = "elements";
+	private static final String COLLECT_NAME_TAG = "tags";
+	
 	private static final String COLLECT_NAME_CLASS = "classes";
 	private static final String COLLECT_NAME_ATTRIBUTE = "attributes";
 	private static final String COLLECT_NAME_REFERENCE = "references";
 	private static final String COLLECT_NAME_ENUM = "enumes";
 	private static final String COLLECT_NAME_SYMBOL = "symbols";
 	private static final String COLLECT_NAME_PACKAGE = "packages";
-	// TODO
-	private static final String COLLECT_NAME_TAG = "tags";
-	private static final String COLLECT_NAME_GLOBAL = "global";
-	private static final String COLLECT_NAME_ELEMENT = "elements";
 	
 	public static boolean ENABLE_DOUBLE_CHECK_EXISTENCE = true;
 	
@@ -41,28 +40,27 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 	
 	private void writeElementType(long id, MElementType type) {
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject typeObj = new BasicDBObject();
 		typeObj.put("_id", id);
 		typeObj.put("type", type.toString());
-		typeCol.insert(typeObj);
+		eleCol.insert(typeObj);
 	}
 	
 	private void writeObject(long id, long class_id) {
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject typeObj = new BasicDBObject();
 		typeObj.put("_id", id);
 		typeObj.put("type", MElementType.Object.toString());
 		typeObj.put("class", classIDToString(class_id));
-		typeCol.insert(typeObj);
+		eleCol.insert(typeObj);
 	}
 	
 	@Override
 	public void loadPackage(PackageDBInfo pkg) {
 		// load
 		DBCollection pkgCol = db.getCollection(COLLECT_NAME_PACKAGE);
-		long id = pkg.id;
-		DBObject pkgObj = pkgCol.findOne(id);
+		DBObject pkgObj = pkgCol.findOne(pkg.id);
 		// check existence
 		if (pkgObj == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -107,7 +105,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public void deletePackage(PackageDBInfo pkg) {
 		DBCollection pkgCol = db.getCollection(COLLECT_NAME_PACKAGE);
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject pkgQue = new BasicDBObject();
 		
 		// double check existence
@@ -120,15 +118,14 @@ public class MongoDBAdapter implements MDBAdapter {
 		// delete
 		pkgQue.put("_id", pkg.id);
 		pkgCol.remove(pkgQue);
-		typeCol.remove(pkgQue);
+		eleCol.remove(pkgQue);
 	}
 	
 	@Override
 	public void loadClass(ClassDBInfo cls) {
 		// load
 		DBCollection clsCol = db.getCollection(COLLECT_NAME_CLASS);
-		long id = cls.id;
-		DBObject clsObj = clsCol.findOne(id);
+		DBObject clsObj = clsCol.findOne(cls.id);
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
 			if (clsObj == null)
@@ -180,7 +177,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public void deleteClass(ClassDBInfo cls) {
 		DBCollection clsCol = db.getCollection(COLLECT_NAME_CLASS);
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject clsQue = new BasicDBObject();
 		
 		// valid existence
@@ -193,15 +190,14 @@ public class MongoDBAdapter implements MDBAdapter {
 		// delete
 		clsQue.put("_id", cls.id);
 		clsCol.remove(clsQue);
-		typeCol.remove(clsQue);
+		eleCol.remove(clsQue);
 	}
 
 	@Override
 	public void loadAttribute(AttributeDBInfo atb) {
 		// load
 		DBCollection atbCol = db.getCollection(COLLECT_NAME_ATTRIBUTE);
-		long id = atb.id;
-		DBObject atbObj = atbCol.findOne(id);
+		DBObject atbObj = atbCol.findOne(atb.id);
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
 			if (atbObj == null)
@@ -253,7 +249,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public void deleteAttribute(AttributeDBInfo atb) {
 		DBCollection atbCol = db.getCollection(COLLECT_NAME_ATTRIBUTE);
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject atbQue = new BasicDBObject();
 		
 		// valid existence
@@ -265,15 +261,14 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		atbQue.put("_id", atb.id);
 		atbCol.remove(atbQue);
-		typeCol.remove(atbQue);
+		eleCol.remove(atbQue);
 	}
 
 	@Override
 	public void loadReference(ReferenceDBInfo ref) {
 		// load
 		DBCollection refCol = db.getCollection(COLLECT_NAME_REFERENCE);
-		long id = ref.id;
-		DBObject refObj = refCol.findOne(id);
+		DBObject refObj = refCol.findOne(ref.id);
 		// double check existence
 		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
 			if (refObj == null)
@@ -333,7 +328,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public void deleteReference(ReferenceDBInfo ref) {
 		DBCollection refCol = db.getCollection(COLLECT_NAME_REFERENCE);
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject refQue = new BasicDBObject();
 		
 		// valid existence
@@ -345,7 +340,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		refQue.put("_id", ref.id);
 		refCol.remove(refQue);
-		typeCol.remove(refQue);
+		eleCol.remove(refQue);
 	}
 
 	@Override
@@ -400,7 +395,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public void deleteEnum(EnumDBInfo enm) {
 		DBCollection enmCol = db.getCollection(COLLECT_NAME_ENUM);
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject enmQue = new BasicDBObject();
 		
 		// valid existence
@@ -413,7 +408,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		// delete
 		enmQue.put("_id", enm.id);
 		enmCol.remove(enmQue);
-		typeCol.remove(enmQue);
+		eleCol.remove(enmQue);
 	}
 
 	@Override
@@ -467,7 +462,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public void deleteSymbol(SymbolDBInfo sym) {
 		DBCollection symCol = db.getCollection(COLLECT_NAME_SYMBOL);
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject symQue = new BasicDBObject();
 		
 		// valid existence
@@ -479,7 +474,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		
 		symQue.put("_id", sym.id);
 		symCol.remove(symQue);
-		typeCol.remove(symQue);
+		eleCol.remove(symQue);
 	}
 
 	@Override
@@ -543,32 +538,108 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	@Override
 	public void deleteObject(ObjectDBInfo obj) {
-		// TODO Auto-generated method stub
+		String class_id = classIDToString(obj.class_id);
+		DBCollection objCol = db.getCollection(class_id);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject objQue = new BasicDBObject();
+		objQue.put("_id", obj.id);
 		
+		// valid existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			DBObject objInDB = objCol.findOne(obj.id, objQue);
+			if (objInDB == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		
+		objCol.remove(objQue);
+		eleCol.remove(objQue);
 	}
 
 	@Override
 	public void loadTag(TagDBInfo tag) {
-		// TODO Auto-generated method stub
+		DBCollection tagCol = db.getCollection(COLLECT_NAME_TAG);
+		DBObject tagObj = tagCol.findOne(tag.id);
+		// double check existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			if (tagObj == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
 		
+		// name
+		tag.name = (String) tagObj.get("name");
+		// value
+		tag.value = dbObjectToObject(tagObj.get("value"));
+		// targets
+		BasicDBList targets = (BasicDBList) tagObj.get("targets");
+		Iterator<Object> it = targets.iterator();
+		while (it.hasNext()) {
+			Long tid = (Long) it.next();
+			tag.targets_id.add(tid);
+		}
 	}
 
 	@Override
 	public void createTag(TagDBInfo tag) {
-		// TODO Auto-generated method stub
-		
+		// create : 1. type collection
+		writeElementType(tag.id, MElementType.Tag);
+		// create : 2. specific class collection
+		DBCollection tagCol = db.getCollection(COLLECT_NAME_TAG);
+		DBObject tagObj = new BasicDBObject();
+		tagObj.put("_id", tag.id);
+		tagObj.put("name", tag.name);
+		tagObj.put("value", objectToDBObject(tag.value));
+		BasicDBList targets = new BasicDBList();
+		Iterator<Long> it = tag.targets_id.iterator();
+		while (it.hasNext()) {
+			Long tid = it.next();
+			targets.add(tid);
+		}
+		tagObj.put("targets", targets);
+		tagCol.insert(tagObj);
 	}
 
 	@Override
 	public void updateTag(TagDBInfo tag) {
-		// TODO Auto-generated method stub
+		DBCollection tagCol = db.getCollection(COLLECT_NAME_TAG);
+		DBObject tagQue = new BasicDBObject();
+		DBObject tagObj = new BasicDBObject();
+		tagQue.put("_id", tag.id);
+	
+		// double check existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			DBObject symInDB = tagCol.findOne(tag.id);
+			if (symInDB == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		tagObj.put("name", tag.name);
+		tagObj.put("value", objectToDBObject(tag.value));
+		BasicDBList targets = new BasicDBList();
+		Iterator<Long> it = tag.targets_id.iterator();
+		while (it.hasNext()) {
+			Long tid = it.next();
+			targets.add(tid);
+		}
+		tagObj.put("targets", targets);
 		
+		tagCol.update(tagQue, tagObj);
 	}
 
 	@Override
 	public void deleteTag(TagDBInfo tag) {
-		// TODO Auto-generated method stub
+		DBCollection tagCol = db.getCollection(COLLECT_NAME_TAG);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject tagQue = new BasicDBObject();
 		
+		// valid existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			DBObject tagInDB = tagCol.findOne(tag.id);
+			if (tagInDB == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		
+		tagQue.put("_id", tag.id);
+		tagCol.remove(tagQue);
+		eleCol.remove(tagQue);
 	}
 
 	private static Object objectToDBObject(Object obj) {
@@ -704,14 +775,35 @@ public class MongoDBAdapter implements MDBAdapter {
 
 	@Override
 	public void loadElementTags(ElementTagDBInfo dbInfo) {
-		// TODO Auto-generated method stub
-		
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject eleObj = eleCol.findOne(dbInfo.id);
+		// double check existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			if (eleObj == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		BasicDBList tags = (BasicDBList) eleObj.get("tags");
+		Iterator<Object> it = tags.iterator();
+		while (it.hasNext()) {
+			Long tid = (Long) it.next();
+			dbInfo.tags_id.add(tid);
+		}
 	}
 
 	@Override
 	public void saveElementTags(ElementTagDBInfo dbInfo) {
-		// TODO Auto-generated method stub
-		
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject eleQue = new BasicDBObject();
+		eleQue.put("_id", dbInfo.id);
+		BasicDBList eleObj = new BasicDBList();
+		Iterator<Long> it = dbInfo.tags_id.iterator();
+		while (it.hasNext()) {
+			Long tid = it.next();
+			eleObj.add(tid);
+		}
+		DBObject setter = new BasicDBObject();
+		setter.put("$set", eleObj);
+		eleCol.update(eleQue, eleObj);
 	}
 
 	@Override
@@ -744,16 +836,16 @@ public class MongoDBAdapter implements MDBAdapter {
 				statecol.update(obj, update);
 			}
 		}
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
-		typeCol.ensureIndex("type");
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		eleCol.ensureIndex("type");
 		// TODO
 		
 	}
 
 	@Override
 	public MElementType getElementType(long id) {
-		DBCollection typeCol = db.getCollection(COLLECT_NAME_ELEMENT);
-		DBObject typeObj = typeCol.findOne(id);
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject typeObj = eleCol.findOne(id);
 		if (typeObj == null)
 			return null;
 		String type = (String) typeObj.get("type");

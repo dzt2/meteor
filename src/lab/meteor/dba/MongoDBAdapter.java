@@ -3,6 +3,8 @@ package lab.meteor.dba;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.bson.types.Binary;
+
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -16,6 +18,8 @@ import lab.meteor.core.MElementPointer;
 import lab.meteor.core.MException;
 import lab.meteor.core.MReference.Multiplicity;
 import lab.meteor.core.MUtility;
+import lab.meteor.core.type.MBinary;
+import lab.meteor.core.type.MRef;
 
 public class MongoDBAdapter implements MDBAdapter {
 
@@ -646,6 +650,13 @@ public class MongoDBAdapter implements MDBAdapter {
 		eleCol.remove(tagQue);
 	}
 
+	final static String KEY_DICT = "d";
+	final static String KEY_LIST = "l";
+	final static String KEY_SET = "s";
+	final static String KEY_OBJECT = "o";
+	final static String KEY_SYMBOL = "e";
+	final static String KEY_REF = "r";
+	
 	private static Object objectToDBObject(Object obj) {
 		Object value = obj;
 		if (value instanceof MElementPointer) {
@@ -656,6 +667,10 @@ public class MongoDBAdapter implements MDBAdapter {
 			value = dataListToDBObject((DataList) value);
 		} else if (value instanceof DataSet) {
 			value = dataSetToDBObject((DataSet) value);
+		} else if (value instanceof MBinary) {
+			value = new Binary(((MBinary) value).getData());
+		} else if (value instanceof MRef) {
+			value = refToDBObject((MRef) value);
 		}
 		return value;
 	}
@@ -663,22 +678,26 @@ public class MongoDBAdapter implements MDBAdapter {
 	private static Object dbObjectToObject(Object obj) {
 		if (obj instanceof DBObject) {
 			DBObject dbo = (DBObject) obj;
-			if (dbo.containsField("d")) {
+			if (dbo.containsField(KEY_DICT)) {
 				return dbObjectToDataDict(dbo);
-			} else if (dbo.containsField("l")) {
+			} else if (dbo.containsField(KEY_LIST)) {
 				return dbObjectToDataList(dbo);
-			} else if (dbo.containsField("s")) {
+			} else if (dbo.containsField(KEY_SET)) {
 				return dbObjectToDataSet(dbo);
+			} else if (dbo.containsField(KEY_REF)) {
+				return dbObjectToRef(dbo);
 			} else {
 				return dbObjectToElementPt(dbo);
 			}
+		} else if (obj instanceof Binary) {
+			return new MBinary(((Binary) obj).getData());
 		}
 		return obj;
 	}
 	
 	private static DBObject dataDictToDBObject(DataDict dd) {
 		DBObject obj = new BasicDBObject();
-		String key = "d";
+		String key = KEY_DICT;
 		DBObject dict = new BasicDBObject();
 		Iterator<Entry<String, Object>> it = dd.entrySet().iterator();
 		while (it.hasNext()) {
@@ -692,7 +711,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	private static DataDict dbObjectToDataDict(DBObject obj) {
 		DataDict dd = new DataDict();
-		DBObject dict = (DBObject) obj.get("d");
+		DBObject dict = (DBObject) obj.get(KEY_DICT);
 		Iterator<String> it = dict.keySet().iterator();
 		while (it.hasNext()) {
 			String key = it.next();
@@ -703,7 +722,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	private static DBObject dataListToDBObject(DataList dl) {
 		DBObject obj = new BasicDBObject();
-		String key = "l";
+		String key = KEY_LIST;
 		BasicDBList list = new BasicDBList();
 		Iterator<Object> it = dl.iterator();
 		while (it.hasNext()) {
@@ -716,7 +735,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	private static DataList dbObjectToDataList(DBObject obj) {
 		DataList dl = new DataList();
-		BasicDBList list = (BasicDBList) obj.get("l");
+		BasicDBList list = (BasicDBList) obj.get(KEY_LIST);
 		Iterator<Object> it = list.iterator();
 		while (it.hasNext()) {
 			Object value = it.next();
@@ -727,7 +746,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	private static DBObject dataSetToDBObject(DataSet ds) {
 		DBObject obj = new BasicDBObject();
-		String key = "s";
+		String key = KEY_SET;
 		BasicDBList list = new BasicDBList();
 		Iterator<Object> it = ds.iterator();
 		while (it.hasNext()) {
@@ -740,7 +759,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	private static DataSet dbObjectToDataSet(DBObject obj) {
 		DataSet ds = new DataSet();
-		BasicDBList list = (BasicDBList) obj.get("l");
+		BasicDBList list = (BasicDBList) obj.get(KEY_LIST);
 		Iterator<Object> it = list.iterator();
 		while (it.hasNext()) {
 			Object value = it.next();
@@ -754,10 +773,10 @@ public class MongoDBAdapter implements MDBAdapter {
 		String key;
 		switch (pt.getElementType()) {
 		case Object:
-			key = "o";
+			key = KEY_OBJECT;
 			break;
 		case Symbol:
-			key = "e";
+			key = KEY_SYMBOL;
 			break;
 		default:
 			throw new MException(MException.Reason.NOT_SUPPORT_YET);
@@ -767,14 +786,30 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 	
 	private static MElementPointer dbObjectToElementPt(DBObject obj) {
-		if (obj.containsField("o")) {
-			Long id = (Long) obj.get("o");
+		if (obj.containsField(KEY_OBJECT)) {
+			Long id = (Long) obj.get(KEY_OBJECT);
 			return new MElementPointer(id, MElementType.Object);
-		} else if (obj.containsField("e")) {
-			Long id = (Long) obj.get("e");
+		} else if (obj.containsField(KEY_SYMBOL)) {
+			Long id = (Long) obj.get(KEY_SYMBOL);
 			return new MElementPointer(id, MElementType.Symbol);
 		}
 		return new MElementPointer();
+	}
+	
+	private static DBObject refToDBObject(MRef ref) {
+		DBObject obj = new BasicDBObject();
+		BasicDBList list = new BasicDBList();
+		list.add(ref.getTarget().getID());
+		list.add(ref.getAttribute().getID());
+		obj.put(KEY_REF, list);
+		return obj;
+	}
+	
+	private static MRef dbObjectToRef(DBObject obj) {
+		BasicDBList list = (BasicDBList) obj.get(KEY_REF);
+		long obj_id = (Long) list.get(0);
+		long atb_id = (Long) list.get(1);
+		return new MRef(obj_id, atb_id);
 	}
 
 	@Override

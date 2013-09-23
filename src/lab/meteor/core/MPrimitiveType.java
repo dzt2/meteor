@@ -3,7 +3,6 @@ package lab.meteor.core;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class MPrimitiveType implements MType {
 
 //	private static final String primitiveTypePrefix = "#";
@@ -44,6 +43,11 @@ public class MPrimitiveType implements MType {
 	
 	public static MPrimitiveType getPrimitiveType(String identifier) {
 		return types.get(identifier);
+	}
+	
+	@Override
+	public String toString() {
+		return "__" + this.nType.toString().toLowerCase();
 	}
 
 }

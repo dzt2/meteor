@@ -119,6 +119,7 @@ public interface MDBAdapter {
 	IDList listAllPackageIDs();
 	IDList listAllClassIDs();
 	IDList listAllAttributeIDs();
+	IDList listAllReferenceIDs();
 	IDList listAllEnumIDs();
 	IDList listAllSymbolIDs();
 	IDList listAllObjectIDs(long classID);

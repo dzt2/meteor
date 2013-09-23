@@ -35,6 +35,10 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	private DB db;
 	
+	public MongoDBAdapter(DB db) {
+		this.db = db;
+	}
+	
 	public void setDB(DB db) {
 		this.db = db;
 	}
@@ -297,7 +301,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		refObj.put("name", ref.name);
 		refObj.put("calss", ref.class_id);
 		refObj.put("reference", ref.reference_id);
-		refObj.put("multiplicity", ref.multi);
+		refObj.put("multiplicity", ref.multi.toString());
 		refObj.put("opposite", ref.opposite_id);
 		refCol.insert(refObj);
 	}
@@ -320,7 +324,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		refObj.put("name", ref.name);
 		refObj.put("calss", ref.class_id);
 		refObj.put("reference", ref.reference_id);
-		refObj.put("multiplicity", ref.multi);
+		refObj.put("multiplicity", ref.multi.toString());
 		refObj.put("opposite", ref.opposite_id);
 		refCol.update(refQue, refObj);
 	}
@@ -854,77 +858,41 @@ public class MongoDBAdapter implements MDBAdapter {
 
 	@Override
 	public IDList listAllPackageIDs() {
-		DBCollection col = db.getCollection(COLLECT_NAME_PACKAGE);
-		DBObject projection = new BasicDBObject();
-		projection.put("_id", true);
-		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		IDList list = new IDList();
-		while (cursor.hasNext()) {
-			DBObject o = cursor.next();
-			list.add((Long) o.get("_id"));
-		}
-		return list;
+		return listIDs(COLLECT_NAME_PACKAGE);
 	}
 
 	@Override
 	public IDList listAllClassIDs() {
-		DBCollection col = db.getCollection(COLLECT_NAME_CLASS);
-		DBObject projection = new BasicDBObject();
-		projection.put("_id", true);
-		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		IDList list = new IDList();
-		while (cursor.hasNext()) {
-			DBObject o = cursor.next();
-			list.add((Long) o.get("_id"));
-		}
-		return list;
+		return listIDs(COLLECT_NAME_CLASS);
 	}
 
 	@Override
 	public IDList listAllAttributeIDs() {
-		DBCollection col = db.getCollection(COLLECT_NAME_ATTRIBUTE);
-		DBObject projection = new BasicDBObject();
-		projection.put("_id", true);
-		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		IDList list = new IDList();
-		while (cursor.hasNext()) {
-			DBObject o = cursor.next();
-			list.add((Long) o.get("_id"));
-		}
-		return list;
+		return listIDs(COLLECT_NAME_ATTRIBUTE);
+	}
+	
+	@Override
+	public IDList listAllReferenceIDs() {
+		return listIDs(COLLECT_NAME_REFERENCE);
 	}
 
 	@Override
 	public IDList listAllEnumIDs() {
-		DBCollection col = db.getCollection(COLLECT_NAME_ENUM);
-		DBObject projection = new BasicDBObject();
-		projection.put("_id", true);
-		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		IDList list = new IDList();
-		while (cursor.hasNext()) {
-			DBObject o = cursor.next();
-			list.add((Long) o.get("_id"));
-		}
-		return list;
+		return listIDs(COLLECT_NAME_ENUM);
 	}
 
 	@Override
 	public IDList listAllSymbolIDs() {
-		DBCollection col = db.getCollection(COLLECT_NAME_SYMBOL);
-		DBObject projection = new BasicDBObject();
-		projection.put("_id", true);
-		DBCursor cursor = col.find(new BasicDBObject(), projection);
-		IDList list = new IDList();
-		while (cursor.hasNext()) {
-			DBObject o = cursor.next();
-			list.add((Long) o.get("_id"));
-		}
-		return list;
+		return listIDs(COLLECT_NAME_SYMBOL);
 	}
 	
 	@Override
 	public IDList listAllObjectIDs(long id) {
-		DBCollection col = db.getCollection(classIDToString(id));
+		return listIDs(classIDToString(id));
+	}
+	
+	private IDList listIDs(String collectionName) {
+		DBCollection col = db.getCollection(collectionName);
 		DBObject projection = new BasicDBObject().append("_id", true);
 		DBObject query = new BasicDBObject();
 		DBCursor cursor = col.find(query, projection);
@@ -937,7 +905,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	}
 	
 	private static String classIDToString(long id) {
-		return "_" + MUtility.idEncode(id);
+		return "_" + MUtility.stringID(id);
 	}
 	
 	@Override

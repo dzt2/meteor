@@ -25,23 +25,41 @@ public class MClass extends MElement {
 	 * ********************************
 	 */
 	
+	/**
+	 * Create a new class in default package, without superclass.
+	 * When created, there is no attribute of a class.
+	 * @param name the name of class.
+	 */
 	public MClass(String name) {
 		this(name, null, null);
 	}
 	
+	/**
+	 * Create a new class in default package with superclass.
+	 * When created, there is no attribute of a class.
+	 * @param name the name of class.
+	 * @param superclazz superclass.
+	 */
 	public MClass(String name, MClass superclazz) {
 		this(name, superclazz, MPackage.DEFAULT_PACKAGE);
 	}
 	
+	/**
+	 * Create a new class, without superclass.
+	 * When created, there is no attribute of a class.
+	 * @param name the name of class.
+	 * @param pkg package.
+	 */
 	public MClass(String name, MPackage pkg) {
 		this(name, null, pkg);
 	}
+	
 	/**
-	 * Create a new class with specified name, superclass and package.
+	 * Create a new class with specified name, superclass and package(owner).
 	 * When created, there is no attribute of a class.
-	 * @param name the name of class
-	 * @throws MException when database has no adapter (i.e. MDatabase.dbAdapter is 
-	 * null), it's not able to assign an id to class intended to create.
+	 * @param name the name of class.
+	 * @param supercls superclass.
+	 * @param pkg package.
 	 */
 	public MClass(String name, MClass supercls, MPackage pkg) {
 		super(MElementType.Class);
@@ -68,7 +86,7 @@ public class MClass extends MElement {
 	
 	/**
 	 * Create a "lazy" class element with id.
-	 * @param id
+	 * @param id ID of element.
 	 */
 	protected MClass(long id) {
 		super(id, MElementType.Class);
@@ -80,8 +98,14 @@ public class MClass extends MElement {
 	 * ********************************
 	 */
 	
+	/**
+	 * Delete all MElement associated with this class, include attributes, 
+	 * references, the references refer to this class. If there is(are) sub-class(es),
+	 * all of its sub-classes's superclass automatically set to be this class's 
+	 * superclass.
+	 */
 	@Override
-	public void delete() throws MException {
+	public void delete() {
 		// delete attributes
 		if (this.attributes != null) {
 			for (MAttribute atb : this.attributes.values()) {
@@ -129,7 +153,7 @@ public class MClass extends MElement {
 	
 	/**
 	 * Get the name of class.
-	 * @return
+	 * @return name.
 	 */
 	public String getName() {
 		return this.name;
@@ -137,11 +161,11 @@ public class MClass extends MElement {
 	
 	/**
 	 * Set the name of class. It's notable that changing the name of class
-	 * does not disturb the instantiated objects of this class.
-	 * @param name
-	 * @throws MException 
+	 * does not disturb the instantiated objects of this class. The name has
+	 * to be unique, otherwise an exception will be thrown.
+	 * @param name the name of class.
 	 */
-	public void setName(String name) throws MException {
+	public void setName(String name) {
 		if (name.equals(this.name))
 			return;
 		if (this.parent.hasChild(name))
@@ -154,9 +178,8 @@ public class MClass extends MElement {
 	}
 	
 	/**
-	 * The super class of the class.
-	 * @return
-	 * @throws MException 
+	 * The superclass of the class.
+	 * @return superclass.
 	 */
 	public MClass getSuperClass() {
 		return this.superclass;
@@ -165,7 +188,7 @@ public class MClass extends MElement {
 	/**
 	 * Set the super class of the class. It's forbidden to set class itself or its sub-
 	 * class to be its super class.
-	 * @param clazz
+	 * @param clazz superclass.
 	 */
 	public void setSuperClass(MClass clazz) {
 		if (this.superclass == clazz)
@@ -185,6 +208,11 @@ public class MClass extends MElement {
 		this.setChanged();
 	}
 	
+	/**
+	 * Find whether this class is a sub-class of another.
+	 * @param clazz another class
+	 * @return {@code true} if is sub-class.
+	 */
 	public boolean asSubClass(MClass clazz) {
 		MClass cp = this.superclass;
 		do {
@@ -194,6 +222,10 @@ public class MClass extends MElement {
 		return false;
 	}
 	
+	/**
+	 * Get all sub-classes.
+	 * @return the set of sub-classes.
+	 */
 	private Set<MClass> getSubclasses() {
 		if (this.subclasses == null)
 			this.subclasses = new TreeSet<MClass>();
@@ -202,8 +234,7 @@ public class MClass extends MElement {
 	
 	/**
 	 * The package of the class.
-	 * @return
-	 * @throws MException 
+	 * @return package.
 	 */
 	public MPackage getPackage() throws MException {
 		return this.parent;
@@ -211,8 +242,7 @@ public class MClass extends MElement {
 	
 	/**
 	 * Set the package of the class.
-	 * @param packaga
-	 * @throws MException 
+	 * @param pkg package.
 	 */
 	public void setPackage(MPackage pkg) throws MException {
 		if (pkg == null)
@@ -228,6 +258,12 @@ public class MClass extends MElement {
 		this.setChanged();
 	}
 	
+	/**
+	 * Find whether this class has an attribute or a reference named with
+	 * the specified name.
+	 * @param name the specified name.
+	 * @return {@code true} if there is.
+	 */
 	public boolean hasChild(String name) {
 		return this.hasAttribute(name) || this.hasReference(name);
 	}
@@ -238,10 +274,18 @@ public class MClass extends MElement {
 	 * ********************************
 	 */
 	
+	/**
+	 * Get all names of attributes owned by this class.
+	 * @return the set of attribute names.
+	 */
 	public Set<String> getAttributeNames() {
 		return new TreeSet<String>(this.getAttributes().keySet());
 	}
 	
+	/**
+	 * Get all names of attributes, include the attributes owned by superclass.
+	 * @return the set of attribute names.
+	 */
 	public Set<String> getAllAttributeNames() {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
@@ -254,15 +298,15 @@ public class MClass extends MElement {
 	
 	/**
 	 * Get the attribute with specific name.
-	 * @param attrib the attribute name
-	 * @return attribute with specific name
-	 * @throws MException 
+	 * @param name the specific name.
+	 * @return attribute with specific name. {@code null} if there is no one.
 	 */
 	public MAttribute getAttribute(String name) {
 		MAttribute atb = null;
+
 		MClass cls = this;
 		while (cls != null) {
-			atb = cls.getAttribute(name);
+			atb = cls.getAttributes().get(name);
 			if (atb != null)
 				break;
 			cls = cls.superclass;
@@ -270,6 +314,11 @@ public class MClass extends MElement {
 		return atb;
 	}
 
+	/**
+	 * Find whether this class own an attribute named with specified name.
+	 * @param name the specified name.
+	 * @return {@code true} if there is.
+	 */
 	public boolean hasAttribute(String name) {
 		MClass cls = this;
 		while (cls != null) {
@@ -282,7 +331,7 @@ public class MClass extends MElement {
 
 	/**
 	 * Get the attributes.
-	 * @return the map from name to attribute
+	 * @return the map from name to attribute.
 	 */
 	private Map<String, MAttribute> getAttributes() {
 		if (this.attributes == null)
@@ -290,16 +339,40 @@ public class MClass extends MElement {
 		return this.attributes;
 	}
 	
+	/**
+	 * Add attribute.
+	 * @param atb attribute.
+	 */
+	protected void addAttribute(MAttribute atb) {
+		this.getAttributes().put(atb.getName(), atb);
+	}
+
+	/**
+	 * Remove attribute.
+	 * @param atb attribute.
+	 */
+	protected void removeAtttribute(MAttribute atb) {
+		this.getAttributes().remove(atb.getName());
+	}
+	
 	/* 
 	 * ********************************
 	 *       REFERENCE OPERATIONS
 	 * ********************************
 	 */
-	
+
+	/**
+	 * Get all names of references owned by this class.
+	 * @return the set of reference names.
+	 */
 	public Set<String> getReferenceNames() {
 		return new TreeSet<String>(this.getReferences().keySet());
 	}
 	
+	/**
+	 * Get all names of references, include the references owned by superclass.
+	 * @return the set of reference names.
+	 */
 	public Set<String> getAllReferenceNames() {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
@@ -310,18 +383,29 @@ public class MClass extends MElement {
 		return names;
 	}
 	
+	/**
+	 * Get the reference with specific name.
+	 * @param name the specific name.
+	 * @return reference with specific name. {@code null} if there is no one.
+	 */
 	public MReference getReference(String name) {
-		MReference rol = null;
+		MReference ref = null;
+		
 		MClass cls = this;
 		while (cls != null) {
-			rol = cls.getReference(name);
-			if (rol != null)
+			ref = cls.getReferences().get(name);
+			if (ref != null)
 				break;
 			cls = cls.superclass;
 		}
-		return rol;
+		return ref;
 	}
 	
+	/**
+	 * Find whether this class own a reference named with specified name.
+	 * @param name the specified name.
+	 * @return {@code true} if there is.
+	 */
 	public boolean hasReference(String name) {
 		MClass cls = this;
 		while (cls != null) {
@@ -332,38 +416,60 @@ public class MClass extends MElement {
 		return false;
 	}
 	
+	/**
+	 * Get the references.
+	 * @return the map from name to reference.
+	 */
 	private Map<String, MReference> getReferences() {
 		if (this.references == null)
 			this.references = new TreeMap<String, MReference>();
 		return this.references;
 	}
 
-	protected void addAttribute(MAttribute atb) {
-		this.getAttributes().put(atb.getName(), atb);
+	/**
+	 * Add reference.
+	 * @param ref reference.
+	 */
+	protected void addReference(MReference ref) {
+		this.getReferences().put(ref.getName(), ref);
 	}
 	
-	protected void removeAtttribute(MAttribute atb) {
-		this.getAttributes().remove(atb.getName());
+	/**
+	 * Remove reference.
+	 * @param ref reference.
+	 */
+	protected void removeReference(MReference ref) {
+		this.getReferences().remove(ref.getName());
 	}
 	
-	protected void addReference(MReference rol) {
-		this.getReferences().put(rol.getName(), rol);
-	}
+	/*
+	 * ********************************
+	 *            UTILIZE
+	 * ********************************
+	 */
 	
-	protected void removeReference(MReference rol) {
-		this.getReferences().remove(rol.getName());
-	}
-	
+	/**
+	 * Utilizers are the references({@code MReference}) refer to this class.
+	 * @return the utilizers.
+	 */
 	private Set<MReference> getUtilizers() {
 		if (this.utilizers == null)
 			this.utilizers = new TreeSet<MReference>();
 		return this.utilizers;
 	}
 	
+	/**
+	 * Add utilizer.
+	 * @param utilizer a reference.
+	 */
 	void addUtilizer(MReference utilizer) {
 		this.getUtilizers().add(utilizer);
 	}
 	
+	/**
+	 * Remove utilizer.
+	 * @param utilizer a reference.
+	 */
 	void removeUtilizer(MReference utilizer) {
 		this.getUtilizers().remove(utilizer);
 	}
@@ -394,6 +500,19 @@ public class MClass extends MElement {
 		clsDBInfo.name = this.name;
 		clsDBInfo.superclass_id = MElement.getElementID(this.superclass);
 		clsDBInfo.package_id = MElement.getElementID(this.parent);
+	}
+	
+	/*
+	 * ********************************
+	 *             STRING
+	 * ********************************
+	 */
+	
+	@Override
+	public String toString() {
+		if (this.parent == MPackage.DEFAULT_PACKAGE)
+			return this.name;
+		return this.parent.toString() + "::" + this.name;
 	}
 
 }

@@ -46,6 +46,10 @@ public class MPackage extends MElement {
 		MDatabase.getDB().createElement(this);
 	}
 	
+	/**
+	 * Create a "lazy" package element with id.
+	 * @param id ID of element.
+	 */
 	protected MPackage(long id) {
 		super(id, MElementType.Package);
 	}
@@ -234,6 +238,14 @@ public class MPackage extends MElement {
 		pkgDBInfo.id = this.id;
 		pkgDBInfo.name = this.name;
 		pkgDBInfo.package_id = MElement.getElementID(this.parent);
+	}
+	
+	@Override
+	public String toString() {
+		if (this.parent == DEFAULT_PACKAGE) {
+			return this.name;
+		}
+		return this.parent.toString() + "::" + this.name;
 	}
 	
 }

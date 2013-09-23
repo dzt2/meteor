@@ -29,6 +29,10 @@ public class MObject extends MElement implements MNotifiable {
 		MDatabase.getDB().createElement(this);
 	}
 	
+	/**
+	 * Create a "lazy" object element with id.
+	 * @param id ID of element.
+	 */
 	public MObject(long id) {
 		super(id, MElementType.Object);
 	}
@@ -373,7 +377,7 @@ public class MObject extends MElement implements MNotifiable {
 		Iterator<Map.Entry<String, Object>> it = objDBInfo.values.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, Object> entry = it.next();
-			long id = MUtility.idDecode(entry.getKey());
+			long id = MUtility.parseID(entry.getKey());
 			MElement ele = MDatabase.getDB().getElement(id);
 			Object value = entry.getValue();
 			
@@ -419,6 +423,7 @@ public class MObject extends MElement implements MNotifiable {
 	@Override
 	void saveToDBInfo(Object dbInfo) {
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
+		objDBInfo.id = this.id;
 		objDBInfo.class_id = this.class_pt.getID();
 		
 		if (this.values != null) {
@@ -433,10 +438,10 @@ public class MObject extends MElement implements MNotifiable {
 					for (MElementPointer pt : (MPointerSet) value) {
 						ds.add(pt);
 					}
-					objDBInfo.values.put(MUtility.idEncode(id), ds);
+					objDBInfo.values.put(MUtility.stringID(id), ds);
 				} else {
 					Object o = toDBObject(value);
-					objDBInfo.values.put(MUtility.idEncode(id), o);
+					objDBInfo.values.put(MUtility.stringID(id), o);
 				}
 			}
 		}

@@ -35,8 +35,9 @@ public class MDatabase {
 	 * ********************************
 	 */
 	private MDatabase() {
-		objectsCache = new HashMap<Long, MObject>();
 		metaElements = new HashMap<Long, MElement>();
+		objectsCache = new HashMap<Long, MObject>();
+		tagsCache = new HashMap<Long, MTag>();
 		dbAdapter = null;
 	}
 	
@@ -164,11 +165,25 @@ public class MDatabase {
 		for (Long atbID : atbIDList) {
 			this.getAttribute(atbID);
 		}
+		// load all references
+		List<Long> refIDList = this.dbAdapter.listAllReferenceIDs();
+		for (Long refID : refIDList) {
+			this.getReference(refID);
+		}
 		// load all symbols
 		List<Long> symIDList = this.dbAdapter.listAllSymbolIDs();
 		for (Long symID : symIDList) {
 			this.getSymbol(symID);
 		}
+	}
+	
+	public void reset() {
+		if (this.dbAdapter == null)
+			return;
+		this.dbAdapter.resetDB();
+		this.metaElements.clear();
+		this.objectsCache.clear();
+		this.tagsCache.clear();
 	}
 	
 	/*
@@ -290,10 +305,10 @@ public class MDatabase {
 			break;
 		case Reference:
 			MReference rol = (MReference) ele;
-			MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
-			rolDBInfo.id = rol.id;
-			dbAdapter.loadReference(rolDBInfo);
-			rol.loadFromDBInfo(rolDBInfo);
+			MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo();
+			refDBInfo.id = rol.id;
+			dbAdapter.loadReference(refDBInfo);
+			rol.loadFromDBInfo(refDBInfo);
 			break;
 		case Object:
 			MObject obj = (MObject) ele;
@@ -358,9 +373,9 @@ public class MDatabase {
 				break;
 			case Reference:
 				MReference rol = (MReference) ele;
-				MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
-				rol.saveToDBInfo(rolDBInfo);
-				dbAdapter.updateReference(rolDBInfo);
+				MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo();
+				rol.saveToDBInfo(refDBInfo);
+				dbAdapter.updateReference(refDBInfo);
 				break;
 			case Object:
 				MObject obj = (MObject) ele;
@@ -418,9 +433,9 @@ public class MDatabase {
 			break;
 		case Reference:
 			MReference rol = (MReference) ele;
-			MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
-			rol.saveToDBInfo(rolDBInfo);
-			dbAdapter.createReference(rolDBInfo);
+			MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo();
+			rol.saveToDBInfo(refDBInfo);
+			dbAdapter.createReference(refDBInfo);
 			break;
 		case Object:
 			MObject obj = (MObject) ele;
@@ -475,9 +490,9 @@ public class MDatabase {
 			dbAdapter.deleteSymbol(symDBInfo);
 			break;
 		case Reference:
-			MDBAdapter.ReferenceDBInfo rolDBInfo = new MDBAdapter.ReferenceDBInfo();
-			rolDBInfo.id = ele.id;
-			dbAdapter.deleteReference(rolDBInfo);
+			MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo();
+			refDBInfo.id = ele.id;
+			dbAdapter.deleteReference(refDBInfo);
 			break;
 		case Object:
 			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
@@ -523,7 +538,7 @@ public class MDatabase {
 		this.dbAdapter.saveElementTags(dbInfo);
 	}
 	
-	public MPackage getPackage(long id) {
+	protected MPackage getPackage(long id) {
 		if (id == MElement.NULL_ID)
 			return MPackage.DEFAULT_PACKAGE;
 		MElement meta = metaElements.get(id);
@@ -541,7 +556,7 @@ public class MDatabase {
 	}
 
 	
-	public MClass getClass(long id) {
+	protected MClass getClass(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
 		MElement meta = metaElements.get(id);
@@ -558,7 +573,7 @@ public class MDatabase {
 		return cls;
 	}
 	
-	public MAttribute getAttribute(long id) {
+	protected MAttribute getAttribute(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
 		MElement meta = metaElements.get(id);
@@ -575,7 +590,7 @@ public class MDatabase {
 		return atb;
 	}
 	
-	public MReference getReference(long id) {
+	protected MReference getReference(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
 		MElement meta = metaElements.get(id);
@@ -592,7 +607,7 @@ public class MDatabase {
 		return ref;
 	}
 	
-	public MEnum getEnum(long id) {
+	protected MEnum getEnum(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
 		MElement meta = metaElements.get(id);
@@ -609,7 +624,7 @@ public class MDatabase {
 		return enm;
 	}
 	
-	public MSymbol getSymbol(long id) {
+	protected MSymbol getSymbol(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
 		MElement meta = metaElements.get(id);
@@ -638,7 +653,7 @@ public class MDatabase {
 	 * @return
 	 * @throws MException
 	 */
-	public MObject getObject(long id) {
+	protected MObject getObject(long id) {
 		MObject obj = getLazyObject(id);
 		if (obj == null)
 			return null;
@@ -664,7 +679,7 @@ public class MDatabase {
 	 * @return
 	 * @throws MException
 	 */
-	public MObject getLazyObject(long id) {
+	protected MObject getLazyObject(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
 		MObject obj = objectsCache.get(id);
@@ -675,7 +690,7 @@ public class MDatabase {
 		return obj;
 	}
 	
-	public MTag getTag(long id) {
+	protected MTag getTag(long id) {
 		MTag tag = getLazyTag(id);
 		if (tag == null)
 			return null;
@@ -692,7 +707,7 @@ public class MDatabase {
 		return tag;
 	}
 	
-	public MTag getLazyTag(long id) {
+	protected MTag getLazyTag(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
 		MTag tag = tagsCache.get(id);
@@ -701,5 +716,9 @@ public class MDatabase {
 			tagsCache.put(id, tag);
 		}
 		return tag;
+	}
+	
+	protected List<Long> getObjects(long class_id) {
+		return this.dbAdapter.listAllObjectIDs(class_id);
 	}
 }

@@ -30,6 +30,10 @@ public class MSymbol extends MElement {
 		MDatabase.getDB().createElement(this);
 	}
 	
+	/**
+	 * Create a "lazy" symbol element with id.
+	 * @param id ID of element.
+	 */
 	protected MSymbol(long id) {
 		super(id, MElementType.Symbol);
 	}
@@ -88,6 +92,11 @@ public class MSymbol extends MElement {
 		symDBInfo.id = this.id;
 		symDBInfo.name = this.name;
 		symDBInfo.enum_id = MElement.getElementID(this.envm);		
+	}
+	
+	@Override
+	public String toString() {
+		return this.name;
 	}
 	
 }

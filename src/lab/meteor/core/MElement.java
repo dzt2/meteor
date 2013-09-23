@@ -8,8 +8,12 @@ import java.util.TreeSet;
 
 public abstract class MElement {
 	
+	/**
+	 * The element type of MElement.
+	 * @author Qiang
+	 *
+	 */
 	public static enum MElementType {
-		Primitive,
 		Class,
 		Attribute,
 		Reference,
@@ -48,7 +52,7 @@ public abstract class MElement {
 		MDatabase.getDB().addElement(this);
 	}
 	
-	protected void initialize() throws MException {
+	protected void initialize() {
 		this.id = MDatabase.getDB().getNewID();
 		this.loaded = true;
 		this.changed = false;
@@ -67,7 +71,7 @@ public abstract class MElement {
 		return this.type;
 	}
 	
-	public void load() throws MException {
+	public void load() {
 		if (deleted)
 			return;
 		if (this.id == NULL_ID)
@@ -77,7 +81,7 @@ public abstract class MElement {
 		this.loaded = true;
 	}
 	
-	public void save() throws MException {
+	public void save() {
 		if (deleted)
 			return;
 		if (!loaded || !changed)
@@ -88,7 +92,7 @@ public abstract class MElement {
 		this.changed = false;
 	}
 	
-	public void delete() throws MException {
+	public void delete() {
 		if (deleted)
 			return;
 		if (this.id == NULL_ID)

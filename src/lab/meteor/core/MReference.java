@@ -35,6 +35,10 @@ public class MReference extends MElement {
 		MDatabase.getDB().createElement(this);
 	}
 	
+	/**
+	 * Create a "lazy" reference element with id.
+	 * @param id ID of element.
+	 */
 	protected MReference(long id) {
 		super(id, MElementType.Reference);
 	}
@@ -142,5 +146,10 @@ public class MReference extends MElement {
 		refDBInfo.opposite_id = MElement.getElementID(this.opposite);
 	}
 	
-	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(this.name).append(" : ").append(this.reference);
+		return builder.toString();
+	}
 }

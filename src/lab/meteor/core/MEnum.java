@@ -38,6 +38,10 @@ public class MEnum extends MElement implements MType {
 		MDatabase.getDB().createElement(this);
 	}
 	
+	/**
+	 * Create a "lazy" enumerator element with id.
+	 * @param id ID of element.
+	 */
 	protected MEnum(long id) {
 		super(id, MElementType.Enum);
 	}
@@ -144,7 +148,7 @@ public class MEnum extends MElement implements MType {
 
 	@Override
 	public String getTypeIdentifier() {
-		return String.valueOf(MElement.ID_PREFIX) + MUtility.idEncode(this.id);
+		return String.valueOf(MElement.ID_PREFIX) + MUtility.stringID(this.id);
 	}
 	
 	/*
@@ -169,6 +173,13 @@ public class MEnum extends MElement implements MType {
 		enmDBInfo.id = this.id;
 		enmDBInfo.name = this.name;
 		enmDBInfo.package_id = MElement.getElementID(this.parent);
+	}
+	
+	@Override
+	public String toString() {
+		if (this.parent == MPackage.DEFAULT_PACKAGE)
+			return this.name;
+		return this.parent.toString() + "::" + this.name;
 	}
 
 }

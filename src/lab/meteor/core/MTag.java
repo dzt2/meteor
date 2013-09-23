@@ -75,6 +75,10 @@ public class MTag extends MElement implements MNotifiable {
 		}
 	}
 	
+	/**
+	 * Create a "lazy" tag element with id.
+	 * @param id ID of element.
+	 */
 	protected MTag(long id) {
 		super(id, MElementType.Tag);
 	}

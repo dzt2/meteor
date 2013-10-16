@@ -18,7 +18,7 @@ public class MPrimitiveType implements MType {
 	public static final MPrimitiveType Regex = new MPrimitiveType(MNativeDataType.Regex);
 	public static final MPrimitiveType Code = new MPrimitiveType(MNativeDataType.Code);
 	public static final MPrimitiveType Ref = new MPrimitiveType(MNativeDataType.Ref);
-	public static final MPrimitiveType Int32 = new MPrimitiveType(MNativeDataType.Int32);
+	public static final MPrimitiveType Integer = new MPrimitiveType(MNativeDataType.Integer);
 	public static final MPrimitiveType Int64 = new MPrimitiveType(MNativeDataType.Int64);
 	
 	public static final MPrimitiveType List = new MPrimitiveType(MNativeDataType.List);

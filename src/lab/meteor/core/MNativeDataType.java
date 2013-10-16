@@ -12,7 +12,7 @@ public enum MNativeDataType {
 	Code,
 	// The attribute reference, such as people[name]
 	Ref,
-	Int32,
+	Integer,
 	Int64,
 	
 	List,

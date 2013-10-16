@@ -3,7 +3,7 @@ package lab.meteor.core;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-public class MSet extends MCollection {
+public class MSet extends MCollection implements Iterable<Object> {
 
 	final TreeSet<Object> set = new TreeSet<Object>();
 	
@@ -47,6 +47,7 @@ public class MSet extends MCollection {
 		return set.size();
 	}
 
+	@Override
 	public Iterator<Object> iterator() {
 		return new SetItr();
 	}

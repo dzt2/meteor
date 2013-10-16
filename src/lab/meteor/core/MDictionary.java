@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-public class MDictionary extends MCollection {
+public class MDictionary extends MCollection implements Iterable<Map.Entry<String, Object>> {
 	
 	MDictionary(MNotifiable parent) {
 		super(parent);
@@ -62,6 +62,7 @@ public class MDictionary extends MCollection {
 		return dict.size();
 	}
 
+	@Override
 	public Iterator<Entry<String, Object>> iterator() {
 		return new MapItr();
 	}

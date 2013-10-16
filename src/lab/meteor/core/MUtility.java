@@ -73,7 +73,7 @@ public class MUtility {
 	{
 		classes = new HashMap<Class<?>, MPrimitiveType>();
 		// Number
-		classes.put(java.lang.Integer.class, MPrimitiveType.Int32);
+		classes.put(java.lang.Integer.class, MPrimitiveType.Integer);
 		classes.put(java.lang.Long.class, MPrimitiveType.Int64);
 		classes.put(java.lang.Float.class, MPrimitiveType.Number);
 		classes.put(java.lang.Double.class, MPrimitiveType.Number);
@@ -173,7 +173,7 @@ public class MUtility {
 			if (value instanceof Pattern)
 				return true;
 			break;
-		case Int32:
+		case Integer:
 			if (value instanceof java.lang.Integer)
 				return true;
 			break;

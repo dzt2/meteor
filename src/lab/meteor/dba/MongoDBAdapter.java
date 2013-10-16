@@ -875,9 +875,9 @@ public class MongoDBAdapter implements MDBAdapter {
 				statecol.update(obj, update);
 			}
 		}
-		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
-		eleCol.ensureIndex("type");
-		// TODO
+		
+//		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+//		eleCol.ensureIndex("type");
 		
 	}
 

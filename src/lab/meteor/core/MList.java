@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class MList extends MCollection {
+public class MList extends MCollection implements Iterable<Object> {
 
 	MList(MNotifiable parent) {
 		super(parent);
@@ -87,6 +87,7 @@ public class MList extends MCollection {
 		return list.size();
 	}
 
+	@Override
 	public Iterator<Object> iterator() {
 		return listIterator();
 	}

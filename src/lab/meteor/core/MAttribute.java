@@ -1,5 +1,10 @@
 package lab.meteor.core;
 
+/**
+ * The attribute of class.
+ * @author Qiang
+ *
+ */
 public class MAttribute extends MElement {
 
 	/**

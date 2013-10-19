@@ -173,7 +173,7 @@ public class MList extends MCollection implements Iterable<Object> {
 			return;
 		for (Object o : list) {
 			o = toOutputObject(o);
-			callback.function(o);
+			callback.action(o);
 		}
 	}
 	

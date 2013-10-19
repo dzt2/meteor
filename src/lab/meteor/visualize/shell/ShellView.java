@@ -39,7 +39,7 @@ public class ShellView extends View {
 					if (getText().length() == 0)
 						return;
 					// TODO
-					shell.parseCommandTest(getPlainText());
+					shell.parseCommand(getPlainText());
 //					System.out.println(getText());
 //					prefixView.setText(getPlainText() + defaultPrefix);
 					setText("");

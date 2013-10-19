@@ -10,6 +10,7 @@ import lab.meteor.core.MElement.MElementType;
 
 public class MDatabase {
 	
+	// TODO
 	private static Pattern validNamePattern = Pattern.compile("[a-zA-Z0-9_ ]");
 	public static boolean validateName(String name) {
 		Matcher matcher = validNamePattern.matcher(name);
@@ -21,8 +22,15 @@ public class MDatabase {
 	 *            SINGLETON
 	 * ********************************
 	 */
+	/**
+	 * The singleton.
+	 */
 	private static MDatabase database = null;
 	
+	/**
+	 * Get the singleton of MDatabase.
+	 * @return singleton
+	 */
 	public static MDatabase getDB() {
 		if (database == null)
 			database = new MDatabase();
@@ -33,6 +41,9 @@ public class MDatabase {
 	 * ********************************
 	 *           CONSTRUCTOR
 	 * ********************************
+	 */
+	/**
+	 * Private constructor.
 	 */
 	private MDatabase() {
 		metaElements = new HashMap<Long, MElement>();
@@ -48,8 +59,8 @@ public class MDatabase {
 	 */
 	
 	/**
-	 * The meta of system, i.e. the model, include class, attribute, enumeration
-	 * and symbol.
+	 * The meta of system, i.e. the model, include class, attribute, reference, 
+	 * enum and symbol(enumeration literal).
 	 */
 	private Map<Long, MElement> metaElements;
 	
@@ -58,25 +69,44 @@ public class MDatabase {
 	 */
 	private Map<Long, MObject> objectsCache;
 	
+	/**
+	 * The tags' cache.
+	 */
 	private Map<Long, MTag> tagsCache;
 	
 	/**
-	 * Get a meta element through id.
+	 * Get a meta element with id.
 	 * @param id
-	 * @return
+	 * @return the model, which could be class, attribute, reference, enum
+	 * and symbol(enumeration literal).
 	 */
 	protected MElement getMetaElement(long id) {
 		return metaElements.get(id);
 	}
 	
+	/**
+	 * Get an object with id.
+	 * @param id
+	 * @return the object.
+	 */
 	protected MObject getObjectElement(long id) {
 		return objectsCache.get(id);
 	}
 	
+	/**
+	 * Get a tag with id.
+	 * @param id
+	 * @return the tag.
+	 */
 	protected MTag getTagElement(long id) {
 		return tagsCache.get(id);
 	}
 	
+	/**
+	 * Check that an element has been loaded into cache.
+	 * @param id
+	 * @return true if element with specific id is in cache.
+	 */
 	protected boolean isElementLoaded(long id) {
 		if (metaElements.containsKey(id))
 			return true;
@@ -87,6 +117,11 @@ public class MDatabase {
 		return false;
 	}
 	
+	/**
+	 * Get an element in cache.
+	 * @param id
+	 * @return
+	 */
 	protected MElement getElement(long id) {
 		MElement ele = metaElements.get(id);
 		if (ele == null)
@@ -97,7 +132,7 @@ public class MDatabase {
 	}
 	
 	/**
-	 * Add an element into system.
+	 * Add an element into system cache.
 	 * @param meta
 	 */
 	protected void addElement(MElement ele) {
@@ -110,7 +145,7 @@ public class MDatabase {
 	}
 	
 	/**
-	 * Remove an element from system.
+	 * Remove an element from system cache.
 	 * @param meta
 	 */
 	protected void removeElement(MElement ele) {
@@ -129,7 +164,7 @@ public class MDatabase {
 	 */
 	
 	/**
-	 * DB adapter. The adapter contributes a outside DB basement for the system.
+	 * DB adapter. The adapter contributes a data storage system for the system.
 	 */
 	private MDBAdapter dbAdapter = null;
 	
@@ -139,6 +174,12 @@ public class MDatabase {
 	 * ********************************
 	 */
 	
+	/**
+	 * Initialize the database, include : <br>
+	 * 1. Prepare the data storage with call of <code>MDBAdapter.checkAndPrepareDB()</code>;<br>
+	 * 2. Load model (all meta elements, i.g. classes, attributes, enumes).<br>
+	 * This method must be called before using the system.
+	 */
 	public void initialize() {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -177,6 +218,10 @@ public class MDatabase {
 		}
 	}
 	
+	/**
+	 * Reset the system, include cache and storage.
+	 * This method calls <code>MDBAdapter.resetDB()</code>.
+	 */
 	public void reset() {
 		if (this.dbAdapter == null)
 			return;
@@ -209,12 +254,11 @@ public class MDatabase {
 	}
 	
 	/**
-	 * Assign a new ID (read the last ID in attached DB and increment the ID) to 
-	 * a data. This method should be called only by MData's constructor.
+	 * Allocate a new ID (read the last ID in attached DB and increment the ID) for 
+	 * an element. This method should be called only by <code>MElement</code>'s constructor.
 	 * @return the new ID
-	 * @throws MException
 	 */
-	protected long getNewID() throws MException {
+	protected long getNewID() {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		long id = dbAdapter.loadLastIDAndIncrement();
@@ -224,6 +268,13 @@ public class MDatabase {
 		return id;
 	}
 	
+	/**
+	 * Get the element type of an element. If element with given ID is in cache, find it
+	 * and return it's type. Otherwise, call <code>MDBAdapter.getElementType(long)</code>, which
+	 * will find the element in database.
+	 * @param id
+	 * @return type of element.
+	 */
 	public MElementType getElementType(long id) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -240,7 +291,13 @@ public class MDatabase {
 		}
 	}
 	
-	private void checkExistenceAndType(long id, MElementType type) throws MException {
+	/**
+	 * Check whether the element with specific ID is exist and if exist, whether the type of
+	 * element is the expect type. Throw a <code>MException</code> if not.
+	 * @param id the specific ID.
+	 * @param type the expect type.
+	 */
+	private void checkExistenceAndType(long id, MElementType type) {
 		MElementType t = dbAdapter.getElementType(id);
 		if (t == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -248,6 +305,10 @@ public class MDatabase {
 			throw new MException(MException.Reason.MISMATCHED_ELEMENT_TYPE);
 	}
 	
+	/**
+	 * 
+	 * @param id
+	 */
 	private void checkExistence(long id) {
 		MElementType t = dbAdapter.getElementType(id);
 		if (t == null)

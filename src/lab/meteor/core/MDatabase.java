@@ -293,7 +293,8 @@ public class MDatabase {
 	
 	/**
 	 * Check whether the element with specific ID is exist and if exist, whether the type of
-	 * element is the expect type. Throw a <code>MException</code> if not.
+	 * element is the expect type. Throw a <code>MException</code> if not. This method always
+	 * check the information in database, instead of cache.
 	 * @param id the specific ID.
 	 * @param type the expect type.
 	 */
@@ -306,8 +307,9 @@ public class MDatabase {
 	}
 	
 	/**
-	 * 
-	 * @param id
+	 * Check whether the element with specific ID is exist. Throw a <code>MException</code> if not.
+	 * This method always check the information in database, instead of cache.
+	 * @param id the specific ID.
 	 */
 	private void checkExistence(long id) {
 		MElementType t = dbAdapter.getElementType(id);
@@ -315,12 +317,21 @@ public class MDatabase {
 			throw new MException(MException.Reason.ELEMENT_MISSED);
 	}
 	
-	private void checkConflict(long id) throws MException {
+	/**
+	 * Check whether there is already an element in database with specific ID. If there is,
+	 * throw a <code>MException</code>.
+	 * @param id the specific ID.
+	 */
+	private void checkConflict(long id) {
 		MElementType t = dbAdapter.getElementType(id);
 		if (t != null)
 			throw new MException(MException.Reason.ELEMENT_CONFILICT);
 	}
 	
+	/**
+	 * Load the element information from database.
+	 * @param ele The element to be loaded.
+	 */
 	protected void loadElement(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -390,6 +401,10 @@ public class MDatabase {
 		}
 	}
 	
+	/**
+	 * Save the element information from database.
+	 * @param ele The element to be saved.
+	 */
 	protected void saveElement(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -456,6 +471,10 @@ public class MDatabase {
 		}
 	}
 	
+	/**
+	 * Create a new element and save it into database.
+	 * @param ele The element to be created.
+	 */
 	protected void createElement(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -515,6 +534,10 @@ public class MDatabase {
 		}
 	}
 	
+	/**
+	 * Delete an element from database.
+	 * @param ele The element to be deleted.
+	 */
 	protected void deleteElement(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -570,6 +593,10 @@ public class MDatabase {
 		}
 	}
 	
+	/**
+	 * Load the tags of an element.
+	 * @param ele The element.
+	 */
 	protected void loadElementTags(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -585,6 +612,10 @@ public class MDatabase {
 		ele.loadTagsFromDBInfo(dbInfo);
 	}
 	
+	/**
+	 * Save the tags of an element.
+	 * @param ele The element.
+	 */
 	protected void saveElementTags(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
@@ -599,6 +630,13 @@ public class MDatabase {
 		this.dbAdapter.saveElementTags(dbInfo);
 	}
 	
+	/**
+	 * Get package with specific ID. Check if the element is in cache first, and then
+	 * if not, load the element from database. If the element is not exist, there will be
+	 * a <code>MException</code> to be thrown.
+	 * @param id The specific ID.
+	 * @return package
+	 */
 	protected MPackage getPackage(long id) {
 		if (id == MElement.NULL_ID)
 			return MPackage.DEFAULT_PACKAGE;
@@ -606,8 +644,8 @@ public class MDatabase {
 		MPackage pkg = null;
 		if (meta == null) {
 			pkg = new MPackage(id);
-			metaElements.put(id, pkg);
 			pkg.load();
+			metaElements.put(id, pkg);
 		} else if (meta instanceof MPackage) {
 			pkg = (MPackage) meta;
 		} else {
@@ -616,7 +654,13 @@ public class MDatabase {
 		return pkg;
 	}
 
-	
+	/**
+	 * Get class with specific ID. Check if the element is in cache first, and then
+	 * if not, load the element from database. If the element is not exist, there will be
+	 * a <code>MException</code> to be thrown.
+	 * @param id The specific ID.
+	 * @return class
+	 */
 	protected MClass getClass(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
@@ -624,8 +668,8 @@ public class MDatabase {
 		MClass cls = null;
 		if (meta == null) {
 			cls = new MClass(id);
-			metaElements.put(id, cls);
 			cls.load();
+			metaElements.put(id, cls);
 		} else if (meta instanceof MClass) {
 			cls = (MClass) meta;
 		} else {
@@ -634,6 +678,13 @@ public class MDatabase {
 		return cls;
 	}
 	
+	/**
+	 * Get attribute with specific ID. Check if the element is in cache first, and then
+	 * if not, load the element from database. If the element is not exist, there will be
+	 * a <code>MException</code> to be thrown.
+	 * @param id The specific ID.
+	 * @return attribute
+	 */
 	protected MAttribute getAttribute(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
@@ -641,8 +692,8 @@ public class MDatabase {
 		MAttribute atb = null;
 		if (meta == null) {
 			atb = new MAttribute(id);
-			metaElements.put(id, atb);
 			atb.load();
+			metaElements.put(id, atb);
 		} else if (meta instanceof MAttribute) {
 			atb = (MAttribute) meta;
 		} else {
@@ -651,6 +702,13 @@ public class MDatabase {
 		return atb;
 	}
 	
+	/**
+	 * Get reference with specific ID. Check if the element is in cache first, and then
+	 * if not, load the element from database. If the element is not exist, there will be
+	 * a <code>MException</code> to be thrown.
+	 * @param id The specific ID.
+	 * @return reference
+	 */
 	protected MReference getReference(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
@@ -658,8 +716,8 @@ public class MDatabase {
 		MReference ref = null;
 		if (meta == null) {
 			ref = new MReference(id);
-			metaElements.put(id, ref);
 			ref.load();
+			metaElements.put(id, ref);
 		} else if (meta instanceof MAttribute) {
 			ref = (MReference) meta;
 		} else {
@@ -668,6 +726,13 @@ public class MDatabase {
 		return ref;
 	}
 	
+	/**
+	 * Get enum with specific ID. Check if the element is in cache first, and then
+	 * if not, load the element from database. If the element is not exist, there will be
+	 * a <code>MException</code> to be thrown.
+	 * @param id The specific ID.
+	 * @return enum
+	 */
 	protected MEnum getEnum(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
@@ -675,8 +740,8 @@ public class MDatabase {
 		MEnum enm = null;
 		if (meta == null) {
 			enm = new MEnum(id);
-			metaElements.put(id, enm);
 			enm.load();
+			metaElements.put(id, enm);
 		} else if (meta instanceof MEnum) {
 			enm = (MEnum) meta;
 		} else {
@@ -685,6 +750,13 @@ public class MDatabase {
 		return enm;
 	}
 	
+	/**
+	 * Get symbol with specific ID. Check if the element is in cache first, and then
+	 * if not, load the element from database. If the element is not exist, there will be
+	 * a <code>MException</code> to be thrown.
+	 * @param id The specific ID.
+	 * @return symbol
+	 */
 	protected MSymbol getSymbol(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
@@ -692,8 +764,8 @@ public class MDatabase {
 		MSymbol sym = null;
 		if (meta == null) {
 			sym = new MSymbol(id);
-			metaElements.put(id, sym);
 			sym.load();
+			metaElements.put(id, sym);
 		} else if (meta instanceof MSymbol) {
 			sym = (MSymbol) meta;
 		} else {
@@ -709,10 +781,9 @@ public class MDatabase {
 	 */
 	
 	/**
-	 * Load the object by id.
-	 * @param id
-	 * @return
-	 * @throws MException
+	 * Get the object by id. The loading will also load the object into cache.
+	 * @param id The ID of object.
+	 * @return object
 	 */
 	protected MObject getObject(long id) {
 		MObject obj = getLazyObject(id);
@@ -734,11 +805,10 @@ public class MDatabase {
 	/**
 	 * Load the object by id, but if the object has not been loaded, a new object that
 	 * only has the ID handler will be created, which is named as a "lazy" object. The 
-	 * content of "lazy" object is empty. Call the {@code loadObject(MObject)}
+	 * content of "lazy" object is empty. Call the {@code MDatabase.loadObject(MObject)}
 	 * to load the content.
-	 * @param id
-	 * @return
-	 * @throws MException
+	 * @param id The ID of object.
+	 * @return A lazy object if it's not in cache, otherwise an object with complete content.
 	 */
 	protected MObject getLazyObject(long id) {
 		if (id == MElement.NULL_ID)
@@ -751,6 +821,11 @@ public class MDatabase {
 		return obj;
 	}
 	
+	/**
+	 * Get the tag by id. The loading will also load the tag into cache.
+	 * @param id The ID of tag.
+	 * @return tag
+	 */
 	protected MTag getTag(long id) {
 		MTag tag = getLazyTag(id);
 		if (tag == null)
@@ -768,6 +843,14 @@ public class MDatabase {
 		return tag;
 	}
 	
+	/**
+	 * Load the tag by id, but if the tag has not been loaded, a new tag that
+	 * only has the ID handler will be created, which is named as a "lazy" tag. The 
+	 * content of "lazy" tag is empty. Call the {@code MDatabase.loadTag(MTag)}
+	 * to load the content.
+	 * @param id The ID of tag.
+	 * @return A lazy tag if it's not in cache, otherwise a tag with complete content.
+	 */
 	protected MTag getLazyTag(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
@@ -779,6 +862,11 @@ public class MDatabase {
 		return tag;
 	}
 	
+	/**
+	 * Get all objects of a class.
+	 * @param class_id The ID of class.
+	 * @return A list of objects.
+	 */
 	protected List<Long> getObjects(long class_id) {
 		return this.dbAdapter.listAllObjectIDs(class_id);
 	}

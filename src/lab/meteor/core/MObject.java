@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import lab.meteor.core.MCollection.Factory;
+import lab.meteor.core.MDBAdapter.DBInfo;
 import lab.meteor.core.MReference.Multiplicity;
 
 public class MObject extends MElement implements MNotifiable {
@@ -58,6 +59,25 @@ public class MObject extends MElement implements MNotifiable {
 			if (cls == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 			return cls.asSubClass(clazz);
+		}
+	}
+	
+	public Object getField(String name) {
+		if (!isLoaded())
+			this.load();
+		MClass cls = (MClass) class_pt.getElement();
+		if (cls == null)
+			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MField field = cls.getField(name);
+		if (field == null)
+			return null;
+		switch (field.getElementType()) {
+		case Attribute:
+			return this.getAttribute((MAttribute) field);
+		case Reference:
+			return this.getReference((MReference) field);
+		default:
+			return null;
 		}
 	}
 
@@ -199,7 +219,7 @@ public class MObject extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
 		if (ref.getMultiplicity() == Multiplicity.One)
 			return;
-		if (!obj.isInstanceOf(ref.getClazz()))
+		if (!obj.isInstanceOf(ref.getOwner()))
 			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
 		
 		MReference ref_a = ref;
@@ -237,7 +257,7 @@ public class MObject extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
 		if (ref.getMultiplicity() == Multiplicity.One)
 			return;
-		if (!obj.isInstanceOf(ref.getClazz()))
+		if (!obj.isInstanceOf(ref.getOwner()))
 			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
 		
 		MReference ref_a = ref;
@@ -267,7 +287,7 @@ public class MObject extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
 		if (ref.getMultiplicity() == Multiplicity.Multiple)
 			return;
-		if (!obj.isInstanceOf(ref.getClazz()))
+		if (!obj.isInstanceOf(ref.getOwner()))
 			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
 		
 		MReference ref_a = ref;
@@ -368,7 +388,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	@Override
-	void loadFromDBInfo(Object dbInfo) {
+	void loadFromDBInfo(DBInfo dbInfo) {
 		boolean changeFlag = false;
 		
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
@@ -421,7 +441,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	@Override
-	void saveToDBInfo(Object dbInfo) {
+	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
 		objDBInfo.id = this.id;
 		objDBInfo.class_id = this.class_pt.getID();

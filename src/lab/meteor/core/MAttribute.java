@@ -1,11 +1,15 @@
 package lab.meteor.core;
 
+import lab.meteor.core.MDBAdapter.DBInfo;
+
 /**
- * The attribute of class.
+ * The attribute of class. The type of attribute can only be primitive type and enum.
  * @author Qiang
- *
+ * @see MPrimitiveType
+ * @see MEnum
+ * @see MType
  */
-public class MAttribute extends MElement {
+public class MAttribute extends MElement implements MField {
 
 	/**
 	 * Attribute's name.
@@ -41,7 +45,7 @@ public class MAttribute extends MElement {
 			throw new MException(MException.Reason.NULL_ELEMENT);
 		if (clazz.isDeleted())
 			throw new MException(MException.Reason.ELEMENT_MISSED);
-		if (clazz.hasChild(name))
+		if (clazz.hasField(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.initialize();
@@ -86,10 +90,7 @@ public class MAttribute extends MElement {
 	 * ********************************
 	 */
 
-	/**
-	 * Get the name of attribute.
-	 * @return name.
-	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -100,10 +101,11 @@ public class MAttribute extends MElement {
 	 * The name has to be unique, otherwise an exception will be thrown.
 	 * @param name
 	 */
+	@Override
 	public void setName(String name) {
 		if (name.equals(this.name))
 			return;
-		if (this.clazz.hasChild(name))
+		if (this.clazz.hasField(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.clazz.removeAtttribute(this);
@@ -138,11 +140,8 @@ public class MAttribute extends MElement {
 		this.setChanged();
 	}
 
-	/**
-	 * Get the owner of this attribute.
-	 * @return the owner class.
-	 */
-	public MClass getClazz() {
+	@Override
+	public MClass getOwner() {
 		return clazz;
 	}
 	
@@ -153,7 +152,7 @@ public class MAttribute extends MElement {
 	 */
 
 	@Override
-	void loadFromDBInfo(Object dbInfo) {
+	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.AttributeDBInfo atbDBInfo = (MDBAdapter.AttributeDBInfo) dbInfo;
 		this.name = atbDBInfo.name;
 		this.clazz = MDatabase.getDB().getClass(atbDBInfo.class_id);
@@ -172,7 +171,7 @@ public class MAttribute extends MElement {
 	}
 
 	@Override
-	void saveToDBInfo(Object dbInfo) {
+	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.AttributeDBInfo atbDBInfo = (MDBAdapter.AttributeDBInfo) dbInfo;
 		atbDBInfo.id = this.id;
 		atbDBInfo.name = this.name;

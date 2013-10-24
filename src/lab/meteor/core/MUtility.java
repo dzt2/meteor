@@ -8,6 +8,14 @@ import lab.meteor.core.type.MBinary;
 import lab.meteor.core.type.MCode;
 import lab.meteor.core.type.MRef;
 
+/**
+ * The utility of meteor system. The responsibility are: 
+ * <p>
+ * 1. Converting the element ID between the form of string and long; <br>
+ * 2. Check the type of Java object is a valid type in meteor system.
+ * @author Qiang
+ *
+ */
 public class MUtility {
 	
 	/**

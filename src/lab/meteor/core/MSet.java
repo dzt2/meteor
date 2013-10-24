@@ -3,6 +3,17 @@ package lab.meteor.core;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+/**
+ * The set, one of a primitive type in meteor system. When there is a modify operation, such
+ * as <code>add()</code>, <code>remove()</code>, etc., or a modify operation activated by
+ * its iterator, the set will notify its parent there is a change needed to be updated.
+ * <p>
+ * The set can only be created by the factory method <code>MCollection.createCollection()</code>.
+ * <p>
+ * It's a wrapper of <code>TreeSet&ltObject&gt</code>.
+ * @author Qiang
+ *
+ */
 public class MSet extends MCollection implements Iterable<Object> {
 
 	final TreeSet<Object> set = new TreeSet<Object>();

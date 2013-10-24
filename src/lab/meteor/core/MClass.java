@@ -5,18 +5,52 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import lab.meteor.core.MDBAdapter.DBInfo;
+
+/**
+ * The class of a kind of objects. <br>
+ * A class contains several fields, which could be attribute
+ * (<code>MAttribute</code>) or reference(<code>MReference</code>). The difference is that 
+ * attribute's type can only be primitive type and enum, and reference's type can only be 
+ * class (so it means referring to a class).
+ * @author Qiang
+ * @see MAttribute
+ * @see MReference
+ */
 public class MClass extends MElement {
 
+	/**
+	 * Class's name.
+	 */
 	private String name;
 	
+	/**
+	 * The attributes.
+	 */
 	private Map<String, MAttribute> attributes;
+	/**
+	 * The references.
+	 */
 	private Map<String, MReference> references;
 	
+	/**
+	 * The super class.
+	 */
 	private MClass superclass;
+	
+	/**
+	 * The package.
+	 */
 	private MPackage parent;
 	
+	/**
+	 * All subclasses.
+	 */
 	private Set<MClass> subclasses;
 	
+	/**
+	 * All references that refer to this class.
+	 */
 	private Set<MReference> utilizers;
 	
 	/* 
@@ -236,7 +270,7 @@ public class MClass extends MElement {
 	 * The package of the class.
 	 * @return package.
 	 */
-	public MPackage getPackage() throws MException {
+	public MPackage getPackage() {
 		return this.parent;
 	}
 	
@@ -244,7 +278,7 @@ public class MClass extends MElement {
 	 * Set the package of the class.
 	 * @param pkg package.
 	 */
-	public void setPackage(MPackage pkg) throws MException {
+	public void setPackage(MPackage pkg) {
 		if (pkg == null)
 			pkg = MPackage.DEFAULT_PACKAGE;
 		if (pkg == this.parent)
@@ -264,8 +298,21 @@ public class MClass extends MElement {
 	 * @param name the specified name.
 	 * @return {@code true} if there is.
 	 */
-	public boolean hasChild(String name) {
+	public boolean hasField(String name) {
 		return this.hasAttribute(name) || this.hasReference(name);
+	}
+	
+	/**
+	 * Get a field of the class.
+	 * @param name The name of field.
+	 * @return <code>MAttribute</code> if field is attribute, <code>MReference</code> if field
+	 * is reference, <code>null</code> if there is no field named after the given name. 
+	 */
+	public MField getField(String name) {
+		MField f = this.getAttribute(name);
+		if (f == null)
+			f = this.getReference(name);
+		return f;
 	}
 	
 	/* 
@@ -481,7 +528,7 @@ public class MClass extends MElement {
 	 */
 
 	@Override
-	void loadFromDBInfo(Object dbInfo) {
+	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ClassDBInfo clsDBInfo = (MDBAdapter.ClassDBInfo) dbInfo;
 		this.name = clsDBInfo.name;
 		this.superclass = MDatabase.getDB().getClass(clsDBInfo.superclass_id);
@@ -494,7 +541,7 @@ public class MClass extends MElement {
 	}
 
 	@Override
-	void saveToDBInfo(Object dbInfo) {
+	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ClassDBInfo clsDBInfo = (MDBAdapter.ClassDBInfo) dbInfo;
 		clsDBInfo.id = this.id;
 		clsDBInfo.name = this.name;

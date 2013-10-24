@@ -4,12 +4,26 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
+/**
+ * The list, one of a primitive type in meteor system. When there is a modify operation, such
+ * as <code>add()</code>, <code>set()</code>, <code>remove()</code>, etc., or a modify operation
+ * activated by its iterator, the list will notify its parent there is a change needed to be
+ * updated.
+ * <p>
+ * The list can only be created by the factory method <code>MCollection.createCollection()</code>.
+ * <p>
+ * It's a wrapper of <code>LinkedList&ltObject&gt</code>.
+ * @author Qiang
+ */
 public class MList extends MCollection implements Iterable<Object> {
 
 	MList(MNotifiable parent) {
 		super(parent);
 	}
 
+	/**
+	 * The inner list.
+	 */
 	final LinkedList<Object> list = new LinkedList<Object>();
 	
 	public boolean add(Object e) {

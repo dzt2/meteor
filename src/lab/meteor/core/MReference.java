@@ -1,6 +1,8 @@
 package lab.meteor.core;
 
-public class MReference extends MElement {
+import lab.meteor.core.MDBAdapter.DBInfo;
+
+public class MReference extends MElement implements MField {
 	
 	private MClass clazz;
 	private String name;
@@ -21,7 +23,7 @@ public class MReference extends MElement {
 			throw new MException(MException.Reason.ELEMENT_MISSED);
 		if (reference == null || reference.isDeleted())
 			throw new MException(MException.Reason.ELEMENT_MISSED);
-		if (cls.hasChild(name))
+		if (cls.hasField(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.initialize();
@@ -51,18 +53,21 @@ public class MReference extends MElement {
 		super.delete();
 	}
 	
-	public MClass getClazz() {
+	@Override
+	public MClass getOwner() {
 		return this.clazz;
 	}
 	
+	@Override
 	public String getName() {
 		return this.name;
 	}
 	
+	@Override
 	public void setName(String name) {
 		if (name.equals(this.name))
 			return;
-		if (this.clazz.hasChild(name))
+		if (this.clazz.hasField(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.clazz.removeReference(this);
@@ -122,7 +127,7 @@ public class MReference extends MElement {
 	 */
 	
 	@Override
-	void loadFromDBInfo(Object dbInfo) {
+	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ReferenceDBInfo refDBInfo = (MDBAdapter.ReferenceDBInfo) dbInfo;
 		this.name = refDBInfo.name;
 		this.clazz = MDatabase.getDB().getClass(refDBInfo.class_id);
@@ -136,7 +141,7 @@ public class MReference extends MElement {
 	}
 
 	@Override
-	void saveToDBInfo(Object dbInfo) {
+	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ReferenceDBInfo refDBInfo = (MDBAdapter.ReferenceDBInfo) dbInfo;
 		refDBInfo.id = this.id;
 		refDBInfo.name = this.name;

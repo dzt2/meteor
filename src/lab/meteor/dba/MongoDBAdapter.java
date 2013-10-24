@@ -657,6 +657,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	final static String KEY_SYMBOL = "e";
 	final static String KEY_REF = "r";
 	
+	/**
+	 * Convert the object in meteor system to DBObject or the object that can store
+	 * in MongoDB.
+	 * @param obj Object in meteor system.
+	 * @return Object that can store in MongoDB.
+	 */
 	private static Object objectToDBObject(Object obj) {
 		Object value = obj;
 		if (value instanceof MElementPointer) {
@@ -675,6 +681,11 @@ public class MongoDBAdapter implements MDBAdapter {
 		return value;
 	}
 	
+	/**
+	 * Convert the object in MongoDB to the object in meteor system.
+	 * @param obj Object that can store in MongoDB.
+	 * @return Object in meteor system.
+	 */
 	private static Object dbObjectToObject(Object obj) {
 		if (obj instanceof DBObject) {
 			DBObject dbo = (DBObject) obj;
@@ -695,6 +706,11 @@ public class MongoDBAdapter implements MDBAdapter {
 		return obj;
 	}
 	
+	/**
+	 * Convert a <code>DataDict</code> to <code>DBObject</code>.
+	 * @param dd Data dictionary
+	 * @return DBObject
+	 */
 	private static DBObject dataDictToDBObject(DataDict dd) {
 		DBObject obj = new BasicDBObject();
 		String key = KEY_DICT;
@@ -709,6 +725,11 @@ public class MongoDBAdapter implements MDBAdapter {
 		return obj;
 	}
 	
+	/**
+	 * Convert the <code>DBObject</code> to <code>DataDict</code>.
+	 * @param obj DBObject
+	 * @return Data dictionary
+	 */
 	private static DataDict dbObjectToDataDict(DBObject obj) {
 		DataDict dd = new DataDict();
 		DBObject dict = (DBObject) obj.get(KEY_DICT);
@@ -800,7 +821,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBObject obj = new BasicDBObject();
 		BasicDBList list = new BasicDBList();
 		list.add(ref.getTarget().getID());
-		list.add(ref.getAttribute().getID());
+		list.add(ref.getField().getID());
 		obj.put(KEY_REF, list);
 		return obj;
 	}
@@ -808,8 +829,9 @@ public class MongoDBAdapter implements MDBAdapter {
 	private static MRef dbObjectToRef(DBObject obj) {
 		BasicDBList list = (BasicDBList) obj.get(KEY_REF);
 		long obj_id = (Long) list.get(0);
-		long atb_id = (Long) list.get(1);
-		return new MRef(obj_id, atb_id);
+		long field_id = (Long) list.get(1);
+		// TODO
+		return new MRef(obj_id, field_id, null);
 	}
 
 	@Override

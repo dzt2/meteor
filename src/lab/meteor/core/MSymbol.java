@@ -1,5 +1,7 @@
 package lab.meteor.core;
 
+import lab.meteor.core.MDBAdapter.DBInfo;
+
 public class MSymbol extends MElement {
 
 	private String name;
@@ -77,7 +79,7 @@ public class MSymbol extends MElement {
 	}
 
 	@Override
-	void loadFromDBInfo(Object dbInfo) {
+	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.SymbolDBInfo symDBInfo = (MDBAdapter.SymbolDBInfo) dbInfo;
 		this.name = symDBInfo.name;
 		this.envm = MDatabase.getDB().getEnum(symDBInfo.enum_id);
@@ -87,7 +89,7 @@ public class MSymbol extends MElement {
 	}
 
 	@Override
-	void saveToDBInfo(Object dbInfo) {
+	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.SymbolDBInfo symDBInfo = (MDBAdapter.SymbolDBInfo) dbInfo;
 		symDBInfo.id = this.id;
 		symDBInfo.name = this.name;

@@ -1,5 +1,10 @@
 package lab.meteor.core;
 
+/**
+ * The exception in meteor system.
+ * @author Qiang
+ *
+ */
 public class MException extends RuntimeException {
 
 	/**
@@ -21,20 +26,26 @@ public class MException extends RuntimeException {
 	}
 	
 	/**
-	 * 
+	 * The reason of exception.
 	 * @author Qiang
 	 *
 	 */
 	public enum Reason {
+		/**
+		 * The feature has not been supported yet.
+		 */
 		NOT_SUPPORT_YET,
 		/**
 		 * When execute CURD operations, the DB adapter has not been attached to MDatabase.
 		 */
 		DB_ADAPTER_NOT_ATTACHED,
 		/**
-		 * When assign a value to a object'attribute, the attribute does not exist.
+		 * When assign a value to a object's attribute, the attribute does not exist.
 		 */
 		ATTRIBUTE_NOT_FOUND,
+		/**
+		 * When assign a value to a object's reference, the reference does not exist.
+		 */
 		REFERENCE_NOT_FOUND,
 		/**
 		 * The type of element (Class, Attribute, Enum, etc.) in memory is different with the

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import lab.meteor.core.MDBAdapter.DBInfo;
+
 public class MTag extends MElement implements MNotifiable {
 	
 	private String name;
@@ -150,7 +152,8 @@ public class MTag extends MElement implements MNotifiable {
 		target.removeTag(this.name, this.id);
 	}
 	
-	void loadFromDBInfo(Object dbInfo) {
+	@Override
+	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.TagDBInfo tagDBInfo = (MDBAdapter.TagDBInfo) dbInfo;
 		this.name = tagDBInfo.name;
 		fromDBObject(this, tagDBInfo.value, null);
@@ -160,7 +163,8 @@ public class MTag extends MElement implements MNotifiable {
 		}
 	}
 	
-	void saveToDBInfo(Object dbInfo) {
+	@Override
+	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.TagDBInfo tagDBInfo = (MDBAdapter.TagDBInfo) dbInfo;
 		tagDBInfo.id = this.id;
 		tagDBInfo.name = this.name;

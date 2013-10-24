@@ -2,21 +2,44 @@ package lab.meteor.core;
 
 import lab.meteor.core.MElement.MElementType;
 
+/**
+ * A pointer to an element.
+ * @author Qiang
+ * @see MElement
+ */
 public class MElementPointer {
 	
+	/**
+	 * ID of element.
+	 */
 	private long id;
 	
+	/**
+	 * The type of element. It's easier to get the origin element with element type.
+	 */
 	private MElementType eType;
 	
+	/**
+	 * Create a null pointer.
+	 */
 	public MElementPointer() {
 		this(null);
 	}
 	
+	/**
+	 * Create a pointer.
+	 * @param id The ID of element.
+	 * @param eType The element type.
+	 */
 	public MElementPointer(long id, MElementType eType) {
 		this.id = id;
 		this.eType = eType;
 	}
 	
+	/**
+	 * Create a pointer.
+	 * @param ele The element.
+	 */
 	public MElementPointer(MElement ele) {
 		if (ele == null) {
 			this.id = MElement.NULL_ID;
@@ -27,19 +50,35 @@ public class MElementPointer {
 		}
 	}
 	
+	/**
+	 * ID of element.
+	 * @return
+	 */
 	public long getID() {
 		return id;
 	}
 	
+	/**
+	 * Type of element.
+	 * @return
+	 */
 	public MElementType getElementType() {
 		return this.eType;
 	}
 	
+	/**
+	 * Point an element.
+	 * @param ele The element.
+	 */
 	public void setPointer(MElement ele) {
 		this.id = ele.id;
 		this.eType = ele.getElementType();
 	}
 	
+	/**
+	 * Get pointed element.
+	 * @return
+	 */
 	public MElement getElement() {
 		switch (this.eType) {
 		case Class:

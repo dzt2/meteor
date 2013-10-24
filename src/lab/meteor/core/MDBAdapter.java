@@ -6,10 +6,29 @@ import java.util.TreeSet;
 
 import lab.meteor.core.MElement.MElementType;
 
+/**
+ * The adapter between the database and the system. Meteor system operates the data with this
+ * adapter. So the adapter provides a way of extension. 
+ * @author Qiang
+ *
+ */
 public interface MDBAdapter {
 	
-	public static class PackageDBInfo {
+	/**
+	 * 
+	 * @author Qiang
+	 *
+	 */
+	public static abstract class DBInfo {
 		public long id;
+	}
+	
+	/**
+	 * 
+	 * @author Qiang
+	 *
+	 */
+	public static class PackageDBInfo extends DBInfo {
 		public String name;
 		public long package_id;
 	}
@@ -19,8 +38,7 @@ public interface MDBAdapter {
 	void updatePackage(PackageDBInfo pkg);
 	void deletePackage(PackageDBInfo pkg);
 	
-	public static class ClassDBInfo {
-		public long id;
+	public static class ClassDBInfo extends DBInfo {
 		public String name;
 		public long package_id;
 		public long superclass_id;
@@ -31,8 +49,7 @@ public interface MDBAdapter {
 	void updateClass(ClassDBInfo cls);
 	void deleteClass(ClassDBInfo cls);
 	
-	public static class AttributeDBInfo {
-		public long id;
+	public static class AttributeDBInfo extends DBInfo {
 		public String name;
 		public String type_id;
 		public long class_id;
@@ -43,8 +60,7 @@ public interface MDBAdapter {
 	void updateAttribute(AttributeDBInfo atb);
 	void deleteAttribute(AttributeDBInfo atb);
 	
-	public static class ReferenceDBInfo {
-		public long id;
+	public static class ReferenceDBInfo extends DBInfo {
 		public long class_id;
 		public String name;
 		public long reference_id;
@@ -57,8 +73,7 @@ public interface MDBAdapter {
 	void updateReference(ReferenceDBInfo rol);
 	void deleteReference(ReferenceDBInfo rol);
 	
-	public static class EnumDBInfo {
-		public long id;
+	public static class EnumDBInfo extends DBInfo {
 		public String name;
 		public long package_id;
 	}
@@ -68,8 +83,7 @@ public interface MDBAdapter {
 	void updateEnum(EnumDBInfo enm);
 	void deleteEnum(EnumDBInfo enm);
 	
-	public static class SymbolDBInfo {
-		public long id;
+	public static class SymbolDBInfo extends DBInfo {
 		public String name;
 		public long enum_id;
 	}
@@ -79,8 +93,7 @@ public interface MDBAdapter {
 	void updateSymbol(SymbolDBInfo syb);
 	void deleteSymbol(SymbolDBInfo syb);
 	
-	public static class ObjectDBInfo {
-		public long id;
+	public static class ObjectDBInfo extends DBInfo {
 		public long class_id;
 		public DataDict values = new DataDict();
 	}
@@ -90,8 +103,7 @@ public interface MDBAdapter {
 	void updateObject(ObjectDBInfo obj);
 	void deleteObject(ObjectDBInfo obj);
 	
-	public static class TagDBInfo {
-		public long id;
+	public static class TagDBInfo extends DBInfo {
 		public String name;
 		public Object value;
 		public IDList targets_id = new IDList();
@@ -102,8 +114,7 @@ public interface MDBAdapter {
 	void updateTag(TagDBInfo tag);
 	void deleteTag(TagDBInfo tag);
 	
-	public static class ElementTagDBInfo {
-		public long id;
+	public static class ElementTagDBInfo extends DBInfo {
 		public IDList tags_id = new IDList();
 	}
 	
@@ -124,23 +135,39 @@ public interface MDBAdapter {
 	IDList listAllSymbolIDs();
 	IDList listAllObjectIDs(long classID);
 	
-	@SuppressWarnings("serial")
+	/**
+	 * A list of object in meteor system. It's a linked list.
+	 * @author Qiang
+	 *
+	 */
 	public static class DataList extends LinkedList<Object> {
-		
+		private static final long serialVersionUID = 4119666467334909410L;
 	}
 	
-	@SuppressWarnings("serial")
+	/**
+	 * A dictionary of object in meteor system. It's a tree map.
+	 * @author Qiang
+	 *
+	 */
 	public static class DataDict extends TreeMap<String, Object> {
-		
+		private static final long serialVersionUID = -3370705807605089825L;
 	}
 	
-	@SuppressWarnings("serial")
+	/**
+	 * A set of object in meteor system. It's a tree set.
+	 * @author Qiang
+	 *
+	 */
 	public static class DataSet extends TreeSet<Object> {
-		
+		private static final long serialVersionUID = 8312477680744554417L;
 	}
 	
-	@SuppressWarnings("serial")
+	/**
+	 * A list of element ID. It's a linked list.
+	 * @author Qiang
+	 *
+	 */
 	public static class IDList extends LinkedList<Long> {
-		
+		private static final long serialVersionUID = 4824752584421148743L;
 	}
 }

@@ -5,6 +5,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+/**
+ * The dictionary, one of a primitive type in meteor system. When there is a modify operation, 
+ * such as <code>add()</code>, <code>set()</code>, <code>remove()</code>, etc., or a modify
+ * operation activated by its iterator, the dictionary will notify its parent there is a 
+ * change needed to be updated.
+ * <p>
+ * The dictionary can only be created by the factory method
+ * <code>MCollection.createCollection()</code>.
+ * <p>
+ * It's a wrapper of <code>TreeMap&ltString, Object&gt</code>.
+ * @author Qiang
+ *
+ */
 public class MDictionary extends MCollection implements Iterable<Map.Entry<String, Object>> {
 	
 	MDictionary(MNotifiable parent) {

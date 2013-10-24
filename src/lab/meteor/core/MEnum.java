@@ -6,6 +6,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import lab.meteor.core.MDBAdapter.DBInfo;
+
+/**
+ * Enumeration type.
+ * @author Qiang
+ *
+ */
 public class MEnum extends MElement implements MType {
 
 	private MPackage parent;
@@ -158,7 +165,7 @@ public class MEnum extends MElement implements MType {
 	 */
 
 	@Override
-	void loadFromDBInfo(Object dbInfo) {
+	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.EnumDBInfo enmDBInfo = (MDBAdapter.EnumDBInfo) dbInfo;
 		this.name = enmDBInfo.name;
 		this.parent = MDatabase.getDB().getPackage(enmDBInfo.package_id);
@@ -168,7 +175,7 @@ public class MEnum extends MElement implements MType {
 	}
 
 	@Override
-	void saveToDBInfo(Object dbInfo) {
+	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.EnumDBInfo enmDBInfo = (MDBAdapter.EnumDBInfo) dbInfo;
 		enmDBInfo.id = this.id;
 		enmDBInfo.name = this.name;

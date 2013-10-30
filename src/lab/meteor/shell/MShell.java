@@ -267,11 +267,23 @@ public class MShell {
 					Token child = tokenizer.next();
 					if (child == null || child.type != TokenType.Identifier)
 					{ printError(tokenizer.loc, "field name is required."); return; }
-					// TODO
-					System.out.println("del " + name.content + " : " + child.content);
+					// delete child of class or enum
+					try {
+						deleteChildElement(child.content, name.content);
+						commandFinish(command, "succeeded.");
+					} catch (MShellException e) {
+						printError(e);
+						commandFinish(command, e.getMessage());
+					}
 				} else {
-					// TODO
-					System.out.println("del " + name.content);
+					// delete class, enum or package
+					try {
+						deleteElement(name.content);
+						commandFinish(command, "succeeded.");
+					} catch (MShellException e) {
+						printError(e);
+						commandFinish(command, e.getMessage());
+					}
 				}
 				break;
 			}

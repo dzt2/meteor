@@ -17,7 +17,7 @@ import lab.meteor.core.MDBAdapter.DBInfo;
  * @see MAttribute
  * @see MReference
  */
-public class MClass extends MElement {
+public class MClass extends MElement implements MType {
 
 	/**
 	 * Class's name.
@@ -303,16 +303,30 @@ public class MClass extends MElement {
 	}
 	
 	/**
-	 * Get a field of the class.
+	 * Get a property of the class.
 	 * @param name The name of field.
-	 * @return <code>MAttribute</code> if field is attribute, <code>MReference</code> if field
-	 * is reference, <code>null</code> if there is no field named after the given name. 
+	 * @return <code>MAttribute</code> if property is attribute, <code>MReference</code> if field
+	 * is reference, <code>null</code> if there is no property named after the given name. 
 	 */
-	public MField getField(String name) {
-		MField f = this.getAttribute(name);
-		if (f == null)
-			f = this.getReference(name);
-		return f;
+	public MProperty getProperty(String name) {
+		MProperty p = this.getAttribute(name);
+		if (p == null)
+			p = this.getReference(name);
+		return p;
+	}
+	
+	protected void addProperty(MProperty p) {
+		if (p.getElementType() == MElementType.Attribute)
+			addAttribute((MAttribute) p);
+		else if (p.getElementType() == MElementType.Reference)
+			addReference((MReference) p);
+	}
+	
+	protected void removeProperty(MProperty p) {
+		if (p.getElementType() == MElementType.Attribute)
+			removeAttribute((MAttribute) p);
+		else if (p.getElementType() == MElementType.Reference)
+			removeReference((MReference) p);
 	}
 	
 	/* 
@@ -390,7 +404,7 @@ public class MClass extends MElement {
 	 * Add attribute.
 	 * @param atb attribute.
 	 */
-	protected void addAttribute(MAttribute atb) {
+	private void addAttribute(MAttribute atb) {
 		this.getAttributes().put(atb.getName(), atb);
 	}
 
@@ -398,7 +412,7 @@ public class MClass extends MElement {
 	 * Remove attribute.
 	 * @param atb attribute.
 	 */
-	protected void removeAtttribute(MAttribute atb) {
+	private void removeAttribute(MAttribute atb) {
 		this.getAttributes().remove(atb.getName());
 	}
 	
@@ -477,7 +491,7 @@ public class MClass extends MElement {
 	 * Add reference.
 	 * @param ref reference.
 	 */
-	protected void addReference(MReference ref) {
+	private void addReference(MReference ref) {
 		this.getReferences().put(ref.getName(), ref);
 	}
 	
@@ -485,7 +499,7 @@ public class MClass extends MElement {
 	 * Remove reference.
 	 * @param ref reference.
 	 */
-	protected void removeReference(MReference ref) {
+	private void removeReference(MReference ref) {
 		this.getReferences().remove(ref.getName());
 	}
 	

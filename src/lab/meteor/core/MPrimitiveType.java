@@ -3,11 +3,11 @@ package lab.meteor.core;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MPrimitiveType implements MType {
+public class MPrimitiveType implements MDataType {
 
-//	private static final String primitiveTypePrefix = "#";
+	private static final String primitiveTypePrefix = "";
 	
-	private static Map<String, MPrimitiveType> types = new HashMap<String, MPrimitiveType>();
+	private static final Map<String, MPrimitiveType> types = new HashMap<String, MPrimitiveType>();
 	
 	public static final MPrimitiveType Any = new MPrimitiveType(MNativeDataType.Any);
 	public static final MPrimitiveType Number = new MPrimitiveType(MNativeDataType.Number);
@@ -38,16 +38,20 @@ public class MPrimitiveType implements MType {
 
 	@Override
 	public String getTypeIdentifier() {
-		return this.nType.toString();
+		return this.nType.toString().toLowerCase();
 	}
 	
 	public static MPrimitiveType getPrimitiveType(String identifier) {
 		return types.get(identifier);
 	}
 	
+	public static boolean isPrimitiveTypeIdentifier(String identifier) {
+		return types.containsKey(identifier);
+	}
+	
 	@Override
 	public String toString() {
-		return "__" + this.nType.toString().toLowerCase();
+		return primitiveTypePrefix + this.nType.toString().toLowerCase();
 	}
 
 }

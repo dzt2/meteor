@@ -10,6 +10,11 @@ import lab.meteor.core.MCollection.Factory;
 import lab.meteor.core.MDBAdapter.DBInfo;
 import lab.meteor.core.MReference.Multiplicity;
 
+/**
+ * The object.
+ * @author Qiang
+ *
+ */
 public class MObject extends MElement implements MNotifiable {
 
 	private Map<Long, Object> values = null;
@@ -68,7 +73,7 @@ public class MObject extends MElement implements MNotifiable {
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
-		MField field = cls.getField(name);
+		MProperty field = cls.getProperty(name);
 		if (field == null)
 			return null;
 		switch (field.getElementType()) {
@@ -91,13 +96,13 @@ public class MObject extends MElement implements MNotifiable {
 		boolean changeFlag = false;
 		Object o = this.getValues().get(atb.id);
 		if (o != null) {
-			if (!MUtility.checkType(atb.getType(), o)) {
+			if (!MUtility.checkType(atb.getDataType(), o)) {
 				this.getValues().remove(atb.id);
 				changeFlag = true;
 			}
 		}
 		
-		MNativeDataType nType = atb.getType().getNativeDataType();
+		MNativeDataType nType = atb.getDataType().getNativeDataType();
 		switch (nType) {
 		case List:
 			if (o == null) {
@@ -164,7 +169,7 @@ public class MObject extends MElement implements MNotifiable {
 		MAttribute atb = cls.getAttribute(name);
 		if (atb == null)
 			throw new MException(MException.Reason.ATTRIBUTE_NOT_FOUND);
-		if (!MUtility.checkType(atb.getType(), obj))
+		if (!MUtility.checkType(atb.getDataType(), obj))
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		
 		this.setAttribute(atb, obj);
@@ -404,7 +409,7 @@ public class MObject extends MElement implements MNotifiable {
 			// if attribute
 			if (ele.getElementType() == MElementType.Attribute) {
 				MAttribute atb = (MAttribute) ele;
-				if (!MUtility.checkType(atb.getType(), value)) {
+				if (!MUtility.checkType(atb.getDataType(), value)) {
 					changeFlag = true;
 				}
 				fromDBObject(this, value, id);

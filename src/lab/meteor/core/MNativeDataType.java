@@ -41,16 +41,31 @@ public enum MNativeDataType {
 	 */
 	Code,
 	/**
-	 * The attribute reference, such as people[name]
+	 * The attribute reference, such as people.name
 	 */
 	Ref,
+	/**
+	 * The integer, 32-bit data.
+	 */
 	Integer,
+	/**
+	 * The big integer, 64-bit data.
+	 */
 	Int64,
-	
+	/**
+	 * The list, a collection type.
+	 */
 	List,
-	Dictionary,
+	/**
+	 * The set, a collection type.
+	 */
 	Set,
-	
-//	Object,
+	/**
+	 * The dictionary, a collection type.
+	 */
+	Dictionary,
+	/**
+	 * The enumeration.
+	 */
 	Enum
 }

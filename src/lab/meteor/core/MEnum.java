@@ -13,7 +13,7 @@ import lab.meteor.core.MDBAdapter.DBInfo;
  * @author Qiang
  *
  */
-public class MEnum extends MElement implements MType {
+public class MEnum extends MElement implements MDataType {
 
 	private MPackage parent;
 	

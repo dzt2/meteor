@@ -2,10 +2,8 @@ package lab.meteor.core;
 
 import lab.meteor.core.MDBAdapter.DBInfo;
 
-public class MReference extends MElement implements MField {
-	
-	private MClass clazz;
-	private String name;
+public class MReference extends MProperty {
+
 	private MClass reference;
 	private Multiplicity multi;
 	
@@ -17,21 +15,10 @@ public class MReference extends MElement implements MField {
 	}
 	
 	public MReference(MClass cls, String name, MClass reference, Multiplicity multi) {
-		super(MElementType.Reference);
+		super(cls, name, MElementType.Reference);
 		
-		if (cls == null || cls.isDeleted())
-			throw new MException(MException.Reason.ELEMENT_MISSED);
-		if (reference == null || reference.isDeleted())
-			throw new MException(MException.Reason.ELEMENT_MISSED);
-		if (cls.hasField(name))
-			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
-		
-		this.initialize();
-		this.clazz = cls;
-		this.name = name;
 		this.reference = reference;
 		this.multi = multi;
-		this.clazz.addReference(this);
 		this.reference.addUtilizer(this);
 		
 		MDatabase.getDB().createElement(this);
@@ -47,33 +34,13 @@ public class MReference extends MElement implements MField {
 	
 	@Override
 	public void delete() throws MException {
-		// class
-		this.clazz.removeReference(this);
 		this.reference.removeUtilizer(this);
 		super.delete();
 	}
 	
 	@Override
-	public MClass getOwner() {
-		return this.clazz;
-	}
-	
-	@Override
-	public String getName() {
-		return this.name;
-	}
-	
-	@Override
-	public void setName(String name) {
-		if (name.equals(this.name))
-			return;
-		if (this.clazz.hasField(name))
-			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
-		
-		this.clazz.removeReference(this);
-		this.name = name;
-		this.clazz.addReference(this);
-		this.setChanged();
+	public MType getType() {
+		return getReference();
 	}
 	
 	public MClass getReference() {
@@ -136,7 +103,7 @@ public class MReference extends MElement implements MField {
 		this.opposite = MDatabase.getDB().getReference(refDBInfo.opposite_id);
 		
 		// link
-		this.clazz.addReference(this);
+		this.clazz.addProperty(this);
 		this.reference.addUtilizer(this);
 	}
 

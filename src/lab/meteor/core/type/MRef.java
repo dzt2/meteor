@@ -2,8 +2,7 @@ package lab.meteor.core.type;
 
 import lab.meteor.core.MAttribute;
 import lab.meteor.core.MElementPointer;
-import lab.meteor.core.MException;
-import lab.meteor.core.MField;
+import lab.meteor.core.MProperty;
 import lab.meteor.core.MObject;
 import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MReference;
@@ -33,8 +32,8 @@ public class MRef {
 		return (MObject) this.target.getElement();
 	}
 	
-	public MField getField() {
-		return (MField) this.target.getElement();
+	public MProperty getField() {
+		return (MProperty) this.target.getElement();
 	}
 
 }

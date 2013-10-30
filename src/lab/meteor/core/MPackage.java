@@ -219,6 +219,20 @@ public class MPackage extends MElement {
 	}
 	
 	/**
+	 * Get the child (package, class or enum) with a specific name.
+	 * @param name The name
+	 * @return package, class or enum
+	 */
+	public MElement getChild(String name) {
+		MElement child = this.getPackages().get(name);
+		if (child == null)
+			child = this.getClasses().get(name);
+		if (child == null)
+			child = this.getEnumes().get(name);
+		return child;
+	}
+	
+	/**
 	 * Get the class in this package with a specific name.
 	 * @param name The class's name
 	 * @return The class

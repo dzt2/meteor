@@ -126,7 +126,7 @@ public class MUtility {
 	 * @param value the value to be checked.
 	 * @return true if matches
 	 */
-	public static boolean checkType(MType type, Object value) {
+	public static boolean checkType(MDataType type, Object value) {
 		if (value == null)
 			return true;
 		MNativeDataType nType = type.getNativeDataType();

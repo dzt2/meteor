@@ -9,10 +9,15 @@ import lab.meteor.core.MAttribute;
 import lab.meteor.core.MClass;
 import lab.meteor.core.MDatabase;
 import lab.meteor.core.MElement;
+import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MEnum;
+import lab.meteor.core.MProperty;
 import lab.meteor.core.MPackage;
+import lab.meteor.core.MPrimitiveType;
 import lab.meteor.core.MReference;
+import lab.meteor.core.MReference.Multiplicity;
 import lab.meteor.core.MSymbol;
+import lab.meteor.core.MDataType;
 
 public class MShell {
 	
@@ -53,12 +58,20 @@ public class MShell {
 	}
 	
 	private MElement findElement(String identifier) {
-		// TODO
-		return null;
+		if (identifier == null)
+			return null;
+		if (identifier.contains("::"))
+			return MScript.getElement(identifier);
+		else
+			return MScript.getElement(identifier, currentPkg);
 	}
 	
 	private static void printError(int loc, String message) {
 		System.out.println("error at " + loc + ":" + message);
+	}
+	
+	private static void printError(MShellException e) {
+		System.out.println(e.getMessage());
 	}
 	
 	/**
@@ -136,12 +149,24 @@ public class MShell {
 					if (next != null) {
 						if (next.type == TokenType.As) {
 							Token supName = tokenizer.next();
-							// TODO
-							System.out.println("class " + className.content + " as " + supName.content);
+							// create class People as Animal
+							try {
+								createClass(className.content, supName.content);
+								commandFinish(command, "succeeded.");
+							} catch (MShellException e) {
+								printError(e);
+								commandFinish(command, e.getMessage());
+							}
 						} else { printError(tokenizer.loc, "keyword \'as\' is required."); return; }
 					} else {
-						// TODO
-						System.out.println("class " + className.content);
+						// create class People
+						try {
+							createClass(className.content, null);
+							commandFinish(command, "succeeded.");
+						} catch (MShellException e) {
+							printError(e);
+							commandFinish(command, e.getMessage());
+						}
 					}
 					break;
 				}
@@ -152,8 +177,14 @@ public class MShell {
 					{ printError(tokenizer.loc, "enum name is required."); return; }
 					if (tokenizer.next() != null)
 					{ printError(tokenizer.loc, "unknown part."); return; }
-					// TODO
-					System.out.println("enum " + enumName.content);
+					// create enum Gender
+					try {
+						createEnum(enumName.content);
+						commandFinish(command, "succeeded.");
+					} catch (MShellException e) {
+						printError(e);
+						commandFinish(command, e.getMessage());
+					}
 					break;
 				}
 			case 3:
@@ -163,8 +194,14 @@ public class MShell {
 					{ printError(tokenizer.loc, "package name is required."); return; }
 					if (tokenizer.next() != null)
 					{ printError(tokenizer.loc, "unknown part."); return; }
-					// TODO
-					System.out.println("package " + pkgName.content);
+					// create package processes
+					try {
+						createPackage(pkgName.content);
+						commandFinish(command, "succeeded.");
+					} catch (MShellException e) {
+						printError(e);
+						commandFinish(command, e.getMessage());
+					}
 					break;
 				}
 			case 4:
@@ -190,13 +227,28 @@ public class MShell {
 								else
 								{ printError(tokenizer.loc, "unknown part."); return; }
 							}
-							// TODO attribute / reference
+							// attribute / reference
+							// create People.name : string
+							try {
+								createField(childName.content, parentName.content, typeName.content, multiple);
+								commandFinish(command, "succeeded.");
+							} catch (MShellException e) {
+								printError(e);
+								commandFinish(command, e.getMessage());
+							}
 							System.out.println(parentName.content + "." + childName.content + " : " +
 									typeName.content + (multiple ? "*" : ""));
 						} else { printError(tokenizer.loc, "unknown part."); return; }
 					} else {
-						// TODO symbol
-						System.out.println(parentName.content + "." + childName.content);
+						// symbol
+						// create Gender.Male
+						try {
+							createSymbol(childName.content, parentName.content);
+							commandFinish(command, "succeeded.");
+						} catch (MShellException e) {
+							printError(e);
+							commandFinish(command, e.getMessage());
+						}
 					}
 					break;
 				}
@@ -401,6 +453,114 @@ public class MShell {
 			builder.append(name).append(" - Enum\n");
 		}
 		return builder.toString();
+	}
+	
+	private MClass createClass(String name, String superclass) throws MShellException {
+		MClass supcls = null;
+		if (superclass != null) {
+			MElement e = findElement(superclass);
+			if (e == null || e.getElementType() != MElementType.Class)
+				throw new MShellException("superclass is not found.");
+			supcls = (MClass) e;
+		}
+		if (name == null)
+			throw new MShellException("invalid name.");
+		if (name.contains("::"))
+			throw new MShellException("full name has not been supported when creating class.");
+		if (currentPkg.hasChild(name))
+			throw new MShellException("the name has been used in current package.");
+		return new MClass(name, supcls, currentPkg);
+	}
+	
+	private MEnum createEnum(String name) throws MShellException {
+		if (name == null)
+			throw new MShellException("invalid name.");
+		if (name.contains("::"))
+			throw new MShellException("full name has not been supported when creating enum.");
+		if (currentPkg.hasChild(name))
+			throw new MShellException("the name has been used in current package.");
+		return new MEnum(name, currentPkg);
+	}
+	
+	private MPackage createPackage(String name) throws MShellException {
+		if (name == null)
+			throw new MShellException("invalid name.");
+		if (name.contains("::"))
+			throw new MShellException("full name has not been supported when creating package.");
+		if (currentPkg.hasChild(name))
+			throw new MShellException("the name has been used in current package.");
+		return new MPackage(name, currentPkg);
+	}
+	
+	private MProperty createField(String name, String parentName, String typeName, boolean multiple) throws MShellException {
+		if (name == null || parentName == null || typeName == null)
+			throw new MShellException("invalid name.");
+		MClass parent = null;
+		MElement e = findElement(parentName);
+		if (e == null || e.getElementType() != MElementType.Class)
+			throw new MShellException("class is not found.");
+		parent = (MClass) e;
+		if (parent.hasField(name))
+			throw new MShellException("the name has been used in the class.");
+		if (MPrimitiveType.isPrimitiveTypeIdentifier(typeName)) {
+			MDataType type = MPrimitiveType.getPrimitiveType(typeName);
+			return new MAttribute(parent, name, type);
+		} else {
+			e = findElement(typeName);
+			if (e == null || e.getElementType() != MElementType.Class || 
+				e.getElementType() != MElementType.Enum)
+				throw new MShellException("classifier of field is not found.");
+			if (e.getElementType() == MElementType.Enum) {
+				MDataType type = (MEnum) e;
+				return new MAttribute(parent, name, type);
+			} else {
+				MClass refcls = (MClass) e;
+				Multiplicity mul = Multiplicity.One;
+				if (multiple)
+					mul = Multiplicity.Multiple;
+				return new MReference(parent, name, refcls, mul);
+			}
+		}
+	}
+	
+	private MSymbol createSymbol(String name, String parentName) throws MShellException {
+		if (name == null || parentName == null)
+			throw new MShellException("invalid name.");
+		MEnum parent = null;
+		MElement e = findElement(parentName);
+		if (e == null || e.getElementType() != MElementType.Enum)
+			throw new MShellException("enum is not found.");
+		parent = (MEnum) e;
+		if (parent.hasSymbol(name))
+			throw new MShellException("the name has been used in the enum.");
+		return new MSymbol(parent, name);
+	}
+	
+	private void deleteElement(String name) throws MShellException {
+		MElement e = findElement(name);
+		if (e == null)
+			throw new MShellException("element is not found.");
+		e.delete();
+	}
+	
+	private void deleteChildElement(String name, String parentName) throws MShellException {
+		MElement e = findElement(name);
+		if (e == null)
+			throw new MShellException("element is not found.");
+		if (e.getElementType() != MElementType.Class || e.getElementType() != MElementType.Enum) {
+			throw new MShellException("class or enum is not found.");
+		}
+		if (e.getElementType() == MElementType.Class) {
+			
+		}
+	}
+	
+	static class MShellException extends Exception {
+		public MShellException(String message) {
+			super(message);
+		}
+		private static final long serialVersionUID = -770231784709755511L;
+		
 	}
 	
 	static class Tokenizer {

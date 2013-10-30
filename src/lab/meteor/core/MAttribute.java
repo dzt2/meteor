@@ -7,24 +7,14 @@ import lab.meteor.core.MDBAdapter.DBInfo;
  * @author Qiang
  * @see MPrimitiveType
  * @see MEnum
- * @see MType
+ * @see MDataType
  */
-public class MAttribute extends MElement implements MField {
-
-	/**
-	 * Attribute's name.
-	 */
-	private String name;
+public class MAttribute extends MProperty {
 	
 	/**
 	 * Attribute's type.
 	 */
-	private MType type;
-
-	/**
-	 * Attribute's owner.
-	 */
-	private MClass clazz;
+	private MDataType type;
 	
 	/* 
 	 * ********************************
@@ -38,21 +28,10 @@ public class MAttribute extends MElement implements MField {
 	 * @param name the name of attribute.
 	 * @param type the type of attribute, MType's instance.
 	 */
-	public MAttribute(MClass clazz, String name, MType type) {
-		super(MElementType.Attribute);
+	public MAttribute(MClass cls, String name, MDataType type) {
+		super(cls, name, MElementType.Attribute);
 		
-		if (clazz == null)
-			throw new MException(MException.Reason.NULL_ELEMENT);
-		if (clazz.isDeleted())
-			throw new MException(MException.Reason.ELEMENT_MISSED);
-		if (clazz.hasField(name))
-			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
-		
-		this.initialize();
-		this.clazz = clazz;
-		this.name = name;
 		this.type = type;
-		this.clazz.addAttribute(this);
 		if (this.type instanceof MEnum) {
 			((MEnum) this.type).addUtilizer(this);
 		}
@@ -77,7 +56,6 @@ public class MAttribute extends MElement implements MField {
 	@Override
 	public void delete() throws MException {
 		// class
-		this.clazz.removeAtttribute(this);
 		if (this.type instanceof MEnum) {
 			((MEnum) this.type).removeUtilizer(this);
 		}
@@ -89,36 +67,12 @@ public class MAttribute extends MElement implements MField {
 	 *           PROPERTIES
 	 * ********************************
 	 */
-
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	/**
-	 * Set the name of attribute. It's notable that changing the name of attribute
-	 * does not disturb the instantiated objects of the class owning this attribute.
-	 * The name has to be unique, otherwise an exception will be thrown.
-	 * @param name
-	 */
-	@Override
-	public void setName(String name) {
-		if (name.equals(this.name))
-			return;
-		if (this.clazz.hasField(name))
-			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
-		
-		this.clazz.removeAtttribute(this);
-		this.name = name;
-		this.clazz.addAttribute(this);
-		this.setChanged();
-	}
 	
 	/**
 	 * Get the type of attribute.
 	 * @return type.
 	 */
-	public MType getType() {
+	public MDataType getDataType() {
 		return type;
 	}
 	
@@ -126,7 +80,7 @@ public class MAttribute extends MElement implements MField {
 	 * Set the type of attribute.
 	 * @param type a MType instance, can be MPrimitiveType or MEnum.
 	 */
-	public void setType(MType type) {
+	public void setDataType(MDataType type) {
 		if (type == this.type)
 			return;
 		
@@ -139,10 +93,10 @@ public class MAttribute extends MElement implements MField {
 		}
 		this.setChanged();
 	}
-
+	
 	@Override
-	public MClass getOwner() {
-		return clazz;
+	public MType getType() {
+		return getDataType();
 	}
 	
 	/*
@@ -164,7 +118,7 @@ public class MAttribute extends MElement implements MField {
 		}
 		
 		// link
-		this.clazz.addAttribute(this);
+		this.clazz.addProperty(this);
 		if (this.type instanceof MEnum) {
 			((MEnum) this.type).addUtilizer(this);
 		}

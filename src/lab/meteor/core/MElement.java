@@ -87,25 +87,37 @@ public abstract class MElement {
 	}
 	
 	/**
-	 * The type of element.
+	 * The ID of null element.
 	 */
-	private MElementType type;
-	
+	public static final long NULL_ID = 0x0000000000000000L;
+
+	/**
+	 * The prefix for presenting the element's ID.
+	 */
+	public static final char ID_PREFIX = '@';
+
+	/**
+	 * Get the ID of an element.
+	 * @param element An element or <code>null</code>.
+	 * @return <code>NULL_ID</code> if <code>null</code>, otherwise <code>MElement.getID()</code>
+	 */
+	public static long getElementID(MElement element) {
+		if (element == null)
+			return MElement.NULL_ID;
+		else
+			return element.id;
+	}
+
 	/**
 	 * The identifier.
 	 */
 	protected long id;
 	
 	/**
-	 * The ID of null element.
+	 * The type of element.
 	 */
-	public static final long NULL_ID = 0x0000000000000000L;
-	
-	/**
-	 * The prefix for presenting the element's ID.
-	 */
-	public static final char ID_PREFIX = '@';
-	
+	private MElementType type;
+
 	/**
 	 * A state of element.
 	 */
@@ -114,7 +126,7 @@ public abstract class MElement {
 	/**
 	 * A state of element.
 	 */
-	private boolean changed = false;
+	private int changed_flag = 0;
 	
 	/**
 	 * A state of element.
@@ -147,7 +159,7 @@ public abstract class MElement {
 	protected void initialize() {
 		this.id = MDatabase.getDB().getNewID();
 		this.loaded = true;
-		this.changed = false;
+		this.changed_flag = 0;
 		MDatabase.getDB().addElement(this);
 	}
 	
@@ -155,10 +167,26 @@ public abstract class MElement {
 	 * If the element is loaded from database.
 	 * @return
 	 */
-	boolean isLoaded() {
+	public boolean isLoaded() {
 		return this.loaded;
 	}
 	
+	/**
+	 * If the element is changed.
+	 * @return <code>true</code> if changed.
+	 */
+	public boolean isChanged() {
+		return changed_flag == 0;
+	}
+
+	/**
+	 * If the element is deleted.
+	 * @return <code>true</code> if deleted.
+	 */
+	public boolean isDeleted() {
+		return deleted;
+	}
+
 	/**
 	 * The identifier of an element. It's a unique value in type of long.
 	 * @return The ID.
@@ -176,30 +204,83 @@ public abstract class MElement {
 	}
 	
 	/**
-	 * Load the content of element from database.
+	 * Load all attributes of element from database. If the element has been loaded once,
+	 * there is no effect for calling this method.
 	 */
 	public void load() {
-		if (deleted)
-			return;
-		if (this.id == NULL_ID)
-			return;
-		MDatabase.getDB().loadElement(this);
-		this.changed = false;
-		this.loaded = true;
+		if (!loaded)
+			forceLoad();
 	}
 	
 	/**
-	 * Save the content of element to database.
+	 * 
+	 * @param flag The flag that which attributes is going to be loaded.
 	 */
-	public void save() {
+	public void load(int flag) {
+		if (!loaded)
+			forceLoad(flag);
+	}
+	
+	/**
+	 * Forcibly load the content of element from database.
+	 */
+	public void forceLoad() {
+		forceLoad(FULL_ATTRIB_FLAG);
+		changed_flag = 0;
+		loaded = true;
+	}
+	
+	/**
+	 * Forcibly load the specific attributes of element from database according to flag.
+	 * @param flag The flag that which attributes is going to be loaded.
+	 */
+	public void forceLoad(int flag) {
 		if (deleted)
 			return;
-		if (!loaded || !changed)
+		if (id == NULL_ID)
 			return;
-		if (this.id == NULL_ID)
+		MDatabase.getDB().loadElement(this, flag);
+	}
+	
+	/**
+	 * Save the changed attributes of element to database. If there is no change, there 
+	 * is no effect for calling this method.
+	 */
+	public void save() {
+		if (isChanged())
+			forceSave(changed_flag);
+	}
+	
+	/**
+	 * Save the specific attributes of element to database according flag. If the flagged
+	 * attribute has been changed, the attribute will be saved.
+	 * @param flag The flag that which attributes is going to be saved.
+	 */
+	public void save(int flag) {
+		if ((changed_flag & flag) != 0)
+			forceSave(changed_flag & flag);
+	}
+	
+	/**
+	 * Forcibly save all attributes of element to database.
+	 */
+	public void forceSave() {
+		forceSave(FULL_ATTRIB_FLAG);
+		changed_flag = 0;
+	}
+	
+	/**
+	 * Forcibly save specific attributes of element to database according to the flag.
+	 * @param flag The flag that which attributes is going to be saved.
+	 */
+	public void forceSave(int flag) {
+		if (deleted)
 			return;
-		MDatabase.getDB().saveElement(this);
-		this.changed = false;
+		if (id == NULL_ID)
+			return;
+		if (!loaded)
+			throw new MException(MException.Reason.SAVE_FORBIDEN_BEFORE_LOAD);
+		MDatabase.getDB().saveElement(this, flag);
 	}
 	
 	/**
@@ -208,47 +289,87 @@ public abstract class MElement {
 	public void delete() {
 		if (deleted)
 			return;
-		if (this.id == NULL_ID)
+		if (id == NULL_ID)
 			return;
 		MDatabase.getDB().removeElement(this);
 		MDatabase.getDB().deleteElement(this);
-		this.deleted = true;
-		this.changed = false;
+		
+		Iterator<MTag> it = tagIterator();
+		while (it.hasNext()) {
+			MTag tag = it.next();
+			removeTag(tag);
+			it.remove();
+		}
+		deleted = true;
+		changed_flag = 0;
 	}
 	
 	/**
-	 * If the element is deleted.
-	 * @return <code>true</code> if deleted.
+	 * Set element changed. It's necessary to call this method manually after making a
+	 * modification of element content.
 	 */
-	public boolean isDeleted() {
-		return this.deleted;
-	}
-	
-	/**
-	 * If the element is changed.
-	 * @return <code>true</code> if changed.
-	 */
-	public boolean isChanged() {
-		return this.changed;
-	}
-	
-	/**
-	 * Set element changed.
-	 */
-	void setChanged() {
-		this.changed = true;
+	protected void setChanged(int flag) {
+		changed_flag |= flag;
 	}
 
 	/**
-	 * Get the ID of an element.
-	 * @param element An element or <code>null</code>.
-	 * @return <code>NULL_ID</code> if <code>null</code>, otherwise <code>MElement.getID()</code>
+	 * An iterator for iterate the tags.
+	 * @return
 	 */
-	public static long getElementID(MElement element) {
-		if (element == null)
-			return MElement.NULL_ID;
-		else
-			return element.id;
+	public Iterator<MTag> tagIterator() {
+		return new TagItr();
+	}
+	
+	/**
+	 * An iterator for iterate the tags.
+	 * @author Qiang
+	 *
+	 */
+	private class TagItr implements Iterator<MTag> {
+		private final Iterator<Map.Entry<String, Set<MElementPointer>>> mapit;
+		private Iterator<MElementPointer> setit;
+		private MElementPointer current;
+		
+		TagItr() {
+			mapit = MElement.this.tags.entrySet().iterator();
+			setit = null;
+		}
+		
+		@Override
+		public boolean hasNext() {
+			if (setit == null || !setit.hasNext()) {
+				if (mapit.hasNext())
+					setit = mapit.next().getValue().iterator();
+				else
+					setit = null;
+			}
+			if (setit != null)
+				return setit.hasNext();
+			return false;
+		}
+
+		@Override
+		public MTag next() {
+			if (setit == null || !setit.hasNext()) {
+				if (mapit.hasNext())
+					setit = mapit.next().getValue().iterator();
+				else
+					setit = null;
+			}
+			if (setit != null) {
+				current = setit.next();
+				return (MTag) current.getElement();
+			}
+			current = null;
+			return null;
+		}
+
+		@Override
+		public void remove() {
+			setit.remove();
+			current.getElement().delete();
+		}
+		
 	}
 	
 	/**
@@ -267,9 +388,9 @@ public abstract class MElement {
 	private boolean changed_tags = false;
 	
 	/**
-	 * Load tags from database.
+	 * Force to load tags from database.
 	 */
-	public void loadTags() {
+	public void forceLoadTags() {
 		if (deleted)
 			return;
 		if (this.id == NULL_ID)
@@ -280,43 +401,33 @@ public abstract class MElement {
 	}
 	
 	/**
-	 * Save tags to database.
+	 * Load tags from database. If it has been loaded once, there is no effect
+	 * for calling this method.
 	 */
-	public void saveTags() {
+	public void loadTags() {
+		if (!loaded_tags)
+			forceLoadTags();
+	}
+	
+	/**
+	 * Force to save tags to database.
+	 */
+	public void forceSaveTags() {
 		if (deleted)
 			return;
 		if (this.id == NULL_ID)
-			return;
-		if (!loaded_tags || !changed_tags)
 			return;
 		MDatabase.getDB().saveElementTags(this);
 		this.changed_tags = false;
 	}
 	
 	/**
-	 * Add a tag of element.
-	 * @param name Tag's name.
-	 * @param id Tag's ID.
+	 * Save tags to database. If tags of element have not been loaded or there
+	 * is no change, there is no effect for calling this method.
 	 */
-	void addTag(String name, long id) {
-		Set<MElementPointer> tags = this.getTags().get(name);
-		if (tags == null) {
-			tags = new TreeSet<MElementPointer>();
-			this.getTags().put(name, tags);
-		}
-		tags.add(new MElementPointer(id, MElementType.Tag));
-	}
-	
-	/**
-	 * Remove a tag of element.
-	 * @param name Tag's name.
-	 * @param id Tag's ID.
-	 */
-	void removeTag(String name, long id) {
-		Set<MElementPointer> tags = this.getTags().get(name);
-		if (tags == null)
-			return;
-		tags.remove(new MElementPointer(id, MElementType.Tag));
+	public void saveTags() {
+		if (loaded_tags && changed_tags)
+			forceSaveTags();
 	}
 	
 	/**
@@ -332,7 +443,7 @@ public abstract class MElement {
 			this.loadTags();
 		
 		addTag(tag.getName(), tag.getID());
-		tag.addTarget(this.id, this.type);
+		tag.addElement(this);
 		this.changed_tags = true;
 	}
 	
@@ -349,7 +460,7 @@ public abstract class MElement {
 			this.loadTags();
 		
 		removeTag(tag.getName(), tag.getID());
-		tag.removeTarget(this.id, this.type);
+		tag.removeElement(this);
 		this.changed_tags = true;
 	}
 	
@@ -371,8 +482,9 @@ public abstract class MElement {
 		for (MElementPointer tag_pt : tags) {
 			MTag tag = (MTag) tag_pt.getElement();
 			if (tag != null)
-				tag.removeTarget(this.id, this.type);
+				tag.removeElement(this);
 		}
+		tags.clear();
 		this.getTags().remove(name);
 		this.changed_tags = true;
 	}
@@ -405,7 +517,7 @@ public abstract class MElement {
 	 * Get all tags' names.
 	 * @return Tags' names.
 	 */
-	public Set<String> getTagNames() {
+	public String[] getTagNames() {
 		if (deleted)
 			return null;
 		if (this.id == NULL_ID)
@@ -413,7 +525,7 @@ public abstract class MElement {
 		if (!loaded_tags)
 			this.loadTags();
 		
-		return new TreeSet<String>(this.getTags().keySet());
+		return this.getTags().keySet().toArray(new String[0]);
 	}
 	
 	/**
@@ -421,7 +533,7 @@ public abstract class MElement {
 	 * @param name The name.
 	 * @return Tags with specific name.
 	 */
-	public Set<MTag> getTags(String name) {
+	public MTag[] getTags(String name) {
 		if (deleted)
 			return null;
 		if (this.id == NULL_ID)
@@ -437,7 +549,7 @@ public abstract class MElement {
 			MTag tag = (MTag) pt.getElement();
 			tags.add(tag);
 		}
-		return tags;
+		return tags.toArray(new MTag[0]);
 	}
 
 	/**
@@ -449,16 +561,43 @@ public abstract class MElement {
 			this.tags = new TreeMap<String, Set<MElementPointer>>();
 		return this.tags;
 	}
-	
+
+	/**
+	 * Add a tag of element.
+	 * @param name Tag's name.
+	 * @param id Tag's ID.
+	 */
+	void addTag(String name, long id) {
+		Set<MElementPointer> tags = this.getTags().get(name);
+		if (tags == null) {
+			tags = new TreeSet<MElementPointer>();
+			this.getTags().put(name, tags);
+		}
+		tags.add(new MElementPointer(id, MElementType.Tag));
+	}
+
+	/**
+	 * Remove a tag of element.
+	 * @param name Tag's name.
+	 * @param id Tag's ID.
+	 */
+	void removeTag(String name, long id) {
+		Set<MElementPointer> tags = this.getTags().get(name);
+		if (tags == null)
+			return;
+		tags.remove(new MElementPointer(id, MElementType.Tag));
+	}
+
 	/**
 	 * Load tags from tag database information.
 	 * @param dbInfo
 	 */
-	void loadTagsFromDBInfo(MDBAdapter.ElementTagDBInfo dbInfo) {
-		for (Long tag_id : dbInfo.tags_id) {
+	void loadTagsFromDBInfo(MDBAdapter.IDList idList) {
+		for (Long tag_id : idList) {
 			MTag tag = MDatabase.getDB().getTag(tag_id);
 			if (tag == null)
 				continue;
+//			tag.loadBase();
 			addTag(tag.getName(), tag_id);
 		}
 	}
@@ -467,12 +606,11 @@ public abstract class MElement {
 	 * Save tags to tag database information.
 	 * @param dbInfo
 	 */
-	void saveTagsFromDBInfo(MDBAdapter.ElementTagDBInfo dbInfo) {
-		dbInfo.id = this.id;
+	void saveTagsToDBInfo(MDBAdapter.IDList idList) {
 		if (this.tags != null) {
 			for (Set<MElementPointer> set : this.tags.values()) {
 				for (MElementPointer pt : set) {
-					dbInfo.tags_id.add(pt.getID());
+					idList.add(pt.getID());
 				}
 			}
 		}
@@ -490,6 +628,9 @@ public abstract class MElement {
 	 */
 	abstract void saveToDBInfo(DBInfo dbInfo);
 	
+	/**
+	 * An element can equal to its pointer.
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof MElement) {
@@ -499,4 +640,6 @@ public abstract class MElement {
 		}
 		return false;
 	}
+	
+	public static final int FULL_ATTRIB_FLAG = 0xFFFFFFFF;
 }

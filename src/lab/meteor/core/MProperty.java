@@ -25,7 +25,6 @@ public abstract class MProperty extends MElement {
 		this.initialize();
 		this.clazz = cls;
 		this.name = name;
-		this.clazz.addProperty(this);
 	}
 	
 	public MProperty(long id, MElementType type) {
@@ -55,7 +54,7 @@ public abstract class MProperty extends MElement {
 		this.clazz.removeProperty(this);
 		this.name = name;
 		this.clazz.addProperty(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
 	/**
@@ -66,12 +65,8 @@ public abstract class MProperty extends MElement {
 		return clazz;
 	}
 	
-	@Override
-	public void delete() {
-		// class
-		this.clazz.removeProperty(this);
-		super.delete();
-	}
-	
 	public abstract MType getType();
+	
+	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
+	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 }

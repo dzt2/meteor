@@ -19,7 +19,7 @@ public class MReference extends MProperty {
 		
 		this.reference = reference;
 		this.multi = multi;
-		this.reference.addUtilizer(this);
+		link();
 		
 		MDatabase.getDB().createElement(this);
 	}
@@ -34,7 +34,7 @@ public class MReference extends MProperty {
 	
 	@Override
 	public void delete() throws MException {
-		this.reference.removeUtilizer(this);
+		unlink();
 		super.delete();
 	}
 	
@@ -53,6 +53,7 @@ public class MReference extends MProperty {
 		this.reference.removeUtilizer(this);
 		this.reference = reference;
 		this.reference.addUtilizer(this);
+		this.setChanged(ATTRIB_FLAG_REFERENCE);
 	}
 	
 	public Multiplicity getMultiplicity() {
@@ -61,7 +62,7 @@ public class MReference extends MProperty {
 	
 	public void setMultiplicity(Multiplicity multi) {
 		this.multi = multi;
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_MULTIPLICITY);
 	}
 	
 	public MReference getOpposite() {
@@ -82,9 +83,21 @@ public class MReference extends MProperty {
 		this.opposite = opposite;
 		if (this.opposite != null)
 			this.opposite.opposite = this;
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_OPPOSITE);
 		if (this.opposite != null)
-			this.opposite.setChanged();
+			this.opposite.setChanged(ATTRIB_FLAG_OPPOSITE);
+	}
+	
+	private void link() {
+		if (name != null)
+			this.clazz.addReference(this);
+		this.reference.addUtilizer(this);
+	}
+	
+	private void unlink() {
+		if (name != null)
+			this.clazz.removeReference(this);
+		this.reference.removeUtilizer(this);
 	}
 
 	/*
@@ -96,26 +109,47 @@ public class MReference extends MProperty {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ReferenceDBInfo refDBInfo = (MDBAdapter.ReferenceDBInfo) dbInfo;
-		this.name = refDBInfo.name;
-		this.clazz = MDatabase.getDB().getClass(refDBInfo.class_id);
-		this.multi = refDBInfo.multi;
-		this.reference = MDatabase.getDB().getClass(refDBInfo.reference_id);
-		this.opposite = MDatabase.getDB().getReference(refDBInfo.opposite_id);
+		// unlink
+		unlink();
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			this.name = refDBInfo.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			this.clazz = MDatabase.getDB().getClass(refDBInfo.class_id);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_MULTIPLICITY)) {
+			this.multi = refDBInfo.multi;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_REFERENCE)) {
+			this.reference = MDatabase.getDB().getClass(refDBInfo.reference_id);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_OPPOSITE)) {
+			this.opposite = MDatabase.getDB().getReference(refDBInfo.opposite_id);
+		}
 		
 		// link
-		this.clazz.addProperty(this);
-		this.reference.addUtilizer(this);
+		link();
 	}
 
 	@Override
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ReferenceDBInfo refDBInfo = (MDBAdapter.ReferenceDBInfo) dbInfo;
 		refDBInfo.id = this.id;
-		refDBInfo.name = this.name;
-		refDBInfo.class_id = MElement.getElementID(this.clazz);
-		refDBInfo.multi = this.multi;
-		refDBInfo.reference_id = MElement.getElementID(this.reference);
-		refDBInfo.opposite_id = MElement.getElementID(this.opposite);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			refDBInfo.name = this.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			refDBInfo.class_id = MElement.getElementID(this.clazz);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_MULTIPLICITY)) {
+			refDBInfo.multi = this.multi;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_REFERENCE)) {
+			refDBInfo.reference_id = MElement.getElementID(this.reference);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_OPPOSITE)) {
+			refDBInfo.opposite_id = MElement.getElementID(this.opposite);
+		}
 	}
 	
 	@Override
@@ -124,4 +158,8 @@ public class MReference extends MProperty {
 		builder.append(this.name).append(" : ").append(this.reference);
 		return builder.toString();
 	}
+	
+	public static final int ATTRIB_FLAG_REFERENCE = 0x00000001;
+	public static final int ATTRIB_FLAG_MULTIPLICITY = 0x00000002;
+	public static final int ATTRIB_FLAG_OPPOSITE = 0x00000004;
 }

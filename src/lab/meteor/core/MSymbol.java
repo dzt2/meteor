@@ -27,7 +27,7 @@ public class MSymbol extends MElement {
 		this.initialize();
 		this.envm = enm;
 		this.name = name;
-		this.envm.addSymbol(this);
+		link();
 		
 		MDatabase.getDB().createElement(this);
 	}
@@ -48,7 +48,7 @@ public class MSymbol extends MElement {
 	
 	@Override
 	public void delete() throws MException {
-		this.envm.removeSymbol(this);
+		unlink();
 		super.delete();
 	}
 	
@@ -75,30 +75,52 @@ public class MSymbol extends MElement {
 		this.envm.removeSymbol(this);
 		this.name = name;
 		this.envm.addSymbol(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_NAME);
+	}
+	
+	private void link() {
+		if (name != null)
+			this.envm.addSymbol(this);
+	}
+	
+	private void unlink() {
+		if (name != null)
+			this.envm.removeSymbol(this);
 	}
 
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.SymbolDBInfo symDBInfo = (MDBAdapter.SymbolDBInfo) dbInfo;
-		this.name = symDBInfo.name;
-		this.envm = MDatabase.getDB().getEnum(symDBInfo.enum_id);
-		
+		// unlink
+		unlink();
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			this.name = symDBInfo.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			this.envm = MDatabase.getDB().getEnum(symDBInfo.enum_id);
+		}
 		// link
-		this.envm.addSymbol(this);
+		link();
 	}
 
 	@Override
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.SymbolDBInfo symDBInfo = (MDBAdapter.SymbolDBInfo) dbInfo;
 		symDBInfo.id = this.id;
-		symDBInfo.name = this.name;
-		symDBInfo.enum_id = MElement.getElementID(this.envm);		
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			symDBInfo.name = this.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			symDBInfo.enum_id = MElement.getElementID(this.envm);		
+		}
 	}
 	
 	@Override
 	public String toString() {
 		return this.name;
 	}
+	
+	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
+	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 	
 }

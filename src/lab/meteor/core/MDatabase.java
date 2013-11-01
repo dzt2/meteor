@@ -332,7 +332,7 @@ public class MDatabase {
 	 * Load the element information from database.
 	 * @param ele The element to be loaded.
 	 */
-	protected void loadElement(MElement ele) {
+	void loadElement(MElement ele, int flag) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		if (ele == null)
@@ -342,56 +342,56 @@ public class MDatabase {
 		switch (ele.getElementType()) {
 		case Package:
 			MPackage pkg = (MPackage) ele;
-			MDBAdapter.PackageDBInfo pkgDBInfo = new MDBAdapter.PackageDBInfo();
+			MDBAdapter.PackageDBInfo pkgDBInfo = new MDBAdapter.PackageDBInfo(flag);
 			pkgDBInfo.id = pkg.id;
 			dbAdapter.loadPackage(pkgDBInfo);
 			pkg.loadFromDBInfo(pkgDBInfo);
 			break;
 		case Class:
 			MClass cls = (MClass) ele;
-			MDBAdapter.ClassDBInfo clsDBInfo = new MDBAdapter.ClassDBInfo();
+			MDBAdapter.ClassDBInfo clsDBInfo = new MDBAdapter.ClassDBInfo(flag);
 			clsDBInfo.id = cls.id;
 			dbAdapter.loadClass(clsDBInfo);
 			cls.loadFromDBInfo(clsDBInfo);
 			break;
 		case Enum:
 			MEnum enm = (MEnum) ele;
-			MDBAdapter.EnumDBInfo enmDBInfo = new MDBAdapter.EnumDBInfo();
+			MDBAdapter.EnumDBInfo enmDBInfo = new MDBAdapter.EnumDBInfo(flag);
 			enmDBInfo.id = enm.id;
 			dbAdapter.loadEnum(enmDBInfo);
 			enm.loadFromDBInfo(enmDBInfo);
 			break;
 		case Attribute:
 			MAttribute atb = (MAttribute) ele;
-			MDBAdapter.AttributeDBInfo atbDBInfo = new MDBAdapter.AttributeDBInfo();
+			MDBAdapter.AttributeDBInfo atbDBInfo = new MDBAdapter.AttributeDBInfo(flag);
 			atbDBInfo.id = atb.id;
 			dbAdapter.loadAttribute(atbDBInfo);
 			atb.loadFromDBInfo(atbDBInfo);
 			break;
 		case Symbol:
 			MSymbol sym = (MSymbol) ele;
-			MDBAdapter.SymbolDBInfo symDBInfo = new MDBAdapter.SymbolDBInfo();
+			MDBAdapter.SymbolDBInfo symDBInfo = new MDBAdapter.SymbolDBInfo(flag);
 			symDBInfo.id = sym.id;
 			dbAdapter.loadSymbol(symDBInfo);
 			sym.loadFromDBInfo(symDBInfo);
 			break;
 		case Reference:
 			MReference rol = (MReference) ele;
-			MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo();
+			MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo(flag);
 			refDBInfo.id = rol.id;
 			dbAdapter.loadReference(refDBInfo);
 			rol.loadFromDBInfo(refDBInfo);
 			break;
 		case Object:
 			MObject obj = (MObject) ele;
-			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
+			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo(flag);
 			objDBInfo.id = obj.id;
 			dbAdapter.loadObject(objDBInfo);
 			obj.loadFromDBInfo(objDBInfo);
 			break;
 		case Tag:
 			MTag tag = (MTag) ele;
-			MDBAdapter.TagDBInfo tagDBInfo = new MDBAdapter.TagDBInfo();
+			MDBAdapter.TagDBInfo tagDBInfo = new MDBAdapter.TagDBInfo(flag);
 			tagDBInfo.id = tag.id;
 			dbAdapter.loadTag(tagDBInfo);
 			tag.loadFromDBInfo(tagDBInfo);
@@ -405,7 +405,7 @@ public class MDatabase {
 	 * Save the element information from database.
 	 * @param ele The element to be saved.
 	 */
-	protected void saveElement(MElement ele) {
+	void saveElement(MElement ele, int flag) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		if (ele == null)
@@ -419,49 +419,49 @@ public class MDatabase {
 			switch (ele.getElementType()) {
 			case Package:
 				MPackage pkg = (MPackage) ele;
-				MDBAdapter.PackageDBInfo pkgDBInfo = new MDBAdapter.PackageDBInfo();
+				MDBAdapter.PackageDBInfo pkgDBInfo = new MDBAdapter.PackageDBInfo(flag);
 				pkg.saveToDBInfo(pkgDBInfo);
 				dbAdapter.updatePackage(pkgDBInfo);
 				break;
 			case Class:
 				MClass cls = (MClass) ele;
-				MDBAdapter.ClassDBInfo clsDBInfo = new MDBAdapter.ClassDBInfo();
+				MDBAdapter.ClassDBInfo clsDBInfo = new MDBAdapter.ClassDBInfo(flag);
 				cls.saveToDBInfo(clsDBInfo);
 				dbAdapter.updateClass(clsDBInfo);
 				break;
 			case Enum:
 				MEnum enm = (MEnum) ele;
-				MDBAdapter.EnumDBInfo enmDBInfo = new MDBAdapter.EnumDBInfo();
+				MDBAdapter.EnumDBInfo enmDBInfo = new MDBAdapter.EnumDBInfo(flag);
 				enm.saveToDBInfo(enmDBInfo);
 				dbAdapter.updateEnum(enmDBInfo);
 				break;
 			case Attribute:
 				MAttribute atb = (MAttribute) ele;
-				MDBAdapter.AttributeDBInfo atbDBInfo = new MDBAdapter.AttributeDBInfo();
+				MDBAdapter.AttributeDBInfo atbDBInfo = new MDBAdapter.AttributeDBInfo(flag);
 				atb.saveToDBInfo(atbDBInfo);
 				dbAdapter.updateAttribute(atbDBInfo);
 				break;
 			case Symbol:
 				MSymbol sym = (MSymbol) ele;
-				MDBAdapter.SymbolDBInfo symDBInfo = new MDBAdapter.SymbolDBInfo();
+				MDBAdapter.SymbolDBInfo symDBInfo = new MDBAdapter.SymbolDBInfo(flag);
 				sym.saveToDBInfo(symDBInfo);
 				dbAdapter.updateSymbol(symDBInfo);
 				break;
 			case Reference:
 				MReference rol = (MReference) ele;
-				MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo();
+				MDBAdapter.ReferenceDBInfo refDBInfo = new MDBAdapter.ReferenceDBInfo(flag);
 				rol.saveToDBInfo(refDBInfo);
 				dbAdapter.updateReference(refDBInfo);
 				break;
 			case Object:
 				MObject obj = (MObject) ele;
-				MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
+				MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo(flag);
 				obj.saveToDBInfo(objDBInfo);
 				dbAdapter.updateObject(objDBInfo);
 				break;
 			case Tag:
 				MTag tag = (MTag) ele;
-				MDBAdapter.TagDBInfo tagDBInfo = new MDBAdapter.TagDBInfo();
+				MDBAdapter.TagDBInfo tagDBInfo = new MDBAdapter.TagDBInfo(flag);
 				tag.saveToDBInfo(tagDBInfo);
 				dbAdapter.updateTag(tagDBInfo);
 				break;
@@ -475,7 +475,7 @@ public class MDatabase {
 	 * Create a new element and save it into database.
 	 * @param ele The element to be created.
 	 */
-	protected void createElement(MElement ele) {
+	void createElement(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		checkConflict(ele.id);
@@ -538,7 +538,7 @@ public class MDatabase {
 	 * Delete an element from database.
 	 * @param ele The element to be deleted.
 	 */
-	protected void deleteElement(MElement ele) {
+	void deleteElement(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		if (ele == null)
@@ -597,7 +597,7 @@ public class MDatabase {
 	 * Load the tags of an element.
 	 * @param ele The element.
 	 */
-	protected void loadElementTags(MElement ele) {
+	void loadElementTags(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		if (ele == null)
@@ -605,18 +605,17 @@ public class MDatabase {
 		if (ele.isDeleted())
 			return;
 		checkExistence(ele.id);
-		
-		MDBAdapter.ElementTagDBInfo dbInfo = new MDBAdapter.ElementTagDBInfo();
-		dbInfo.id = ele.id;
-		this.dbAdapter.loadElementTags(dbInfo);
-		ele.loadTagsFromDBInfo(dbInfo);
+
+		MDBAdapter.IDList idList = new MDBAdapter.IDList();
+		this.dbAdapter.loadElementTags(ele.id, idList);
+		ele.loadTagsFromDBInfo(idList);
 	}
 	
 	/**
 	 * Save the tags of an element.
 	 * @param ele The element.
 	 */
-	protected void saveElementTags(MElement ele) {
+	void saveElementTags(MElement ele) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		if (ele == null)
@@ -625,9 +624,35 @@ public class MDatabase {
 			return;
 		checkExistence(ele.id);
 		
-		MDBAdapter.ElementTagDBInfo dbInfo = new MDBAdapter.ElementTagDBInfo();
-		ele.saveTagsFromDBInfo(dbInfo);
-		this.dbAdapter.saveElementTags(dbInfo);
+		MDBAdapter.IDList idList = new MDBAdapter.IDList();
+		ele.saveTagsToDBInfo(idList);
+		this.dbAdapter.saveElementTags(ele.id, idList);
+	}
+	
+	protected void loadTagElements(MTag tag) {
+		if (dbAdapter == null)
+			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
+		if (tag == null)
+			return;
+		if (tag.isDeleted())
+			return;
+		
+		MDBAdapter.IDList idList = new MDBAdapter.IDList();
+		this.dbAdapter.loadTagElements(tag.id, idList);
+		tag.loadElementsFromDBInfo(idList);
+	}
+	
+	protected void saveTagElements(MTag tag) {
+		if (dbAdapter == null)
+			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
+		if (tag == null)
+			return;
+		if (tag.isDeleted())
+			return;
+		
+		MDBAdapter.IDList idList = new MDBAdapter.IDList();
+		tag.saveElementsToDBInfo(idList);
+		this.dbAdapter.saveTagElements(tag.id, idList);
 	}
 	
 	/**
@@ -644,7 +669,7 @@ public class MDatabase {
 		MPackage pkg = null;
 		if (meta == null) {
 			pkg = new MPackage(id);
-			pkg.load();
+			pkg.forceLoad();
 			metaElements.put(id, pkg);
 		} else if (meta instanceof MPackage) {
 			pkg = (MPackage) meta;
@@ -668,7 +693,7 @@ public class MDatabase {
 		MClass cls = null;
 		if (meta == null) {
 			cls = new MClass(id);
-			cls.load();
+			cls.forceLoad();
 			metaElements.put(id, cls);
 		} else if (meta instanceof MClass) {
 			cls = (MClass) meta;
@@ -692,7 +717,7 @@ public class MDatabase {
 		MAttribute atb = null;
 		if (meta == null) {
 			atb = new MAttribute(id);
-			atb.load();
+			atb.forceLoad();
 			metaElements.put(id, atb);
 		} else if (meta instanceof MAttribute) {
 			atb = (MAttribute) meta;
@@ -716,7 +741,7 @@ public class MDatabase {
 		MReference ref = null;
 		if (meta == null) {
 			ref = new MReference(id);
-			ref.load();
+			ref.forceLoad();
 			metaElements.put(id, ref);
 		} else if (meta instanceof MAttribute) {
 			ref = (MReference) meta;
@@ -740,7 +765,7 @@ public class MDatabase {
 		MEnum enm = null;
 		if (meta == null) {
 			enm = new MEnum(id);
-			enm.load();
+			enm.forceLoad();
 			metaElements.put(id, enm);
 		} else if (meta instanceof MEnum) {
 			enm = (MEnum) meta;
@@ -764,7 +789,7 @@ public class MDatabase {
 		MSymbol sym = null;
 		if (meta == null) {
 			sym = new MSymbol(id);
-			sym.load();
+			sym.forceLoad();
 			metaElements.put(id, sym);
 		} else if (meta instanceof MSymbol) {
 			sym = (MSymbol) meta;
@@ -791,7 +816,7 @@ public class MDatabase {
 			return null;
 		try {
 			if (!obj.isLoaded())
-				obj.load();
+				obj.forceLoad();
 		} catch (MException e) {
 			if (e.getReason() == MException.Reason.ELEMENT_MISSED) {
 				obj.delete();
@@ -832,7 +857,7 @@ public class MDatabase {
 			return null;
 		try {
 			if (!tag.isLoaded())
-				tag.load();
+				tag.forceLoad();
 		} catch (MException e) {
 			if (e.getReason() == MException.Reason.ELEMENT_MISSED) {
 				tag.delete();

@@ -21,6 +21,19 @@ public interface MDBAdapter {
 	 */
 	public static abstract class DBInfo {
 		public long id;
+		int flag;
+		
+		DBInfo() { flag = MElement.FULL_ATTRIB_FLAG; }
+		
+		DBInfo(int flag) { this.flag = flag; }
+		
+		void flag(int attrib_flag) {
+			flag |= attrib_flag;
+		}
+		
+		public boolean isFlagged(int attrib_flag) {
+			return (flag & attrib_flag) != 0;
+		}
 	}
 	
 	/**
@@ -31,6 +44,8 @@ public interface MDBAdapter {
 	public static class PackageDBInfo extends DBInfo {
 		public String name;
 		public long package_id;
+		PackageDBInfo() { super(); }
+		PackageDBInfo(int flag) { super(flag); }
 	}
 	
 	void loadPackage(PackageDBInfo pkg);
@@ -42,6 +57,8 @@ public interface MDBAdapter {
 		public String name;
 		public long package_id;
 		public long superclass_id;
+		ClassDBInfo() { super(); }
+		ClassDBInfo(int flag) { super(flag); }
 	}
 	
 	void loadClass(ClassDBInfo cls);
@@ -53,6 +70,8 @@ public interface MDBAdapter {
 		public String name;
 		public String type_id;
 		public long class_id;
+		AttributeDBInfo() { super(); }
+		AttributeDBInfo(int flag) { super(flag); }
 	}
 	
 	void loadAttribute(AttributeDBInfo atb);
@@ -66,6 +85,8 @@ public interface MDBAdapter {
 		public long reference_id;
 		public MReference.Multiplicity multi;
 		public long opposite_id;
+		ReferenceDBInfo() { super(); }
+		ReferenceDBInfo(int flag) { super(flag); }
 	}
 	
 	void loadReference(ReferenceDBInfo rol);
@@ -76,6 +97,8 @@ public interface MDBAdapter {
 	public static class EnumDBInfo extends DBInfo {
 		public String name;
 		public long package_id;
+		EnumDBInfo() { super(); }
+		EnumDBInfo(int flag) { super(flag); }
 	}
 	
 	void loadEnum(EnumDBInfo enm);
@@ -86,6 +109,8 @@ public interface MDBAdapter {
 	public static class SymbolDBInfo extends DBInfo {
 		public String name;
 		public long enum_id;
+		SymbolDBInfo() { super(); }
+		SymbolDBInfo(int flag) { super(flag); }
 	}
 	
 	void loadSymbol(SymbolDBInfo syb);
@@ -96,6 +121,8 @@ public interface MDBAdapter {
 	public static class ObjectDBInfo extends DBInfo {
 		public long class_id;
 		public DataDict values = new DataDict();
+		ObjectDBInfo() { super(); }
+		ObjectDBInfo(int flag) { super(flag); }
 	}
 
 	void loadObject(ObjectDBInfo obj);
@@ -106,7 +133,8 @@ public interface MDBAdapter {
 	public static class TagDBInfo extends DBInfo {
 		public String name;
 		public Object value;
-		public IDList targets_id = new IDList();
+		TagDBInfo() { super(); }
+		TagDBInfo(int flag) { super(flag); }
 	}
 	
 	void loadTag(TagDBInfo tag);
@@ -114,12 +142,11 @@ public interface MDBAdapter {
 	void updateTag(TagDBInfo tag);
 	void deleteTag(TagDBInfo tag);
 	
-	public static class ElementTagDBInfo extends DBInfo {
-		public IDList tags_id = new IDList();
-	}
+	void loadTagElements(long id, IDList list);
+	void saveTagElements(long id, IDList list);
 	
-	void loadElementTags(ElementTagDBInfo dbInfo);
-	void saveElementTags(ElementTagDBInfo dbInfo);
+	void loadElementTags(long id, IDList list);
+	void saveElementTags(long id, IDList list);
 	
 	MElementType getElementType(long id);
 	

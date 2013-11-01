@@ -45,7 +45,7 @@ public class MObject extends MElement implements MNotifiable {
 	
 	public MClass getClazz() {
 		if (!this.isLoaded())
-			this.load();
+			this.forceLoad();
 		
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
@@ -55,7 +55,7 @@ public class MObject extends MElement implements MNotifiable {
 	
 	public boolean isInstanceOf(MClass clazz) throws MException {
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		
 		if (this.class_pt.getID() == clazz.getID())
 			return true;
@@ -69,7 +69,7 @@ public class MObject extends MElement implements MNotifiable {
 	
 	public Object getField(String name) {
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -131,7 +131,7 @@ public class MObject extends MElement implements MNotifiable {
 			break;
 		}
 		if (changeFlag)
-			this.setChanged();
+			this.setChanged(ATTRIB_FLAG_VALUES);
 		return o;
 	}
 	
@@ -149,7 +149,7 @@ public class MObject extends MElement implements MNotifiable {
 	
 	public Object getAttribute(String name) {
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -162,7 +162,7 @@ public class MObject extends MElement implements MNotifiable {
 	
 	public void setAttribute(String name, Object obj) {
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -182,7 +182,7 @@ public class MObject extends MElement implements MNotifiable {
 			if (value == null || !(value instanceof MPointerSet)) {
 				value = new MPointerSet();
 				this.getValues().put(ref.id, value);
-				this.setChanged();
+				this.setChanged(ATTRIB_FLAG_VALUES);
 			}
 		}
 		return value;
@@ -215,7 +215,7 @@ public class MObject extends MElement implements MNotifiable {
 		if (obj == null)
 			return;
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -246,14 +246,14 @@ public class MObject extends MElement implements MNotifiable {
 			}
 		}
 		this.addReference(ref_a, obj);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
 	public void removeReference(String name, MObject obj) {
 		if (obj == null)
 			return;
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -278,12 +278,12 @@ public class MObject extends MElement implements MNotifiable {
 			}
 		}
 		this.removeReference(ref_a, obj);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
 	public void setReference(String name, MObject obj) {
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -327,12 +327,12 @@ public class MObject extends MElement implements MNotifiable {
 			}
 		}
 		this.setReference(ref_a, obj);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
 	public MObject getReference(String name) {
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -349,19 +349,19 @@ public class MObject extends MElement implements MNotifiable {
 			MObject mo = (MObject) ((MElementPointer) o).getElement();
 			if (mo == null) {
 				this.setReference(ref, null);
-				this.setChanged();
+				this.setChanged(ATTRIB_FLAG_VALUES);
 			}
 			return mo;
 		} else {
 			this.setReference(ref, null);
-			this.setChanged();
+			this.setChanged(ATTRIB_FLAG_VALUES);
 			return null;
 		}
 	}
 	
 	public Set<MObject> getReferences(String name) {
 		if (!isLoaded())
-			this.load();
+			this.forceLoad();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -388,7 +388,7 @@ public class MObject extends MElement implements MNotifiable {
 			}
 		}
 		if (changeFlag)
-			this.setChanged();
+			this.setChanged(ATTRIB_FLAG_VALUES);
 		return oset;
 	}
 
@@ -442,7 +442,7 @@ public class MObject extends MElement implements MNotifiable {
 		}
 		
 		if (changeFlag)
-			this.setChanged();
+			this.setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
 	@Override
@@ -547,7 +547,9 @@ public class MObject extends MElement implements MNotifiable {
 
 	@Override
 	public void notifyChanged() {
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_VALUES);
 	}
+	
+	public static final int ATTRIB_FLAG_VALUES = 0x00000001;
 
 }

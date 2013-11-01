@@ -110,10 +110,8 @@ public class MClass extends MElement implements MType {
 		this.initialize();
 		this.name = name;
 		this.superclass = supercls;
-		if (this.superclass != null)
-			this.superclass.getSubclasses().add(this);
 		this.parent = pkg;
-		this.parent.addClass(this);
+		link();
 		
 		MDatabase.getDB().createElement(this);
 	}
@@ -167,11 +165,8 @@ public class MClass extends MElement implements MType {
 				cls.superclass = this.superclass;
 			}
 		}
-		if (this.superclass != null)
-			this.superclass.getSubclasses().remove(this);
 		
-		// package
-		this.parent.removeClass(this);
+		unlink();
 		super.delete();
 	}
 
@@ -208,7 +203,7 @@ public class MClass extends MElement implements MType {
 		this.parent.removeClass(this);
 		this.name = name;
 		this.parent.addClass(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
 	/**
@@ -239,7 +234,7 @@ public class MClass extends MElement implements MType {
 		this.superclass = clazz;
 		if (this.superclass != null)
 			this.superclass.getSubclasses().add(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_SUPERCLASS);
 	}
 	
 	/**
@@ -289,7 +284,7 @@ public class MClass extends MElement implements MType {
 		this.parent.removeClass(this);
 		this.parent = pkg;
 		this.parent.addClass(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_PARENT);
 	}
 	
 	/**
@@ -339,22 +334,22 @@ public class MClass extends MElement implements MType {
 	 * Get all names of attributes owned by this class.
 	 * @return the set of attribute names.
 	 */
-	public Set<String> getAttributeNames() {
-		return new TreeSet<String>(this.getAttributes().keySet());
+	public String[] getAttributeNames() {
+		return this.getAttributes().keySet().toArray(new String[0]);
 	}
 	
 	/**
 	 * Get all names of attributes, include the attributes owned by superclass.
 	 * @return the set of attribute names.
 	 */
-	public Set<String> getAllAttributeNames() {
+	public String[] getAllAttributeNames() {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
 			names.addAll(cls.getAttributes().keySet());
 			cls = cls.superclass;
 		}
-		return names;
+		return names.toArray(new String[0]);
 	}
 	
 	/**
@@ -404,7 +399,7 @@ public class MClass extends MElement implements MType {
 	 * Add attribute.
 	 * @param atb attribute.
 	 */
-	private void addAttribute(MAttribute atb) {
+	void addAttribute(MAttribute atb) {
 		this.getAttributes().put(atb.getName(), atb);
 	}
 
@@ -412,7 +407,7 @@ public class MClass extends MElement implements MType {
 	 * Remove attribute.
 	 * @param atb attribute.
 	 */
-	private void removeAttribute(MAttribute atb) {
+	void removeAttribute(MAttribute atb) {
 		this.getAttributes().remove(atb.getName());
 	}
 	
@@ -426,22 +421,22 @@ public class MClass extends MElement implements MType {
 	 * Get all names of references owned by this class.
 	 * @return the set of reference names.
 	 */
-	public Set<String> getReferenceNames() {
-		return new TreeSet<String>(this.getReferences().keySet());
+	public String[] getReferenceNames() {
+		return this.getReferences().keySet().toArray(new String[0]);
 	}
 	
 	/**
 	 * Get all names of references, include the references owned by superclass.
 	 * @return the set of reference names.
 	 */
-	public Set<String> getAllReferenceNames() {
+	public String[] getAllReferenceNames() {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
 			names.addAll(cls.getReferences().keySet());
 			cls = cls.superclass;
 		}
-		return names;
+		return names.toArray(new String[0]);
 	}
 	
 	/**
@@ -491,7 +486,7 @@ public class MClass extends MElement implements MType {
 	 * Add reference.
 	 * @param ref reference.
 	 */
-	private void addReference(MReference ref) {
+	void addReference(MReference ref) {
 		this.getReferences().put(ref.getName(), ref);
 	}
 	
@@ -499,7 +494,7 @@ public class MClass extends MElement implements MType {
 	 * Remove reference.
 	 * @param ref reference.
 	 */
-	private void removeReference(MReference ref) {
+	void removeReference(MReference ref) {
 		this.getReferences().remove(ref.getName());
 	}
 	
@@ -535,6 +530,20 @@ public class MClass extends MElement implements MType {
 		this.getUtilizers().remove(utilizer);
 	}
 	
+	private void link() {
+		if (name != null)
+			this.parent.addClass(this);
+		if (this.superclass != null)
+			this.superclass.getSubclasses().add(this);
+	}
+	
+	private void unlink() {
+		if (name != null)
+			this.parent.removeClass(this);
+		if (this.superclass != null)
+			this.superclass.getSubclasses().remove(this);
+	}
+	
 	/*
 	 * ********************************
 	 *        DATA LOAD & SAVE
@@ -544,23 +553,34 @@ public class MClass extends MElement implements MType {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ClassDBInfo clsDBInfo = (MDBAdapter.ClassDBInfo) dbInfo;
-		this.name = clsDBInfo.name;
-		this.superclass = MDatabase.getDB().getClass(clsDBInfo.superclass_id);
-		this.parent = MDatabase.getDB().getPackage(clsDBInfo.package_id);
-		
+		// unlink
+		unlink();
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			this.name = clsDBInfo.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_SUPERCLASS)) {
+			this.superclass = MDatabase.getDB().getClass(clsDBInfo.superclass_id);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			this.parent = MDatabase.getDB().getPackage(clsDBInfo.package_id);
+		}
 		// link
-		this.parent.addClass(this);
-		if (this.superclass != null)
-			this.superclass.getSubclasses().add(this);
+		link();
 	}
 
 	@Override
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ClassDBInfo clsDBInfo = (MDBAdapter.ClassDBInfo) dbInfo;
 		clsDBInfo.id = this.id;
-		clsDBInfo.name = this.name;
-		clsDBInfo.superclass_id = MElement.getElementID(this.superclass);
-		clsDBInfo.package_id = MElement.getElementID(this.parent);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			clsDBInfo.name = this.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_SUPERCLASS)) {
+			clsDBInfo.superclass_id = MElement.getElementID(this.superclass);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			clsDBInfo.package_id = MElement.getElementID(this.parent);
+		}
 	}
 	
 	/*
@@ -575,5 +595,9 @@ public class MClass extends MElement implements MType {
 			return this.name;
 		return this.parent.toString() + "::" + this.name;
 	}
+	
+	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
+	public static final int ATTRIB_FLAG_NAME = 0x00000002;
+	public static final int ATTRIB_FLAG_SUPERCLASS = 0x00000004;
 
 }

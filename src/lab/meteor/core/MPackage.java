@@ -1,10 +1,7 @@
 package lab.meteor.core;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-
 import lab.meteor.core.MDBAdapter.DBInfo;
 
 public class MPackage extends MElement {
@@ -72,7 +69,7 @@ public class MPackage extends MElement {
 		this.initialize();
 		this.name = name;
 		this.parent = DEFAULT_PACKAGE;
-		this.parent.addPackage(this);
+		link();
 		
 		MDatabase.getDB().createElement(this);
 	}
@@ -115,7 +112,7 @@ public class MPackage extends MElement {
 			this.packages.clear();
 		}
 		
-		this.parent.removePackage(this);
+		unlink();
 		super.delete();
 	}
 	
@@ -146,14 +143,14 @@ public class MPackage extends MElement {
 		this.parent.removePackage(this);
 		this.name = name;
 		this.parent.addPackage(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
 	/**
 	 * Get the parent package.
 	 * @return The parent package.
 	 */
-	public MPackage getParent() {
+	public MPackage getPackage() {
 		return this.parent;
 	}
 	
@@ -162,7 +159,7 @@ public class MPackage extends MElement {
 	 * be a <code>MException</code> to be thrown.
 	 * @param pkg
 	 */
-	public void setParent(MPackage pkg) {
+	public void setPackage(MPackage pkg) {
 		if (pkg == null)
 			pkg = DEFAULT_PACKAGE;
 		if (pkg == this.parent)
@@ -173,7 +170,7 @@ public class MPackage extends MElement {
 		this.parent.removePackage(this);
 		this.parent = pkg;
 		this.parent.addPackage(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_PARENT);
 	}
 	
 	/* 
@@ -263,24 +260,24 @@ public class MPackage extends MElement {
 	 * Get all names of classes in this package.
 	 * @return All classes' names
 	 */
-	public Set<String> getClassNames() {
-		return new TreeSet<String>(this.getClasses().keySet());
+	public String[] getClassNames() {
+		return this.getClasses().keySet().toArray(new String[0]);
 	}
 	
 	/**
 	 * Get all names of enumes in this package.
 	 * @return All enumes' names
 	 */
-	public Set<String> getEnumNames() {
-		return new TreeSet<String>(this.getEnumes().keySet());
+	public String[] getEnumNames() {
+		return this.getEnumes().keySet().toArray(new String[0]);
 	}
 	
 	/**
 	 * Get all names of packages in this package.
 	 * @return All packages' names
 	 */
-	public Set<String> getPackageNames() {
-		return new TreeSet<String>(this.getPackages().keySet());
+	public String[] getPackageNames() {
+		return this.getPackages().keySet().toArray(new String[0]);
 	}
 
 	/**
@@ -361,6 +358,16 @@ public class MPackage extends MElement {
 		this.getPackages().remove(pkg.getName());
 	}
 
+	private void link() {
+		if (name != null)
+			this.parent.addPackage(this);
+	}
+	
+	private void unlink() {
+		if (name != null)
+			this.parent.removePackage(this);
+	}
+	
 	/*
 	 * ********************************
 	 *        DATA LOAD & SAVE
@@ -370,19 +377,28 @@ public class MPackage extends MElement {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.PackageDBInfo pkgDBInfo = (MDBAdapter.PackageDBInfo) dbInfo;
-		this.name = pkgDBInfo.name;
-		this.parent = MDatabase.getDB().getPackage(pkgDBInfo.package_id);
-		
+		// unlink
+		unlink();
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			this.name = pkgDBInfo.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			this.parent = MDatabase.getDB().getPackage(pkgDBInfo.package_id);
+		}
 		// link
-		this.parent.addPackage(this);
+		link();
 	}
 
 	@Override
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.PackageDBInfo pkgDBInfo = (MDBAdapter.PackageDBInfo) dbInfo;
 		pkgDBInfo.id = this.id;
-		pkgDBInfo.name = this.name;
-		pkgDBInfo.package_id = MElement.getElementID(this.parent);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			pkgDBInfo.name = this.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			pkgDBInfo.package_id = MElement.getElementID(this.parent);
+		}
 	}
 	
 	@Override
@@ -392,5 +408,8 @@ public class MPackage extends MElement {
 		}
 		return this.parent.toString() + "::" + this.name;
 	}
+	
+	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
+	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 	
 }

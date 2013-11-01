@@ -1,6 +1,5 @@
 package lab.meteor.core;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -87,7 +86,7 @@ public class MEnum extends MElement implements MDataType {
 		this.parent.removeEnum(this);
 		this.name = name;
 		this.parent.addEnum(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
 	private Map<String, MSymbol> getSymbols() {
@@ -104,8 +103,8 @@ public class MEnum extends MElement implements MDataType {
 		this.getSymbols().remove(sym.getName());
 	}
 	
-	public Set<String> getSymbolNames() {
-		return new HashSet<String>(this.getSymbols().keySet());
+	public String[] getSymbolNames() {
+		return this.getSymbols().keySet().toArray(new String[0]);
 	}
 	
 	public MSymbol getSymbol(String sym) {
@@ -131,7 +130,7 @@ public class MEnum extends MElement implements MDataType {
 		this.parent.removeEnum(this);
 		this.parent = pkg;
 		this.parent.addEnum(this);
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_PARENT);
 	}
 	
 	void addUtilizer(MAttribute atb) {
@@ -158,6 +157,16 @@ public class MEnum extends MElement implements MDataType {
 		return String.valueOf(MElement.ID_PREFIX) + MUtility.stringID(this.id);
 	}
 	
+	private void link() {
+		if (name != null)
+			this.parent.addEnum(this);
+	}
+	
+	private void unlink() {
+		if (name != null)
+			this.parent.removeEnum(this);
+	}
+	
 	/*
 	 * ********************************
 	 *        DATA LOAD & SAVE
@@ -167,19 +176,28 @@ public class MEnum extends MElement implements MDataType {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.EnumDBInfo enmDBInfo = (MDBAdapter.EnumDBInfo) dbInfo;
-		this.name = enmDBInfo.name;
-		this.parent = MDatabase.getDB().getPackage(enmDBInfo.package_id);
-		
+		// unlink
+		unlink();
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			this.name = enmDBInfo.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			this.parent = MDatabase.getDB().getPackage(enmDBInfo.package_id);
+		}
 		// link
-		this.parent.addEnum(this);
+		link();
 	}
 
 	@Override
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.EnumDBInfo enmDBInfo = (MDBAdapter.EnumDBInfo) dbInfo;
 		enmDBInfo.id = this.id;
-		enmDBInfo.name = this.name;
-		enmDBInfo.package_id = MElement.getElementID(this.parent);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			enmDBInfo.name = this.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			enmDBInfo.package_id = MElement.getElementID(this.parent);
+		}
 	}
 	
 	@Override
@@ -188,5 +206,8 @@ public class MEnum extends MElement implements MDataType {
 			return this.name;
 		return this.parent.toString() + "::" + this.name;
 	}
+	
+	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
+	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 
 }

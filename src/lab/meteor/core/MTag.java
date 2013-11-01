@@ -14,7 +14,7 @@ public class MTag extends MElement implements MNotifiable {
 	
 	private Object value;
 	
-	private Set<MElementPointer> targets;
+	private Set<MElementPointer> elements;
 	
 	public MTag(MElement target, String name) {
 		this(target, name, null);
@@ -32,7 +32,7 @@ public class MTag extends MElement implements MNotifiable {
 		
 		this.initialize();
 		this.name = name;
-		this.targets = new TreeSet<MElementPointer>();
+		this.elements = new TreeSet<MElementPointer>();
 		if (value instanceof MElement) {
 			this.value = new MElementPointer((MElement) value);
 		} else {
@@ -40,7 +40,8 @@ public class MTag extends MElement implements MNotifiable {
 		}
 
 		MDatabase.getDB().createElement(this);
-		this.addTarget(target);
+		MDatabase.getDB().saveTagElements(this);
+		target.addTag(this);
 	}
 	
 	public MTag(Collection<MElement> targets, String name) {
@@ -63,7 +64,7 @@ public class MTag extends MElement implements MNotifiable {
 		
 		this.initialize();
 		this.name = name;
-		this.targets = new TreeSet<MElementPointer>();
+		this.elements = new TreeSet<MElementPointer>();
 		if (value instanceof MElement) {
 			this.value = new MElementPointer((MElement) value);
 		} else {
@@ -71,9 +72,9 @@ public class MTag extends MElement implements MNotifiable {
 		}
 		
 		MDatabase.getDB().createElement(this);
-		
+		MDatabase.getDB().saveTagElements(this);
 		for (MElement target : targets) {
-			this.addTarget(target);
+			target.addTag(this);
 		}
 	}
 	
@@ -86,11 +87,11 @@ public class MTag extends MElement implements MNotifiable {
 	}
 	
 	public void delete() {
-		for (MElementPointer pt : this.targets) {
+		for (MElementPointer pt : this.elements) {
 			MElement ele = pt.getElement();
 			ele.removeTag(this);
 		}
-		this.targets.clear();
+		this.elements.clear();
 		super.delete();
 	}
 	
@@ -101,7 +102,7 @@ public class MTag extends MElement implements MNotifiable {
 	public void setName(String name) {
 		if (this.name.equals(name))
 			return;
-		for (MElementPointer pt : this.targets) {
+		for (MElementPointer pt : this.elements) {
 			MElement e = pt.getElement();
 			if (e != null) {
 				e.removeTag(this.name, this.id);
@@ -109,7 +110,7 @@ public class MTag extends MElement implements MNotifiable {
 				e.addTag(this.name, this.id);
 			}
 		}
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
 	public Object getValue() {
@@ -129,38 +130,34 @@ public class MTag extends MElement implements MNotifiable {
 		} else {
 			this.value = value;
 		}
-		this.setChanged();
+		setChanged(ATTRIB_FLAG_VALUE);
 	}
 	
-	void addTarget(long id, MElementType eType) {
-		this.targets.add(new MElementPointer(id, eType));
+	void addElement(MElement e) {
+		MElementPointer ep = new MElementPointer(e);
+		if (elements.contains(ep))
+			return;
+		elements.add(ep);
+		changed_elements = true;
 	}
 	
-	void removeTarget(long id, MElementType eType) {
-		this.targets.remove(new MElementPointer(id, eType));
-		if (this.targets.size() == 0)
-			this.delete();
+	void removeElement(MElement e) {
+		MElementPointer ep = new MElementPointer(e);
+		if (!elements.contains(ep))
+			return;
+		elements.remove(ep);
+		changed_elements = true;
+		
+		if (elements.size() == 0)
+			delete();
 	}
 	
-	public void addTarget(MElement target) {
-		addTarget(target.getID(), target.getElementType());
-		target.addTag(this.name, this.id);
-	}
-	
-	public void removeTarget(MElement target) {
-		removeTarget(target.getID(), target.getElementType());
-		target.removeTag(this.name, this.id);
-	}
 	
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.TagDBInfo tagDBInfo = (MDBAdapter.TagDBInfo) dbInfo;
 		this.name = tagDBInfo.name;
 		fromDBObject(this, tagDBInfo.value, null);
-		for (Long target_id : tagDBInfo.targets_id) {
-			MElementType eType = MDatabase.getDB().getElementType(target_id);
-			this.targets.add(new MElementPointer(target_id, eType));
-		}
 	}
 	
 	@Override
@@ -169,9 +166,6 @@ public class MTag extends MElement implements MNotifiable {
 		tagDBInfo.id = this.id;
 		tagDBInfo.name = this.name;
 		tagDBInfo.value = toDBObject(this.value);
-		for (MElementPointer target_pt : this.targets) {
-			tagDBInfo.targets_id.add(target_pt.getID());
-		}
 	}
 	
 	private static void fromDBObject(MNotifiable parent, Object value, Object key) {
@@ -245,7 +239,43 @@ public class MTag extends MElement implements MNotifiable {
 
 	@Override
 	public void notifyChanged() {
-		this.setChanged();
+		setChanged(ATTRIB_FLAG_VALUE);
 	}
+	
+	private boolean loaded_elements = false;
+	
+	private boolean changed_elements = false;
+	
+	public void forceLoadElements() {
+		// TODO load name & value
+	}
+	
+	public void loadElements() {
+		// TODO
+	}
+	
+	public void forceSaveElements() {
+		// TODO save name & value
+	}
+	
+	public void saveElements() {
+		// TODO
+	}
+	
+	void loadElementsFromDBInfo(MDBAdapter.IDList idList) {
+		for (Long target_id : idList) {
+			MElementType eType = MDatabase.getDB().getElementType(target_id);
+			this.elements.add(new MElementPointer(target_id, eType));
+		}
+	}
+	
+	void saveElementsToDBInfo(MDBAdapter.IDList idList) {
+		for (MElementPointer target_pt : this.elements) {
+			idList.add(target_pt.getID());
+		}
+	}
+	
+	public static final int ATTRIB_FLAG_NAME = 0x00000001;
+	public static final int ATTRIB_FLAG_VALUE = 0x00000002;
 
 }

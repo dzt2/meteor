@@ -32,9 +32,7 @@ public class MAttribute extends MProperty {
 		super(cls, name, MElementType.Attribute);
 		
 		this.type = type;
-		if (this.type instanceof MEnum) {
-			((MEnum) this.type).addUtilizer(this);
-		}
+		link();
 		
 		MDatabase.getDB().createElement(this);
 	}
@@ -56,9 +54,7 @@ public class MAttribute extends MProperty {
 	@Override
 	public void delete() throws MException {
 		// class
-		if (this.type instanceof MEnum) {
-			((MEnum) this.type).removeUtilizer(this);
-		}
+		unlink();
 		super.delete();
 	}
 	
@@ -91,12 +87,34 @@ public class MAttribute extends MProperty {
 		if (this.type instanceof MEnum) {
 			((MEnum) this.type).addUtilizer(this);
 		}
-		this.setChanged();
+		this.setChanged(ATTRIB_FLAG_DATATYPE);
 	}
 	
 	@Override
 	public MType getType() {
 		return getDataType();
+	}
+	
+	/*
+	 * ********************************
+	 *            LINKAGE
+	 * ********************************
+	 */
+	
+	private void link() {
+		if (name != null)
+			this.clazz.addAttribute(this);
+		if (this.type instanceof MEnum) {
+			((MEnum) this.type).addUtilizer(this);
+		}
+	}
+	
+	private void unlink() {
+		if (name != null)
+			this.clazz.removeAttribute(this);
+		if (this.type instanceof MEnum) {
+			((MEnum) this.type).removeUtilizer(this);
+		}
 	}
 	
 	/*
@@ -108,29 +126,39 @@ public class MAttribute extends MProperty {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.AttributeDBInfo atbDBInfo = (MDBAdapter.AttributeDBInfo) dbInfo;
-		this.name = atbDBInfo.name;
-		this.clazz = MDatabase.getDB().getClass(atbDBInfo.class_id);
-		if (atbDBInfo.type_id.charAt(0) == MElement.ID_PREFIX) {
-			long id = MUtility.parseID(atbDBInfo.type_id.substring(1));
-			this.type = MDatabase.getDB().getEnum(id);
-		} else {
-			this.type = MPrimitiveType.getPrimitiveType(atbDBInfo.type_id);
+		// unlink
+		unlink();
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			this.name = atbDBInfo.name;
 		}
-		
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			this.clazz = MDatabase.getDB().getClass(atbDBInfo.class_id);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_DATATYPE)) {
+			if (atbDBInfo.type_id.charAt(0) == MElement.ID_PREFIX) {
+				long id = MUtility.parseID(atbDBInfo.type_id.substring(1));
+				this.type = MDatabase.getDB().getEnum(id);
+			} else {
+				this.type = MPrimitiveType.getPrimitiveType(atbDBInfo.type_id);
+			}
+		}
 		// link
-		this.clazz.addProperty(this);
-		if (this.type instanceof MEnum) {
-			((MEnum) this.type).addUtilizer(this);
-		}
+		link();
 	}
 
 	@Override
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.AttributeDBInfo atbDBInfo = (MDBAdapter.AttributeDBInfo) dbInfo;
 		atbDBInfo.id = this.id;
-		atbDBInfo.name = this.name;
-		atbDBInfo.type_id = this.type.getTypeIdentifier();
-		atbDBInfo.class_id = MElement.getElementID(this.clazz);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
+			atbDBInfo.name = this.name;
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
+			atbDBInfo.class_id = MElement.getElementID(this.clazz);
+		}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_DATATYPE)) {
+			atbDBInfo.type_id = this.type.getTypeIdentifier();
+		}
 	}
 	
 	/*
@@ -145,5 +173,7 @@ public class MAttribute extends MProperty {
 		builder.append(this.name).append(" : ").append(this.type);
 		return builder.toString();
 	}
-
+	
+	public static final int ATTRIB_FLAG_DATATYPE = 0x00000004;
+	
 }

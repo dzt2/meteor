@@ -523,7 +523,7 @@ public class MShell {
 		if (e == null || e.getElementType() != MElementType.Class)
 			throw new MShellException("class is not found.");
 		parent = (MClass) e;
-		if (parent.hasField(name))
+		if (parent.hasProperty(name))
 			throw new MShellException("the name has been used in the class.");
 		if (MPrimitiveType.isPrimitiveTypeIdentifier(typeName)) {
 			MDataType type = MPrimitiveType.getPrimitiveType(typeName);

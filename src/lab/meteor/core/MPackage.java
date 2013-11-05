@@ -2,6 +2,7 @@ package lab.meteor.core;
 
 import java.util.Map;
 import java.util.TreeMap;
+
 import lab.meteor.core.MDBAdapter.DBInfo;
 
 public class MPackage extends MElement {
@@ -377,16 +378,30 @@ public class MPackage extends MElement {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.PackageDBInfo pkgDBInfo = (MDBAdapter.PackageDBInfo) dbInfo;
+		// check conflict
+		MPackage pkg = this.parent;
+		String name = this.name;
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT))
+			pkg = MDatabase.getDB().getPackage(pkgDBInfo.package_id);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			name = pkgDBInfo.name;
+		if (pkg != null && name != null && pkg.hasChild(name) && pkg.getPackage(name) != this)
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		boolean relink = false;
+		if (pkg != this.parent || !name.equals(this.name))
+			relink = true;
 		// unlink
-		unlink();
+		if (relink)
+			unlink();
 		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
-			this.name = pkgDBInfo.name;
+			this.name = name;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
 			this.parent = MDatabase.getDB().getPackage(pkgDBInfo.package_id);
 		}
 		// link
-		link();
+		if (relink)
+			link();
 	}
 
 	@Override

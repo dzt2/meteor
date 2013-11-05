@@ -293,7 +293,7 @@ public class MClass extends MElement implements MType {
 	 * @param name the specified name.
 	 * @return {@code true} if there is.
 	 */
-	public boolean hasField(String name) {
+	public boolean hasProperty(String name) {
 		return this.hasAttribute(name) || this.hasReference(name);
 	}
 	
@@ -553,19 +553,34 @@ public class MClass extends MElement implements MType {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ClassDBInfo clsDBInfo = (MDBAdapter.ClassDBInfo) dbInfo;
+		// check conflict
+		MPackage pkg = this.parent;
+		String name = this.name;
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT))
+			pkg = MDatabase.getDB().getPackage(clsDBInfo.package_id);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			name = clsDBInfo.name;
+		if (pkg != null && name != null && pkg.hasChild(name) && pkg.getClazz(name) != this)
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		
+		boolean relink = false;
+		if (pkg != this.parent || !name.equals(this.name) || dbInfo.isFlagged(ATTRIB_FLAG_SUPERCLASS))
+			relink = true;
 		// unlink
-		unlink();
+		if (relink)
+			unlink();
 		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
-			this.name = clsDBInfo.name;
+			this.name = name;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_SUPERCLASS)) {
 			this.superclass = MDatabase.getDB().getClass(clsDBInfo.superclass_id);
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
-			this.parent = MDatabase.getDB().getPackage(clsDBInfo.package_id);
+			this.parent = pkg;
 		}
 		// link
-		link();
+		if (relink)
+			link();
 	}
 
 	@Override

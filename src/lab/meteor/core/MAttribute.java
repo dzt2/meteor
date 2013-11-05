@@ -126,13 +126,26 @@ public class MAttribute extends MProperty {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.AttributeDBInfo atbDBInfo = (MDBAdapter.AttributeDBInfo) dbInfo;
+		// check conflict
+		MClass cls = this.clazz;
+		String name = this.name;
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT))
+			cls = MDatabase.getDB().getClass(atbDBInfo.class_id);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			name = atbDBInfo.name;
+		if (cls != null && name != null && cls.hasProperty(name) && cls.getAttribute(name) != this)
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		boolean relink = false;
+		if (cls != this.clazz || !name.equals(this.name))
+			relink = true;
 		// unlink
-		unlink();
+		if (relink)
+			unlink();
 		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
-			this.name = atbDBInfo.name;
+			this.name = name;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
-			this.clazz = MDatabase.getDB().getClass(atbDBInfo.class_id);
+			this.clazz = cls;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_DATATYPE)) {
 			if (atbDBInfo.type_id.charAt(0) == MElement.ID_PREFIX) {
@@ -143,7 +156,8 @@ public class MAttribute extends MProperty {
 			}
 		}
 		// link
-		link();
+		if (relink)
+			link();
 	}
 
 	@Override

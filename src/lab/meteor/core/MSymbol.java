@@ -91,16 +91,30 @@ public class MSymbol extends MElement {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.SymbolDBInfo symDBInfo = (MDBAdapter.SymbolDBInfo) dbInfo;
+		// check conflict
+		MEnum enm = this.envm;
+		String name = this.name;
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT))
+			enm = MDatabase.getDB().getEnum(symDBInfo.enum_id);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			name = symDBInfo.name;
+		if (enm != null && name != null && enm.hasSymbol(name) && enm.getSymbol(name) != this)
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		boolean relink = false;
+		if (enm != this.envm || !name.equals(this.name))
+			relink = true;
 		// unlink
-		unlink();
+		if (relink)
+			unlink();
 		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
-			this.name = symDBInfo.name;
+			this.name = name;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
-			this.envm = MDatabase.getDB().getEnum(symDBInfo.enum_id);
+			this.envm = enm;
 		}
 		// link
-		link();
+		if (relink)
+			link();
 	}
 
 	@Override

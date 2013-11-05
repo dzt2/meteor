@@ -176,16 +176,30 @@ public class MEnum extends MElement implements MDataType {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.EnumDBInfo enmDBInfo = (MDBAdapter.EnumDBInfo) dbInfo;
+		// check conflict
+		MPackage pkg = this.parent;
+		String name = this.name;
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT))
+			pkg = MDatabase.getDB().getPackage(enmDBInfo.package_id);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			name = enmDBInfo.name;
+		if (pkg != null && name != null && pkg.hasChild(name) && pkg.getEnum(name) != this)
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		boolean relink = false;
+		if (pkg != this.parent || !name.equals(this.name))
+			relink = true;
 		// unlink
-		unlink();
+		if (relink)
+			unlink();
 		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
-			this.name = enmDBInfo.name;
+			this.name = name;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
-			this.parent = MDatabase.getDB().getPackage(enmDBInfo.package_id);
+			this.parent = pkg;
 		}
 		// link
-		link();
+		if (relink)
+			link();
 	}
 
 	@Override

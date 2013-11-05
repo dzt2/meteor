@@ -83,7 +83,7 @@ public class MException extends RuntimeException {
 		UNKNOWN_VALUE_TYPE,
 		INVALID_OPPOSITE,
 		NULL_NOTIFICABLE,
-		SAVE_FORBIDEN_BEFORE_LOAD
+		FORBIDEN_SAVE_BEFORE_LOAD
 	}
 	
 	/**

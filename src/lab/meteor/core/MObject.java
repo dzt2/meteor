@@ -54,8 +54,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public boolean isInstanceOf(MClass clazz) throws MException {
-		if (!isLoaded())
-			this.forceLoad();
+		load();
 		
 		if (this.class_pt.getID() == clazz.getID())
 			return true;
@@ -67,9 +66,9 @@ public class MObject extends MElement implements MNotifiable {
 		}
 	}
 	
-	public Object getField(String name) {
-		if (!isLoaded())
-			this.forceLoad();
+	public Object getProperty(String name) {
+		load();
+		
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -148,8 +147,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public Object getAttribute(String name) {
-		if (!isLoaded())
-			this.forceLoad();
+		load();
+		
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -161,8 +160,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public void setAttribute(String name, Object obj) {
-		if (!isLoaded())
-			this.forceLoad();
+		load();
+		
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -214,8 +213,7 @@ public class MObject extends MElement implements MNotifiable {
 	public void addReference(String name, MObject obj) {
 		if (obj == null)
 			return;
-		if (!isLoaded())
-			this.forceLoad();
+		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -252,8 +250,7 @@ public class MObject extends MElement implements MNotifiable {
 	public void removeReference(String name, MObject obj) {
 		if (obj == null)
 			return;
-		if (!isLoaded())
-			this.forceLoad();
+		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -282,8 +279,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public void setReference(String name, MObject obj) {
-		if (!isLoaded())
-			this.forceLoad();
+		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -331,8 +327,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public MObject getReference(String name) {
-		if (!isLoaded())
-			this.forceLoad();
+		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -360,8 +355,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public Set<MObject> getReferences(String name) {
-		if (!isLoaded())
-			this.forceLoad();
+		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -449,24 +443,26 @@ public class MObject extends MElement implements MNotifiable {
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
 		objDBInfo.id = this.id;
-		objDBInfo.class_id = this.class_pt.getID();
-		
-		if (this.values != null) {
-			Iterator<Map.Entry<Long, Object>> it = this.values.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry<Long, Object> entry = it.next();
-				long id = entry.getKey();
-				Object value = entry.getValue();
-				
-				if (value instanceof MPointerSet) {
-					MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
-					for (MElementPointer pt : (MPointerSet) value) {
-						ds.add(pt);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_CLASS))
+			objDBInfo.class_id = this.class_pt.getID();
+		if (dbInfo.isFlagged(ATTRIB_FLAG_VALUES)) {
+			if (this.values != null) {
+				Iterator<Map.Entry<Long, Object>> it = this.values.entrySet().iterator();
+				while (it.hasNext()) {
+					Map.Entry<Long, Object> entry = it.next();
+					long id = entry.getKey();
+					Object value = entry.getValue();
+					
+					if (value instanceof MPointerSet) {
+						MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
+						for (MElementPointer pt : (MPointerSet) value) {
+							ds.add(pt);
+						}
+						objDBInfo.values.put(MUtility.stringID(id), ds);
+					} else {
+						Object o = toDBObject(value);
+						objDBInfo.values.put(MUtility.stringID(id), o);
 					}
-					objDBInfo.values.put(MUtility.stringID(id), ds);
-				} else {
-					Object o = toDBObject(value);
-					objDBInfo.values.put(MUtility.stringID(id), o);
 				}
 			}
 		}
@@ -550,6 +546,7 @@ public class MObject extends MElement implements MNotifiable {
 		this.setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
-	public static final int ATTRIB_FLAG_VALUES = 0x00000001;
+	public static final int ATTRIB_FLAG_CLASS = 0x00000001;
+	public static final int ATTRIB_FLAG_VALUES = 0x00000002;
 
 }

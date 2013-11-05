@@ -19,7 +19,7 @@ public abstract class MProperty extends MElement {
 			throw new MException(MException.Reason.NULL_ELEMENT);
 		if (cls.isDeleted())
 			throw new MException(MException.Reason.ELEMENT_MISSED);
-		if (cls.hasField(name))
+		if (cls.hasProperty(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.initialize();
@@ -48,7 +48,7 @@ public abstract class MProperty extends MElement {
 	public void setName(String name) {
 		if (name.equals(this.name))
 			return;
-		if (this.clazz.hasField(name))
+		if (this.clazz.hasProperty(name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
 		this.clazz.removeProperty(this);

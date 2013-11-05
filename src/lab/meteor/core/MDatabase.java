@@ -629,7 +629,7 @@ public class MDatabase {
 		this.dbAdapter.saveElementTags(ele.id, idList);
 	}
 	
-	protected void loadTagElements(MTag tag) {
+	void loadTagElements(MTag tag) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		if (tag == null)
@@ -642,7 +642,7 @@ public class MDatabase {
 		tag.loadElementsFromDBInfo(idList);
 	}
 	
-	protected void saveTagElements(MTag tag) {
+	void saveTagElements(MTag tag) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
 		if (tag == null)
@@ -653,6 +653,13 @@ public class MDatabase {
 		MDBAdapter.IDList idList = new MDBAdapter.IDList();
 		tag.saveElementsToDBInfo(idList);
 		this.dbAdapter.saveTagElements(tag.id, idList);
+	}
+	
+	void preloadTagName(MTag tag) {
+		MDBAdapter.TagDBInfo tagDBInfo = new MDBAdapter.TagDBInfo(MTag.ATTRIB_FLAG_NAME);
+		tagDBInfo.id = tag.id;
+		dbAdapter.loadTag(tagDBInfo);
+		
 	}
 	
 	/**

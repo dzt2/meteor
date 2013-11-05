@@ -279,7 +279,7 @@ public abstract class MElement {
 		if (id == NULL_ID)
 			return;
 		if (!loaded)
-			throw new MException(MException.Reason.SAVE_FORBIDEN_BEFORE_LOAD);
+			throw new MException(MException.Reason.FORBIDEN_SAVE_BEFORE_LOAD);
 		MDatabase.getDB().saveElement(this, flag);
 	}
 	
@@ -388,7 +388,7 @@ public abstract class MElement {
 	private boolean changed_tags = false;
 	
 	/**
-	 * Force to load tags from database.
+	 * Forcibly load tags from database.
 	 */
 	public void forceLoadTags() {
 		if (deleted)
@@ -396,8 +396,8 @@ public abstract class MElement {
 		if (this.id == NULL_ID)
 			return;
 		MDatabase.getDB().loadElementTags(this);
-		this.changed_tags = false;
-		this.loaded_tags = true;
+		changed_tags = false;
+		loaded_tags = true;
 	}
 	
 	/**
@@ -410,15 +410,17 @@ public abstract class MElement {
 	}
 	
 	/**
-	 * Force to save tags to database.
+	 * Forcibly save tags to database.
 	 */
 	public void forceSaveTags() {
 		if (deleted)
 			return;
 		if (this.id == NULL_ID)
 			return;
+		if (!loaded_tags)
+			throw new MException(MException.Reason.FORBIDEN_SAVE_BEFORE_LOAD);
 		MDatabase.getDB().saveElementTags(this);
-		this.changed_tags = false;
+		changed_tags = false;
 	}
 	
 	/**
@@ -426,7 +428,7 @@ public abstract class MElement {
 	 * is no change, there is no effect for calling this method.
 	 */
 	public void saveTags() {
-		if (loaded_tags && changed_tags)
+		if (changed_tags)
 			forceSaveTags();
 	}
 	
@@ -568,6 +570,8 @@ public abstract class MElement {
 	 * @param id Tag's ID.
 	 */
 	void addTag(String name, long id) {
+		if (name == null)
+			return;
 		Set<MElementPointer> tags = this.getTags().get(name);
 		if (tags == null) {
 			tags = new TreeSet<MElementPointer>();
@@ -582,6 +586,8 @@ public abstract class MElement {
 	 * @param id Tag's ID.
 	 */
 	void removeTag(String name, long id) {
+		if (name == null)
+			return;
 		Set<MElementPointer> tags = this.getTags().get(name);
 		if (tags == null)
 			return;
@@ -597,7 +603,7 @@ public abstract class MElement {
 			MTag tag = MDatabase.getDB().getTag(tag_id);
 			if (tag == null)
 				continue;
-//			tag.loadBase();
+			tag.preloadName();
 			addTag(tag.getName(), tag_id);
 		}
 	}

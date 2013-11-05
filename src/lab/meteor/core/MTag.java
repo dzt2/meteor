@@ -10,7 +10,7 @@ import lab.meteor.core.MDBAdapter.DBInfo;
 
 public class MTag extends MElement implements MNotifiable {
 	
-	private String name;
+	String name;
 	
 	private Object value;
 	
@@ -96,20 +96,16 @@ public class MTag extends MElement implements MNotifiable {
 	}
 	
 	public String getName() {
+		if (!isLoaded())
+			load(ATTRIB_FLAG_NAME);
 		return this.name;
 	}
 	
 	public void setName(String name) {
 		if (this.name.equals(name))
 			return;
-		for (MElementPointer pt : this.elements) {
-			MElement e = pt.getElement();
-			if (e != null) {
-				e.removeTag(this.name, this.id);
-				this.name = name;
-				e.addTag(this.name, this.id);
-			}
-		}
+		relink(this.name, name);
+		this.name = name;
 		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
@@ -152,22 +148,43 @@ public class MTag extends MElement implements MNotifiable {
 			delete();
 	}
 	
+	void relink(String oldName, String newName) {
+		for (MElementPointer pt : this.elements) {
+			MElement e = MDatabase.getDB().getElement(pt.getID());
+			if (e != null) {
+				e.removeTag(oldName, this.id);
+				e.addTag(newName, this.id);
+			}
+		}
+	}
 	
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.TagDBInfo tagDBInfo = (MDBAdapter.TagDBInfo) dbInfo;
-		this.name = tagDBInfo.name;
-		fromDBObject(this, tagDBInfo.value, null);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			if (!this.name.equals(tagDBInfo.name)) {
+				this.name = tagDBInfo.name;
+				relink(this.name, tagDBInfo.name);
+			}
+		if (dbInfo.isFlagged(ATTRIB_FLAG_VALUE))
+			fromDBObject(this, tagDBInfo.value, null);
 	}
 	
 	@Override
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.TagDBInfo tagDBInfo = (MDBAdapter.TagDBInfo) dbInfo;
 		tagDBInfo.id = this.id;
-		tagDBInfo.name = this.name;
-		tagDBInfo.value = toDBObject(this.value);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			tagDBInfo.name = this.name;
+		if (dbInfo.isFlagged(ATTRIB_FLAG_VALUE))
+			tagDBInfo.value = toDBObject(this.value);
 	}
 	
+	@Override
+	public void notifyChanged() {
+		setChanged(ATTRIB_FLAG_VALUE);
+	}
+
 	private static void fromDBObject(MNotifiable parent, Object value, Object key) {
 		if (value instanceof MDBAdapter.DataList) {
 			MList list = new MList(parent);
@@ -237,29 +254,58 @@ public class MTag extends MElement implements MNotifiable {
 		}
 	}
 
-	@Override
-	public void notifyChanged() {
-		setChanged(ATTRIB_FLAG_VALUE);
+	void preloadName() {
+		if (this.name == null)
+			MDatabase.getDB().preloadTagName(this);
 	}
 	
 	private boolean loaded_elements = false;
 	
 	private boolean changed_elements = false;
 	
+	/**
+	 * Forcibly load the target elements of tag from database.
+	 */
 	public void forceLoadElements() {
-		// TODO load name & value
+		if (isDeleted())
+			return;
+		if (this.id == NULL_ID)
+			return;
+		MDatabase.getDB().loadTagElements(this);
+		loaded_elements = true;
+		changed_elements = false;
 	}
 	
+	/**
+	 * Load the target elements of tag from database. If the target elements have been
+	 * loaded once, there is no effect.
+	 */
 	public void loadElements() {
-		// TODO
+		if (!loaded_elements)
+			forceLoadElements();
 	}
 	
+	/**
+	 * Forcibly save the target elements of tag to database.
+	 */
 	public void forceSaveElements() {
-		// TODO save name & value
+		if (isDeleted())
+			return;
+		if (this.id == NULL_ID)
+			return;
+		if (!loaded_elements)
+			throw new MException(MException.Reason.FORBIDEN_SAVE_BEFORE_LOAD);
+		MDatabase.getDB().saveTagElements(this);
+		changed_elements = false;
 	}
 	
+	/**
+	 * Save the target elements of tag to database. If the target elements have not
+	 * been changed, there is no effect.
+	 */
 	public void saveElements() {
-		// TODO
+		if (changed_elements)
+			forceSaveElements();
 	}
 	
 	void loadElementsFromDBInfo(MDBAdapter.IDList idList) {

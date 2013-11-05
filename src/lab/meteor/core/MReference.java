@@ -109,13 +109,26 @@ public class MReference extends MProperty {
 	@Override
 	void loadFromDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ReferenceDBInfo refDBInfo = (MDBAdapter.ReferenceDBInfo) dbInfo;
+		// check conflict
+		MClass cls = this.clazz;
+		String name = this.name;
+		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT))
+			cls = MDatabase.getDB().getClass(refDBInfo.class_id);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
+			name = refDBInfo.name;
+		if (cls != null && name != null && cls.hasProperty(name) && cls.getReference(name) != this)
+			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
+		boolean relink = false;
+		if (cls != this.clazz || !name.equals(this.name))
+			relink = true;
 		// unlink
-		unlink();
+		if (relink)
+			unlink();
 		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME)) {
-			this.name = refDBInfo.name;
+			this.name = name;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_PARENT)) {
-			this.clazz = MDatabase.getDB().getClass(refDBInfo.class_id);
+			this.clazz = cls;
 		}
 		if (dbInfo.isFlagged(ATTRIB_FLAG_MULTIPLICITY)) {
 			this.multi = refDBInfo.multi;
@@ -126,9 +139,9 @@ public class MReference extends MProperty {
 		if (dbInfo.isFlagged(ATTRIB_FLAG_OPPOSITE)) {
 			this.opposite = MDatabase.getDB().getReference(refDBInfo.opposite_id);
 		}
-		
 		// link
-		link();
+		if (relink)
+			link();
 	}
 
 	@Override

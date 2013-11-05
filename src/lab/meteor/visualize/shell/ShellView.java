@@ -1,7 +1,6 @@
 package lab.meteor.visualize.shell;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.text.BreakIterator;
 
@@ -38,10 +37,8 @@ public class ShellView extends View {
 				if (keyCode == KeyEvent.VK_ENTER) {
 					if (getText().length() == 0)
 						return;
-					// TODO
 					shell.parseCommand(getPlainText());
-//					System.out.println(getText());
-//					prefixView.setText(getPlainText() + defaultPrefix);
+					prefixView.setText(shell.getCurrentPackage().toString() + defaultPrefix);
 					setText("");
 				} else {
 					super.doEditableTextViewKeyCommand(keyCode, ctrl, shift, caret, sel);

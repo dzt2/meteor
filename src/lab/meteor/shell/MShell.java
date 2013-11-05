@@ -41,20 +41,16 @@ public class MShell {
 		enableConsolePrint = enable;
 	}
 	
-	private void commandFinish(String command, String message) {
-		for (IShellListener l : listeners) {
-			l.onCommandFinished(command, message);
-		}
-		if (enableConsolePrint)
-			System.out.println(message);
-	}
-	
 	public void parseCommandTest(String command) {
 		Tokenizer tokenizer = new Tokenizer(command);
 		Token t;
 		while ((t = tokenizer.next()) != null) {
 			System.out.println(t.content);
 		}
+	}
+	
+	public MPackage getCurrentPackage() {
+		return this.currentPkg;
 	}
 	
 	private MElement findElement(String identifier) {
@@ -65,13 +61,39 @@ public class MShell {
 		else
 			return MScript.getElement(identifier, currentPkg);
 	}
-	
-	private static void printError(int loc, String message) {
-		System.out.println("error at " + loc + ":" + message);
+
+	private void commandFinish(String command, String message) {
+		for (IShellListener l : listeners) {
+			l.onCommandFinished(command, message);
+		}
+		if (enableConsolePrint)
+			System.out.println(message);
+	}
+
+	private void printError(int loc, String message) {
+		String em = "error at " + loc + ":" + message;
+		for (IShellListener l : listeners) {
+			l.printError(em);
+		}
+		if (enableConsolePrint)
+			System.out.println(em);
 	}
 	
-	private static void printError(MShellException e) {
-		System.out.println(e.getMessage());
+	private void printError(MShellException e) {
+//		String em = e.getMessage();
+//		for (IShellListener l : listeners) {
+//			l.printError(em);
+//		}
+//		if (enableConsolePrint)
+//			System.out.println(em);
+	}
+	
+	private void print(String content) {
+		for (IShellListener l : listeners) {
+			l.print(content);
+		}
+		if (enableConsolePrint)
+			System.out.println(content);
 	}
 	
 	/**
@@ -129,7 +151,7 @@ public class MShell {
 			Token t2 = tokenizer.peek();
 			if (t2 == null)
 			{ printError(tokenizer.loc, "op is too short."); return; }
-			if (t2.type == TokenType.Identifier) {// 是class,enum,package
+			if (t2.type == TokenType.Identifier) {// class,enum,package
 				if (t1.content.equals(CLASS)) optype = 1;// class
 				else if (t1.content.equals(ENUM)) optype = 2;// enum
 				else if (t1.content.equals(PACKAGE)) optype = 3;// package
@@ -331,10 +353,15 @@ public class MShell {
 							else
 							{ printError(tokenizer.loc, "unknown part."); return; }
 						}
-						// TODO attribute / reference update name & type
-						System.out.println(name.content + "." + child.content + " -> " +
-								modify.content + " : " +
-								typeName.content + (multiple ? "*" : ""));
+						// update attribute / reference name and type (class / enum / primitive)
+						try {
+							updateProperty(child.content, name.content, modify.content, 
+									typeName.content, multiple);
+							commandFinish(command, "succeeded.");
+						} catch (MShellException e) {
+							printError(e);
+							commandFinish(command, e.getMessage());
+						}
 					} else {
 						// only update attribute / reference name / symbol name
 						try {
@@ -363,10 +390,20 @@ public class MShell {
 				Token targetName = tokenizer.next();
 				if (targetName == null || targetName.type != TokenType.Identifier)
 				{ printError(tokenizer.loc, "target package is required."); return; }
-				System.out.println("mv " + name.content + " to " + targetName.content);
+				// move
+				try {
+					moveElement(name.content, targetName.content);
+					commandFinish(command, "succeeded.");
+				} catch (MShellException e) {
+					printError(e);
+					commandFinish(command, e.getMessage());
+				}
 			}
 			break;
 		case Opposite:
+			{
+				System.out.println("not support yet.");
+			}
 			break;
 		case Show:
 			{
@@ -382,8 +419,13 @@ public class MShell {
 				Token name = tokenizer.next();
 				if (name == null || name.type != TokenType.Identifier)
 				{ printError(tokenizer.loc, "name is required."); return; }
-				// TODO
-				System.out.println("print " + name.content);
+				try {
+					printElement(name.content);
+					commandFinish(command, "succeeded.");
+				} catch (MShellException e) {
+					printError(e);
+					commandFinish(command, e.getMessage());
+				}
 			}
 			break;
 		case Goto:
@@ -391,8 +433,14 @@ public class MShell {
 				Token pkgName = tokenizer.next();
 				if (pkgName == null || pkgName.type != TokenType.Identifier)
 				{ printError(tokenizer.loc, "name is required."); return; }
-				// TODO
-				System.out.println("goto " + pkgName.content);
+				// goto
+				try {
+					gotoPackege(pkgName.content);
+					commandFinish(command, "succeeded.");
+				} catch (MShellException e) {
+					printError(e);
+					commandFinish(command, e.getMessage());
+				}
 			}
 			break;
 		case Error:
@@ -403,79 +451,8 @@ public class MShell {
 		
 	}
 	
-	public void gotoPackege(String name) {
-		if (name == null)
-			return;
-		if (name.equals(""))
-			this.currentPkg = this.currentPkg.getPackage();
-		else if (currentPkg.hasPackage(name))
-			this.currentPkg = this.currentPkg.getPackage(name);
-	}
-	
 	public void setCurrentPackage(MPackage pkg) {
 		this.currentPkg = pkg;
-	}
-	
-	public String getPrintString(String name) {
-		if (currentPkg.hasClass(name))
-			return this.getPrintString(currentPkg.getClazz(name));
-		else if (currentPkg.hasEnum(name))
-			return this.getPrintString(currentPkg.getEnum(name));
-		else if (currentPkg.hasPackage(name))
-			return this.getPrintString(currentPkg.getPackage(name));
-		else
-			return "Not Found.";
-	}
-	
-	public String getPrintString(MClass cls) {
-		if (cls == null) {
-			return null;
-		}
-		StringBuilder builder = new StringBuilder();
-		builder.append(cls.toString()).append('\n');
-		String[] atbnames = cls.getAllAttributeNames();
-		for (String name : atbnames) {
-			MAttribute atb = cls.getAttribute(name);
-			builder.append(atb.toString()).append(" - Attribute\n");
-		}
-		String[] refnames = cls.getAllReferenceNames();
-		for (String name : refnames) {
-			MReference ref = cls.getReference(name);
-			builder.append(ref.toString()).append(" - Reference\n");
-		}
-		return builder.toString();
-	}
-	
-	public String getPrintString(MEnum enm) {
-		if (enm == null) {
-			return null;
-		}
-		StringBuilder builder = new StringBuilder();
-		String[] symnames = enm.getSymbolNames();
-		for (String name : symnames) {
-			MSymbol sym = enm.getSymbol(name);
-			builder.append(sym.toString()).append('\n');
-		}
-		return builder.toString();
-	}
-	
-	public String getPrintString(MPackage pkg) {
-		if (pkg == null)
-			return null;
-		StringBuilder builder = new StringBuilder();
-		String[] names = pkg.getPackageNames();
-		for (String name : names) {
-			builder.append(name).append(" - Package\n");
-		}
-		names = pkg.getClassNames();
-		for (String name : names) {
-			builder.append(name).append(" - Class\n");
-		}
-		names = pkg.getEnumNames();
-		for (String name : names) {
-			builder.append(name).append(" - Enum\n");
-		}
-		return builder.toString();
 	}
 	
 	private MClass createClass(String name, String superclass) throws MShellException {
@@ -530,8 +507,9 @@ public class MShell {
 			return new MAttribute(parent, name, type);
 		} else {
 			e = findElement(typeName);
-			if (e == null || e.getElementType() != MElementType.Class || 
-				e.getElementType() != MElementType.Enum)
+			System.out.println(typeName);
+			if (e == null || (e.getElementType() != MElementType.Class &&
+				e.getElementType() != MElementType.Enum))
 				throw new MShellException("type of property is not found.");
 			if (e.getElementType() == MElementType.Enum) {
 				MDataType type = (MEnum) e;
@@ -569,17 +547,21 @@ public class MShell {
 	private void deleteChildElement(String name, String parentName) throws MShellException {
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
-		MElement e = findElement(name);
+		MElement e = findElement(parentName);
 		if (e == null)
 			throw new MShellException("element is not found.");
-		if (e.getElementType() != MElementType.Class || e.getElementType() != MElementType.Enum) {
+		if (e.getElementType() != MElementType.Class && e.getElementType() != MElementType.Enum) {
 			throw new MShellException("class or enum is not found.");
 		}
 		if (e.getElementType() == MElementType.Class) {
 			MProperty p = ((MClass) e).getProperty(name);
+			if (p == null)
+				throw new MShellException("no such property.");
 			p.delete();
 		} else { // Enum
 			MSymbol s = ((MEnum) e).getSymbol(name);
+			if (s == null)
+				throw new MShellException("no such symbol.");
 			s.delete();
 		}
 	}
@@ -601,10 +583,10 @@ public class MShell {
 	private void updateChildName(String name, String parentName, String newName) throws MShellException {
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
-		MElement e = findElement(name);
+		MElement e = findElement(parentName);
 		if (e == null)
 			throw new MShellException("element is not found.");
-		if (e.getElementType() != MElementType.Class || e.getElementType() != MElementType.Enum) {
+		if (e.getElementType() != MElementType.Class && e.getElementType() != MElementType.Enum) {
 			throw new MShellException("class or enum is not found.");
 		}
 		if (e.getElementType() == MElementType.Class) {
@@ -637,17 +619,132 @@ public class MShell {
 			}
 		} else {
 			e = findElement(typeName);
-			if (e == null || e.getElementType() != MElementType.Class || 
-				e.getElementType() != MElementType.Enum)
+			if (e == null || (e.getElementType() != MElementType.Class && 
+				e.getElementType() != MElementType.Enum))
 				throw new MShellException("type of property is not found.");
 			if (e.getElementType() == MElementType.Class) {
 				if (p.getElementType() == MElementType.Reference) {
 					MReference r = (MReference) p;
 					r.setName(newName);
-					// TODO
+					r.setReference((MClass) e);
+					r.setMultiplicity(multiple ? Multiplicity.Multiple: Multiplicity.One);
+				} else {
+					p.delete();
+					new MReference(cls, newName, (MClass) e, 
+						multiple ? Multiplicity.Multiple: Multiplicity.One);
+				}
+			} else { // enum type
+				if (p.getElementType() == MElementType.Reference) {
+					p.delete();
+					new MAttribute(cls, newName, (MEnum) e);
+				} else {
+					MAttribute a = (MAttribute) p;
+					a.setName(newName);
+					a.setDataType((MEnum) e);
 				}
 			}
 		}
+	}
+	
+	private void moveElement(String name, String parentName) throws MShellException {
+		if (name == null || parentName == null)
+			throw new MShellException("invalid name.");
+		MElement e = findElement(name);
+		if (e == null)
+			throw new MShellException("element is not found.");
+		MElement parent = findElement(parentName);
+		if (parent == null || parent.getElementType() != MElementType.Package)
+			throw new MShellException("target package is not found.");
+		MPackage pkg = (MPackage) parent;
+		if (e.getElementType() == MElementType.Package)
+			((MPackage) e).setPackage(pkg);
+		else if (e.getElementType() == MElementType.Class)
+			((MClass) e).setPackage(pkg);
+		else if (e.getElementType() == MElementType.Enum)
+			((MEnum) e).setPackage(pkg);
+	}
+	
+	private void gotoPackege(String name) throws MShellException {
+		if (name == null)
+			throw new MShellException("invalid name.");
+		if (name.equals(""))
+			this.currentPkg = this.currentPkg.getPackage();
+		else {
+			MElement e = findElement(name);
+			if (e == null || e.getElementType() != MElementType.Package)
+				throw new MShellException("package is not found.");
+			this.currentPkg = (MPackage) e;
+		}
+	}
+	
+	private void printElement(String name) throws MShellException {
+		if (name == null)
+			throw new MShellException("invalid name.");
+		MElement e = findElement(name);
+		if (e == null)
+			throw new MShellException("element is not found.");
+		if (e.getElementType() == MElementType.Package)
+			print(getPrintString((MPackage) e));
+		else if (e.getElementType() == MElementType.Class)
+			print(getPrintString((MClass) e));
+		else if (e.getElementType() == MElementType.Enum)
+			print(getPrintString((MEnum) e));
+	}
+	
+	private static String getPrintString(MClass cls) {
+		if (cls == null) {
+			return null;
+		}
+		StringBuilder builder = new StringBuilder();
+		builder.append(cls.toString()).append('\n');
+		String[] atbnames = cls.getAllAttributeNames();
+		for (String name : atbnames) {
+			MAttribute atb = cls.getAttribute(name);
+			builder.append(atb.toString()).append(" - Attribute\n");
+		}
+		String[] refnames = cls.getAllReferenceNames();
+		for (String name : refnames) {
+			MReference ref = cls.getReference(name);
+			builder.append(ref.toString()).append(" - Reference\n");
+		}
+		builder.setLength(builder.length() - 1);
+		return builder.toString();
+	}
+	
+	private static String getPrintString(MEnum enm) {
+		if (enm == null) {
+			return null;
+		}
+		StringBuilder builder = new StringBuilder();
+		builder.append(enm.toString()).append('\n');
+		String[] symnames = enm.getSymbolNames();
+		for (String name : symnames) {
+			MSymbol sym = enm.getSymbol(name);
+			builder.append(sym.toString()).append('\n');
+		}
+		builder.setLength(builder.length() - 1);
+		return builder.toString();
+	}
+	
+	private static String getPrintString(MPackage pkg) {
+		if (pkg == null)
+			return null;
+		StringBuilder builder = new StringBuilder();
+		builder.append(pkg.toString()).append('\n');
+		String[] names = pkg.getPackageNames();
+		for (String name : names) {
+			builder.append(name).append(" - Package\n");
+		}
+		names = pkg.getClassNames();
+		for (String name : names) {
+			builder.append(name).append(" - Class\n");
+		}
+		names = pkg.getEnumNames();
+		for (String name : names) {
+			builder.append(name).append(" - Enum\n");
+		}
+		builder.setLength(builder.length() - 1);
+		return builder.toString();
 	}
 	
 	static class MShellException extends Exception {

@@ -1,7 +1,8 @@
 package lab.meteor.core;
 
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.Set;
 
 /**
  * The set, one of a primitive type in meteor system. When there is a modify operation, such
@@ -10,13 +11,13 @@ import java.util.TreeSet;
  * <p>
  * The set can only be created by the factory method <code>MCollection.createCollection()</code>.
  * <p>
- * It's a wrapper of <code>TreeSet&ltObject&gt</code>.
+ * It's a wrapper of <code>HashSet&ltObject&gt</code>.
  * @author Qiang
  *
  */
 public class MSet extends MCollection implements Iterable<Object> {
 
-	final TreeSet<Object> set = new TreeSet<Object>();
+	final Set<Object> set = new HashSet<Object>();
 	
 	MSet(MNotifiable parent) {
 		super(parent);

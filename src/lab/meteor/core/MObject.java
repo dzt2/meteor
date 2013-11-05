@@ -1,5 +1,6 @@
 package lab.meteor.core;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -367,7 +368,7 @@ public class MObject extends MElement implements MNotifiable {
 		
 		Object o = this.getReference(ref);
 		MPointerSet set = (MPointerSet) o;
-		Set<MObject> oset = new TreeSet<MObject>();
+		Set<MObject> oset = new HashSet<MObject>();
 		boolean changeFlag = false;
 		Iterator<MElementPointer> it = set.iterator();
 		while (it.hasNext()) {

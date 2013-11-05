@@ -303,7 +303,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBObject refObj = new BasicDBObject();
 		refObj.put("_id", ref.id);
 		refObj.put("name", ref.name);
-		refObj.put("calss", ref.class_id);
+		refObj.put("class", ref.class_id);
 		refObj.put("reference", ref.reference_id);
 		refObj.put("multiplicity", ref.multi.toString());
 		refObj.put("opposite", ref.opposite_id);

@@ -3,16 +3,17 @@ package lab.meteor.visualize;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
 import co.gongzh.snail.ViewContext;
+import lab.meteor.core.MDatabase;
+import lab.meteor.dba.MongoDBAdapter;
 import lab.meteor.visualize.diagram.ClassWidget;
 import lab.meteor.visualize.diagram.EnumWidget;
 import lab.meteor.visualize.diagram.Line;
-import lab.meteor.visualize.diagram.LinesView;
-import lab.meteor.visualize.resource.Resources;
-import lab.meteor.visualize.shell.ShellView;
 
 public class Launcher {
 
@@ -20,13 +21,27 @@ public class Launcher {
 	
 	static JFrame frame;
 	
+	static MongoConnector connector;
+	
 	public static JFrame getFrame() {
-		if (frame == null)
+		if (frame == null) {
 			frame = new JFrame();
+			frame.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					connector.close();
+				}
+			});
+		}
 		return frame;
 	}
 	
 	public static void main(String[] args) {
+		
+		connector = new MongoConnector("meteor");
+		connector.open();
+		MDatabase.getDB().setDBAdapter(new MongoDBAdapter(connector.getDB()));
+		MDatabase.getDB().initialize();
 		
 		// standard Swing
 		getFrame();

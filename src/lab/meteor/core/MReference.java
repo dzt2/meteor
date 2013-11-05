@@ -91,13 +91,15 @@ public class MReference extends MProperty {
 	private void link() {
 		if (name != null)
 			this.clazz.addReference(this);
-		this.reference.addUtilizer(this);
+		if (reference != null)
+			this.reference.addUtilizer(this);
 	}
 	
 	private void unlink() {
 		if (name != null)
 			this.clazz.removeReference(this);
-		this.reference.removeUtilizer(this);
+		if (reference != null)
+			this.reference.removeUtilizer(this);
 	}
 
 	/*

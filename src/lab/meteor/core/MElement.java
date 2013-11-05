@@ -294,6 +294,7 @@ public abstract class MElement {
 		MDatabase.getDB().removeElement(this);
 		MDatabase.getDB().deleteElement(this);
 		
+		loadTags();
 		Iterator<MTag> it = tagIterator();
 		while (it.hasNext()) {
 			MTag tag = it.next();

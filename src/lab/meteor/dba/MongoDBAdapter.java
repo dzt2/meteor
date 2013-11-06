@@ -15,7 +15,6 @@ import com.mongodb.DBObject;
 import lab.meteor.core.MAttribute;
 import lab.meteor.core.MClass;
 import lab.meteor.core.MDBAdapter;
-import lab.meteor.core.MDatabase;
 import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MElementPointer;
 import lab.meteor.core.MEnum;
@@ -27,6 +26,7 @@ import lab.meteor.core.MSymbol;
 import lab.meteor.core.MTag;
 import lab.meteor.core.MUtility;
 import lab.meteor.core.type.MBinary;
+import lab.meteor.core.type.MCode;
 import lab.meteor.core.type.MRef;
 
 public class MongoDBAdapter implements MDBAdapter {
@@ -741,6 +741,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	final static String KEY_OBJECT = "o";
 	final static String KEY_SYMBOL = "s";
 	final static String KEY_REF = "r";
+	final static String KEY_CODE = "c";
 	final static String KEY_ELEMENT = "e";
 	
 	/**
@@ -763,6 +764,8 @@ public class MongoDBAdapter implements MDBAdapter {
 			value = new Binary(((MBinary) value).getData());
 		} else if (value instanceof MRef) {
 			value = refToDBObject((MRef) value);
+		} else if (value instanceof MCode) {
+			value = codeToDBObject((MCode) value);
 		}
 		return value;
 	}
@@ -783,6 +786,8 @@ public class MongoDBAdapter implements MDBAdapter {
 				return dbObjectToDataSet(dbo);
 			} else if (dbo.containsField(KEY_REF)) {
 				return dbObjectToRef(dbo);
+			} else if (dbo.containsField(KEY_CODE)) {
+				return dbObjectToCode(dbo);
 			} else {
 				return dbObjectToElementPt(dbo);
 			}
@@ -922,6 +927,17 @@ public class MongoDBAdapter implements MDBAdapter {
 		long field_id = (Long) list.get(1);
 		return new MRef(obj_id, field_id);
 	}
+	
+	private static DBObject codeToDBObject(MCode code) {
+		DBObject obj = new BasicDBObject();
+		obj.put(KEY_CODE, code.getCode());
+		return obj;
+	}
+	
+	private static MCode dbObjectToCode(DBObject obj) {
+		String code = (String) obj.get(KEY_CODE);
+		return new MCode(code);
+	}
 
 	@Override
 	public void loadElementTags(long id, IDList list) {
@@ -933,6 +949,8 @@ public class MongoDBAdapter implements MDBAdapter {
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		BasicDBList tags = (BasicDBList) eleObj.get("tags");
+		if (tags == null)
+			return;
 		Iterator<Object> it = tags.iterator();
 		while (it.hasNext()) {
 			Long tid = (Long) it.next();
@@ -1035,6 +1053,12 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public IDList listAllObjectIDs(long id) {
 		return listIDs(classIDToString(id));
+	}
+	
+	@Override
+	public void deleteAllObjects(long classID) {
+		DBCollection col = db.getCollection(classIDToString(classID));
+		col.drop();
 	}
 	
 	private IDList listIDs(String collectionName) {

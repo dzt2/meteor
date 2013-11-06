@@ -39,7 +39,7 @@ public class MPackage extends MElement {
 	 */
 	private MPackage() {
 		super(MElementType.Package);
-		this.name = null;
+		this.name = "";
 		this.id = MElement.NULL_ID;
 		this.parent = null;
 	}
@@ -418,7 +418,7 @@ public class MPackage extends MElement {
 	
 	@Override
 	public String toString() {
-		if (this.parent == DEFAULT_PACKAGE) {
+		if (parent == null || parent == DEFAULT_PACKAGE) {
 			return this.name;
 		}
 		return this.parent.toString() + "::" + this.name;

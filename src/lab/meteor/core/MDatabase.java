@@ -657,10 +657,35 @@ public class MDatabase {
 	}
 	
 	void preloadTagName(MTag tag) {
+		if (dbAdapter == null)
+			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
+		if (tag == null)
+			return;
+		if (tag.isDeleted())
+			return;
+		
 		MDBAdapter.TagDBInfo tagDBInfo = new MDBAdapter.TagDBInfo(MTag.ATTRIB_FLAG_NAME);
 		tagDBInfo.id = tag.id;
 		dbAdapter.loadTag(tagDBInfo);
 		
+	}
+	
+	List<Long> listAllObjectsID(MClass cls) {
+		if (dbAdapter == null)
+			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
+		if (cls == null)
+			return null;
+		
+		return dbAdapter.listAllObjectIDs(cls.id);
+	}
+	
+	void deleteAllObjects(MClass cls) {
+		if (dbAdapter == null)
+			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
+		if (cls == null)
+			return;
+		
+		dbAdapter.deleteAllObjects(cls.id);
 	}
 	
 	/**

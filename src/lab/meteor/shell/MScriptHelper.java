@@ -2,6 +2,7 @@ package lab.meteor.shell;
 
 import java.util.Iterator;
 
+import lab.meteor.core.MClass;
 import lab.meteor.core.MDictionary;
 import lab.meteor.core.MElement;
 import lab.meteor.core.MList;
@@ -13,11 +14,25 @@ import lab.meteor.core.MReference;
 import lab.meteor.core.MReference.Multiplicity;
 import lab.meteor.core.MTag;
 
-public class MScript {
+public class MScriptHelper {
 	
-	public Iterator<MObject> objects(String className) {
-		// TODO
-		return null;
+	public Iterator<MObject> objects(MClass cls) {
+		return cls.objectsIterator();
+	}
+	
+	public Iterator<MObject> objects(String className) throws MScriptException {
+		MElement e = getElement(className);
+		if (e == null || e.getElementType() != MElementType.Class)
+			throw new MScriptException("class is not found.");
+		return objects((MClass) e);
+	}
+	
+	public MObject newObject(MClass cls) {
+		return new MObject(cls);
+	}
+	
+	public MTag tag(MElement e, String name, Object value) {
+		return new MTag(e, name, value);
 	}
 	
 	public Object get(MElement obj, String exp) throws MScriptException {

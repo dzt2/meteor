@@ -2,8 +2,6 @@ package lab.meteor.shell;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import lab.meteor.core.MAttribute;
 import lab.meteor.core.MClass;
@@ -40,14 +38,14 @@ public class MShell {
 	public void setEnableConsolePrint(boolean enable) {
 		enableConsolePrint = enable;
 	}
-	
-	public void parseCommandTest(String command) {
-		Tokenizer tokenizer = new Tokenizer(command);
-		Token t;
-		while ((t = tokenizer.next()) != null) {
-			System.out.println(t.content);
-		}
-	}
+//	
+//	public void parseCommandTest(String command) {
+//		Tokenizer tokenizer = new Tokenizer(command);
+//		Token t;
+//		while ((t = tokenizer.next()) != null) {
+//			System.out.println(t.content);
+//		}
+//	}
 	
 	public MPackage getCurrentPackage() {
 		return this.currentPkg;
@@ -57,9 +55,9 @@ public class MShell {
 		if (identifier == null)
 			return null;
 		if (identifier.contains("::"))
-			return MScript.getElement(identifier);
+			return MScriptHelper.getElement(identifier);
 		else
-			return MScript.getElement(identifier, currentPkg);
+			return MScriptHelper.getElement(identifier, currentPkg);
 	}
 
 	private void commandFinish(String command, String message) {
@@ -322,7 +320,7 @@ public class MShell {
 					{ printError(tokenizer.loc, "new name is required."); return; }
 					// only update class or enum or package name
 					try {
-						updateElementName(name.content, modify.content);
+						updateElementName(name.content, modify.content).save();
 						commandFinish(command, "succeeded.");
 					} catch (MShellException e) {
 						printError(e);
@@ -356,7 +354,7 @@ public class MShell {
 						// update attribute / reference name and type (class / enum / primitive)
 						try {
 							updateProperty(child.content, name.content, modify.content, 
-									typeName.content, multiple);
+									typeName.content, multiple).save();
 							commandFinish(command, "succeeded.");
 						} catch (MShellException e) {
 							printError(e);
@@ -365,7 +363,7 @@ public class MShell {
 					} else {
 						// only update attribute / reference name / symbol name
 						try {
-							updateChildName(child.content, name.content, modify.content);
+							updateChildName(child.content, name.content, modify.content).save();
 							commandFinish(command, "succeeded.");
 						} catch (MShellException e) {
 							printError(e);
@@ -392,7 +390,7 @@ public class MShell {
 				{ printError(tokenizer.loc, "target package is required."); return; }
 				// move
 				try {
-					moveElement(name.content, targetName.content);
+					moveElement(name.content, targetName.content).save();
 					commandFinish(command, "succeeded.");
 				} catch (MShellException e) {
 					printError(e);
@@ -411,20 +409,25 @@ public class MShell {
 				if (name == null || name.type != TokenType.Identifier)
 				{ printError(tokenizer.loc, "name is required."); return; }
 				// TODO
-				System.out.println("goto " + name.content);
+				System.out.println("show " + name.content);
 			}
 			break;
 		case Print:
 			{
 				Token name = tokenizer.next();
-				if (name == null || name.type != TokenType.Identifier)
-				{ printError(tokenizer.loc, "name is required."); return; }
-				try {
-					printElement(name.content);
+				if (name == null) {
+					print(getPrintString(currentPkg));
 					commandFinish(command, "succeeded.");
-				} catch (MShellException e) {
-					printError(e);
-					commandFinish(command, e.getMessage());
+				} else if (name.type != TokenType.Identifier)
+				{ printError(tokenizer.loc, "name is required."); return; }
+				else {
+					try {
+						printElement(name.content);
+						commandFinish(command, "succeeded.");
+					} catch (MShellException e) {
+						printError(e);
+						commandFinish(command, e.getMessage());
+					}
 				}
 			}
 			break;
@@ -566,7 +569,7 @@ public class MShell {
 		}
 	}
 	
-	private void updateElementName(String name, String newName) throws MShellException {
+	private MElement updateElementName(String name, String newName) throws MShellException {
 		if (name == null || newName == null)
 			throw new MShellException("invalid name.");
 		MElement e = findElement(name);
@@ -578,9 +581,10 @@ public class MShell {
 			((MClass) e).setName(newName);
 		else // Enum
 			((MEnum) e).setName(newName);
+		return e;
 	}
 	
-	private void updateChildName(String name, String parentName, String newName) throws MShellException {
+	private MElement updateChildName(String name, String parentName, String newName) throws MShellException {
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
 		MElement e = findElement(parentName);
@@ -592,17 +596,19 @@ public class MShell {
 		if (e.getElementType() == MElementType.Class) {
 			MProperty p = ((MClass) e).getProperty(name);
 			p.setName(newName);
+			return p;
 		} else { // Enum
 			MSymbol s = ((MEnum) e).getSymbol(name);
 			s.setName(newName);
+			return s;
 		}
 	}
 	
-	private void updateProperty(String name, String parentName, 
+	private MElement updateProperty(String name, String parentName, 
 			String newName, String typeName, boolean multiple) throws MShellException {
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
-		MElement e = findElement(name);
+		MElement e = findElement(parentName);
 		if (e == null)
 			throw new MShellException("element is not found.");
 		if (e.getElementType() != MElementType.Class) {
@@ -613,9 +619,10 @@ public class MShell {
 		if (MPrimitiveType.isPrimitiveTypeIdentifier(typeName)) {
 			if (p.getElementType() == MElementType.Attribute) {
 				((MAttribute) p).setDataType(MPrimitiveType.getPrimitiveType(typeName));
+				return p;
 			} else {
 				p.delete();
-				new MAttribute(cls, newName, MPrimitiveType.getPrimitiveType(typeName));
+				return new MAttribute(cls, newName, MPrimitiveType.getPrimitiveType(typeName));
 			}
 		} else {
 			e = findElement(typeName);
@@ -628,25 +635,27 @@ public class MShell {
 					r.setName(newName);
 					r.setReference((MClass) e);
 					r.setMultiplicity(multiple ? Multiplicity.Multiple: Multiplicity.One);
+					return r;
 				} else {
 					p.delete();
-					new MReference(cls, newName, (MClass) e, 
+					return new MReference(cls, newName, (MClass) e, 
 						multiple ? Multiplicity.Multiple: Multiplicity.One);
 				}
 			} else { // enum type
 				if (p.getElementType() == MElementType.Reference) {
 					p.delete();
-					new MAttribute(cls, newName, (MEnum) e);
+					return new MAttribute(cls, newName, (MEnum) e);
 				} else {
 					MAttribute a = (MAttribute) p;
 					a.setName(newName);
 					a.setDataType((MEnum) e);
+					return a;
 				}
 			}
 		}
 	}
 	
-	private void moveElement(String name, String parentName) throws MShellException {
+	private MElement moveElement(String name, String parentName) throws MShellException {
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
 		MElement e = findElement(name);
@@ -662,6 +671,7 @@ public class MShell {
 			((MClass) e).setPackage(pkg);
 		else if (e.getElementType() == MElementType.Enum)
 			((MEnum) e).setPackage(pkg);
+		return e;
 	}
 	
 	private void gotoPackege(String name) throws MShellException {
@@ -696,7 +706,8 @@ public class MShell {
 			return null;
 		}
 		StringBuilder builder = new StringBuilder();
-		builder.append(cls.toString()).append('\n');
+		builder.append(cls.toString()).append(" : ")
+			.append(cls.getSuperClass().getName()).append('\n');
 		String[] atbnames = cls.getAllAttributeNames();
 		for (String name : atbnames) {
 			MAttribute atb = cls.getAttribute(name);

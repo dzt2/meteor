@@ -291,8 +291,6 @@ public abstract class MElement {
 			return;
 		if (id == NULL_ID)
 			return;
-		MDatabase.getDB().removeElement(this);
-		MDatabase.getDB().deleteElement(this);
 		
 		loadTags();
 		Iterator<MTag> it = tagIterator();
@@ -301,6 +299,9 @@ public abstract class MElement {
 			removeTag(tag);
 			it.remove();
 		}
+		
+		MDatabase.getDB().removeElement(this);
+		MDatabase.getDB().deleteElement(this);
 		deleted = true;
 		changed_flag = 0;
 	}
@@ -318,6 +319,7 @@ public abstract class MElement {
 	 * @return
 	 */
 	public Iterator<MTag> tagIterator() {
+		getTags();
 		return new TagItr();
 	}
 	

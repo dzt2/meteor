@@ -1,6 +1,8 @@
 package lab.meteor.core;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -168,11 +170,40 @@ public class MClass extends MElement implements MType {
 		}
 		
 		unlink();
+		MDatabase.getDB().deleteAllObjects(this);
 		super.delete();
 	}
+	
+	public Iterator<MObject> objectsIterator() {
+		return new ObjItr(MDatabase.getDB().listAllObjectsID(this));
+	}
+	
+	private class ObjItr implements Iterator<MObject> {
 
-	public void deleteAllInstances() {
-		// TODO
+		Iterator<Long> it;
+		Long last = null;
+		
+		ObjItr(List<Long> objects) {
+			it = objects.iterator();
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return it.hasNext();
+		}
+
+		@Override
+		public MObject next() {
+			last = it.next();
+			return MDatabase.getDB().getLazyObject(last);
+		}
+
+		@Override
+		public void remove() {
+			it.remove();
+			MDatabase.getDB().getLazyObject(last).delete();
+		}
+		
 	}
 	
 	/* 
@@ -258,7 +289,7 @@ public class MClass extends MElement implements MType {
 	 */
 	private Set<MClass> getSubclasses() {
 		if (this.subclasses == null)
-			this.subclasses = new TreeSet<MClass>();
+			this.subclasses = new HashSet<MClass>();
 		return this.subclasses;
 	}
 	

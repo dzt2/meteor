@@ -34,6 +34,10 @@ public interface MDBAdapter {
 		public boolean isFlagged(int attrib_flag) {
 			return (flag & attrib_flag) != 0;
 		}
+		
+		public boolean noFlag() {
+			return flag == 0;
+		}
 	}
 	
 	/**

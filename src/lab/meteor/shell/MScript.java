@@ -8,6 +8,10 @@ import lab.meteor.core.MList;
 import lab.meteor.core.MObject;
 import lab.meteor.core.MPackage;
 import lab.meteor.core.MElement.MElementType;
+import lab.meteor.core.MProperty;
+import lab.meteor.core.MReference;
+import lab.meteor.core.MReference.Multiplicity;
+import lab.meteor.core.MTag;
 
 public class MScript {
 	
@@ -16,7 +20,7 @@ public class MScript {
 		return null;
 	}
 	
-	public Object get(MObject obj, String exp) throws MScriptException {
+	public Object get(MElement obj, String exp) throws MScriptException {
 		Tokenizer tn = new Tokenizer(exp);
 		Object it = obj;
 		Token t = tn.next();
@@ -24,55 +28,177 @@ public class MScript {
 			throw new MScriptException("expression must start with 'self'.");
 		while (tn.hasNext()) {
 			t = tn.next();
-			if (t.type == TokenType.Dot) {
-				if (!(it instanceof MObject))
-					throw new MScriptException("wrong operation at \'" + t.name + "\'");
-				MObject o = (MObject) it;
-				it = o.getProperty(t.name);
-			} else {
-				if (Character.isDigit(t.name.charAt(0))) {
-					int index = Integer.parseInt(t.name);
-					if (!(it instanceof MList))
-						throw new MScriptException("wrong operation at \'" + t.name + "\'");
-					MList list = (MList) it;
-					if (index >= list.size())
-						throw new MScriptException("out of range at \'" + t.name + "\'");
-					it = list.get(index);
-				} else {
-					if (!(it instanceof MDictionary))
-						throw new MScriptException("wrong operation at \'" + t.name + "\'");
-					MDictionary dict = (MDictionary) it;
-					if (!dict.containsKey(t.name))
-						throw new MScriptException("out of range at \'" + t.name + "\'");
-					it = dict.get(t.name);
-				}
-			}
+			if (it == null)
+				throw new MScriptException("interupt with null value.");
+			it = find(it, t);
 		}
 		return it;
 	}
 	
-	public static void main(String[] args) {
-		MScript s = new MScript();
-		try {
-			s.get(null, "self[friends][0][name]");
-		} catch (MScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public void set(MObject obj, String exp, Object value) throws MScriptException {
+		Tokenizer tn = new Tokenizer(exp);
+		Object it = obj;
+		Token t = tn.next();
+		if (t == null || !t.name.equals("self"))
+			throw new MScriptException("expression must start with 'self'.");
+		while (tn.hasNext()) {
+			t = tn.next();
+			if (it == null)
+				throw new MScriptException("interupt with null value.");
+			if (!tn.hasNext())
+				break;
+			it = find(it, t);
+		}
+		if (t.type == TokenType.Dot) {
+			if (!(it instanceof MObject))
+				throw new MScriptException("wrong operation at \'" + t.name + "\'");
+			MObject o = (MObject) it;
+			o.load();
+			MProperty p = o.getClazz().getProperty(t.name);
+			if (p.getElementType() == MElementType.Attribute) {
+				o.setAttribute(t.name, value);
+			} else {
+				if (((MReference) p).getMultiplicity() == Multiplicity.Multiple)
+					throw new MScriptException("wrong operation for the invalid multiplicity.");
+				if (!(value instanceof MObject))
+					throw new MScriptException("invalid value.");
+				o.setReference(t.name, (MObject) value);
+			}
+		} else if (t.type == TokenType.Bracket) {
+			if (Character.isDigit(t.name.charAt(0))) {
+				int index = Integer.parseInt(t.name);
+				if (!(it instanceof MList))
+					throw new MScriptException("wrong operation at \'" + t.name + "\'");
+				MList list = (MList) it;
+				if (index > list.size())
+					throw new MScriptException("out of range at \'" + t.name + "\'");
+				list.set(index, value);
+			} else {
+				if (!(it instanceof MDictionary))
+					throw new MScriptException("wrong operation at \'" + t.name + "\'");
+				MDictionary dict = (MDictionary) it;
+				dict.add(t.name, value);
+			}
+		} else if (t.type == TokenType.Angular) {
+			if (!(it instanceof MObject))
+				throw new MScriptException("wrong operation at \'" + t.name + "\'");
+			MElement o = (MElement) it;
+			o.loadTags();
+			MTag tag = o.getTag(t.name);
+			if (tag != null)
+				tag.setValue(value);
+			else {
+				new MTag(o, t.name, value);
+			}
 		}
 	}
 	
-	public void set(MObject obj, String exp, Object value) {
-		// TODO
+	public void add(MObject obj, String exp, MObject value) throws MScriptException {
+		if (value == null)
+			return;
+		Tokenizer tn = new Tokenizer(exp);
+		Object it = obj;
+		Token t = tn.next();
+		if (t == null || !t.name.equals("self"))
+			throw new MScriptException("expression must start with 'self'.");
+		while (tn.hasNext()) {
+			t = tn.next();
+			if (it == null)
+				throw new MScriptException("interupt with null value.");
+			if (!tn.hasNext())
+				break;
+			it = find(it, t);
+		}
+		if (t.type == TokenType.Dot) {
+			if (!(it instanceof MObject))
+				throw new MScriptException("wrong operation at \'" + t.name + "\'");
+			MObject o = (MObject) it;
+			o.load();
+			MProperty p = o.getClazz().getProperty(t.name);
+			if (p.getElementType() == MElementType.Attribute) {
+				throw new MScriptException("wrong operation for the invalid property.");
+			} else {
+				if (((MReference) p).getMultiplicity() == Multiplicity.One)
+					throw new MScriptException("wrong operation for the invalid multiplicity.");
+				o.addReference(t.name, value);
+			}
+		} else {
+			throw new MScriptException("add operation should be operated on a reference property.");
+		}
 	}
 	
-	public void add(MObject obj, String exp, MObject value) {
-		
+	public void remove(MObject obj, String exp, MObject value) throws MScriptException {
+		if (value == null)
+			return;
+		Tokenizer tn = new Tokenizer(exp);
+		Object it = obj;
+		Token t = tn.next();
+		if (t == null || !t.name.equals("self"))
+			throw new MScriptException("expression must start with 'self'.");
+		while (tn.hasNext()) {
+			t = tn.next();
+			if (it == null)
+				throw new MScriptException("interupt with null value.");
+			if (!tn.hasNext())
+				break;
+			it = find(it, t);
+		}
+		if (t.type == TokenType.Dot) {
+			if (!(it instanceof MObject))
+				throw new MScriptException("wrong operation at \'" + t.name + "\'");
+			MObject o = (MObject) it;
+			o.load();
+			MProperty p = o.getClazz().getProperty(t.name);
+			if (p.getElementType() == MElementType.Attribute) {
+				throw new MScriptException("wrong operation for the invalid property.");
+			} else {
+				if (((MReference) p).getMultiplicity() == Multiplicity.One)
+					throw new MScriptException("wrong operation for the invalid multiplicity.");
+				o.removeReference(t.name, value);
+			}
+		} else {
+			throw new MScriptException("add operation should be operated on a reference property.");
+		}
 	}
 	
-	public void remove(MObject obj, String exp, MObject value) {
-		
+	private Object find(Object it, Token t) throws MScriptException {
+		if (t.type == TokenType.Dot) {
+			if (!(it instanceof MObject))
+				throw new MScriptException("wrong operation at \'" + t.name + "\'");
+			MObject o = (MObject) it;
+			o.load();
+			it = o.getProperty(t.name);
+		} else if (t.type == TokenType.Bracket){
+			if (Character.isDigit(t.name.charAt(0))) {
+				int index = Integer.parseInt(t.name);
+				if (!(it instanceof MList))
+					throw new MScriptException("wrong operation at \'" + t.name + "\'");
+				MList list = (MList) it;
+				if (index >= list.size())
+					throw new MScriptException("out of range at \'" + t.name + "\'");
+				it = list.get(index);
+			} else {
+				if (!(it instanceof MDictionary))
+					throw new MScriptException("wrong operation at \'" + t.name + "\'");
+				MDictionary dict = (MDictionary) it;
+				if (!dict.containsKey(t.name))
+					throw new MScriptException("out of range at \'" + t.name + "\'");
+				it = dict.get(t.name);
+			}
+		} else { //Angular
+			if (!(it instanceof MObject))
+				throw new MScriptException("wrong operation at \'" + t.name + "\'");
+			MElement o = (MElement) it;
+			o.loadTags();
+			MTag tag = o.getTag(t.name);
+			if (tag == null)
+				throw new MScriptException("interupt with null tag.");
+			tag.load();
+			it = tag.getValue();
+		}
+		return it;
 	}
-	
+
 	public class MScriptException extends Exception {
 		private static final long serialVersionUID = 8051203885298589303L;
 		public MScriptException(String message) {
@@ -82,7 +208,8 @@ public class MScript {
 	
 	private enum TokenType {
 		Dot,
-		Bracket
+		Bracket,
+		Angular
 	}
 	
 	private class Token {
@@ -131,10 +258,26 @@ public class MScript {
 					throw new MScriptException("wrong expression.");
 				if (cur() == '.')
 					loc++;
-				else if (cur() != '[')
+				else if (cur() != '[' && cur() != '<')
 					throw new MScriptException("wrong expression.");
 				type = TokenType.Bracket;
-			} else {
+			} else if (ch == '<')  {
+				loc++;
+				while (isWordChar(ch = cur())) {
+					sb.append(ch);
+					loc++;
+				}
+				if (ch == '>')
+					loc++;
+				else
+					throw new MScriptException("wrong expression.");
+				if (cur() == '.')
+					loc++;
+				else if (cur() != '[' && cur() != '<')
+					throw new MScriptException("wrong expression.");
+				type = TokenType.Angular;
+			}
+			else {
 				throw new MScriptException("wrong expression.");
 			}
 			return new Token(sb.toString(), type);

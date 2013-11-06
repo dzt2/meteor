@@ -26,6 +26,10 @@ public class MElementPointer {
 		this(null);
 	}
 	
+	public MElementPointer(long id) {
+		this(id, MDatabase.getDB().getElementType(id));
+	}
+	
 	/**
 	 * Create a pointer.
 	 * @param id The ID of element.

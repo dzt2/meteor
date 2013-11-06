@@ -507,6 +507,10 @@ public class MObject extends MElement implements MNotifiable {
 		}
 	}
 	
+	long getClazzID() {
+		return this.class_pt.getID();
+	}
+	
 	private static Object toDBObject(Object value) {
 		if (value instanceof MList) {
 			MDBAdapter.DataList dl = new MDBAdapter.DataList();

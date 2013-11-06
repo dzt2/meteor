@@ -581,6 +581,7 @@ public class MDatabase {
 		case Object:
 			MDBAdapter.ObjectDBInfo objDBInfo = new MDBAdapter.ObjectDBInfo();
 			objDBInfo.id = ele.id;
+			objDBInfo.class_id = ((MObject) ele).getClazzID();
 			dbAdapter.deleteObject(objDBInfo);
 			break;
 		case Tag:

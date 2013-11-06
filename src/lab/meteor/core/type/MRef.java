@@ -13,9 +13,9 @@ public class MRef {
 	
 	final MElementPointer field;
 	
-	public MRef(long obj_id, long field_id, MElementType field_type) {
+	public MRef(long obj_id, long field_id) {
 		this.target = new MElementPointer(obj_id, MElementType.Object);
-		this.field = new MElementPointer(field_id, field_type);
+		this.field = new MElementPointer(field_id);
 	}
 	
 	public MRef(MObject obj, MAttribute atb) {

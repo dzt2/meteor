@@ -176,7 +176,7 @@ public class MDictionary extends MCollection implements Iterable<Map.Entry<Strin
 			Entry<String, Object> e = it.next();
 			Object o = e.getValue();
 			o = toOutputObject(o);
-			callback.action(o);
+			callback.action(e.getKey(), o);
 		}
 	}
 	

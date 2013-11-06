@@ -27,6 +27,14 @@ public class MShell {
 	public MShell() {
 	}
 	
+	public void addShellListener(IShellListener listener) {
+		listeners.add(listener);
+	}
+	
+	public void removeShellListener(IShellListener listener) {
+		listeners.remove(listener);
+	}
+	
 	final static String CLASS = "class";
 	final static String ENUM = "enum";
 	final static String PACKAGE = "package";
@@ -38,14 +46,6 @@ public class MShell {
 	public void setEnableConsolePrint(boolean enable) {
 		enableConsolePrint = enable;
 	}
-//	
-//	public void parseCommandTest(String command) {
-//		Tokenizer tokenizer = new Tokenizer(command);
-//		Token t;
-//		while ((t = tokenizer.next()) != null) {
-//			System.out.println(t.content);
-//		}
-//	}
 	
 	public MPackage getCurrentPackage() {
 		return this.currentPkg;

@@ -51,7 +51,7 @@ public abstract class MCollection implements MNotifiable {
 	 *
 	 */
 	public static interface ForEachCallback {
-		void action(Object o);
+		void action(Object key, Object o);
 	}
 	
 	/**
@@ -115,5 +115,39 @@ public abstract class MCollection implements MNotifiable {
 			return new MDictionary(parent);
 		}
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return this.toString(0);
+	}
+	
+	public String toString(final int intent) {
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < intent; i++) {
+			sb.append("    ");
+		}
+		sb.append("{\n");
+		forEach(new ForEachCallback() {
+
+			@Override
+			public void action(Object key, Object o) {
+				for (int i = 0; i < intent + 1; i++) {
+					sb.append("    ");
+				}
+				if (key != null)
+					sb.append(key.toString()).append(" : ");
+				if (o instanceof MCollection) {
+					sb.append(((MCollection)o).toString(intent+1));
+				} else
+					sb.append(o.toString());
+			}
+			
+		});
+		for (int i = 0; i < intent; i++) {
+			sb.append("    ");
+		}
+		sb.append("}");
+		return sb.toString();
 	}
 }

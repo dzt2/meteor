@@ -185,9 +185,10 @@ public class MList extends MCollection implements Iterable<Object> {
 	public void forEach(ForEachCallback callback) {
 		if (callback == null)
 			return;
+		int i = 0;
 		for (Object o : list) {
 			o = toOutputObject(o);
-			callback.action(o);
+			callback.action(i++, o);
 		}
 	}
 	

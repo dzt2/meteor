@@ -96,7 +96,7 @@ public class MSet extends MCollection implements Iterable<Object> {
 	public void forEach(ForEachCallback callback) {
 		for (Object o : set) {
 			o = toOutputObject(o);
-			callback.action(o);
+			callback.action(null, o);
 		}
 	}
 

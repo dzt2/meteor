@@ -734,6 +734,11 @@ public class MongoDBAdapter implements MDBAdapter {
 		set.put("$set", obj);
 		col.update(que, set);
 	}
+	
+	@Override
+	public long getObjectClass(long obj_id) {
+		return readObjectClass(obj_id);
+	}
 
 	final static String KEY_DICT = "dict";
 	final static String KEY_LIST = "list";

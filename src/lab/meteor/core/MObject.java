@@ -20,7 +20,7 @@ public class MObject extends MElement implements MNotifiable {
 
 	private Map<Long, Object> values = null;
 	
-	private MElementPointer class_pt = new MElementPointer();
+	MElementPointer class_pt = new MElementPointer();
 	
 	public MObject(MClass clazz) throws MException {
 		super(MElementType.Object);
@@ -542,8 +542,42 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	@SuppressWarnings("serial")
-	static class MPointerSet extends TreeSet<MElementPointer> {
+	static class MPointerSet extends HashSet<MElementPointer> {
 
+	}
+	
+	public String print() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Object(").append(this.id).append(")\n");
+		for (Long id : this.getValues().keySet()) {
+			MElement e = MDatabase.getDB().getElement(id);
+			MProperty p = (MProperty) e;
+			sb.append("  ").append(p.name).append(" : ");
+			if (e.getElementType() == MElementType.Attribute) {
+				sb.append(this.values.get(id).toString()).append("\n");
+			} else {
+				MReference r = (MReference) e;
+				if (r.getMultiplicity() == Multiplicity.Multiple) {
+					MPointerSet set = (MPointerSet)this.values.get(r.name);
+					sb.append("  \n{\n");
+					for (MElementPointer pt : set) {
+						sb.append("    ").append(pt.getElement().toString()).append("\n");
+					}
+					sb.append("  }\n");
+				} else {
+					MElementPointer pt = (MElementPointer)this.values.get(r.name);
+					sb.append(pt.getElement().toString()).append("\n");
+				}
+			}
+		}
+		return sb.toString();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getClazz().toString()).append("(").append(this.id).append(")");
+		return sb.toString();
 	}
 
 	@Override

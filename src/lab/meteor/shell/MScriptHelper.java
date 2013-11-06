@@ -3,8 +3,11 @@ package lab.meteor.shell;
 import java.util.Iterator;
 
 import lab.meteor.core.MClass;
+import lab.meteor.core.MDatabase;
 import lab.meteor.core.MDictionary;
 import lab.meteor.core.MElement;
+import lab.meteor.core.MElementPointer;
+import lab.meteor.core.MEnum;
 import lab.meteor.core.MList;
 import lab.meteor.core.MObject;
 import lab.meteor.core.MPackage;
@@ -27,12 +30,48 @@ public class MScriptHelper {
 		return objects((MClass) e);
 	}
 	
-	public MObject newObject(MClass cls) {
+	public MObject object(MClass cls) {
+		if (cls == null)
+			return null;
 		return new MObject(cls);
+	}
+	
+	public MObject object(String clsName) throws MScriptException {
+		MClass cls = findClass(clsName);
+		return object(cls);
 	}
 	
 	public MTag tag(MElement e, String name, Object value) {
 		return new MTag(e, name, value);
+	}
+	
+	public MPackage defaultPackage() {
+		return MPackage.DEFAULT_PACKAGE;
+	}
+	
+	public MPackage findPackage(String name) throws MScriptException {
+		MElement e = getElement(name);
+		if (e == null || e.getElementType() != MElementType.Package)
+			throw new MScriptException("package is not found.");
+		return (MPackage) e;
+	}
+	
+	public MClass findClass(String name) throws MScriptException {
+		MElement e = getElement(name);
+		if (e == null || e.getElementType() != MElementType.Class)
+			throw new MScriptException("class is not found.");
+		return (MClass) e;
+	}
+	
+	public MEnum findEnum(String name) throws MScriptException {
+		MElement e = getElement(name);
+		if (e == null || e.getElementType() != MElementType.Enum)
+			throw new MScriptException("enum is not found.");
+		return (MEnum) e;
+	}
+	
+	public MObject findObject(long id) {
+		return (MObject)(new MElementPointer(id, MElementType.Object)).getElement();
 	}
 	
 	public Object get(MElement obj, String exp) throws MScriptException {

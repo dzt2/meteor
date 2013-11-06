@@ -12,7 +12,7 @@ import lab.meteor.core.type.MCode;
 
 public class MScriptEngine {
 	
-	private ScriptEngine se;
+	private ScriptEngineManager sem;
 	MScriptHelper helper;
 	
 	List<IScriptListener> listeners = new LinkedList<IScriptListener>();
@@ -32,14 +32,14 @@ public class MScriptEngine {
 	}
 	
 	public MScriptEngine() {
-		ScriptEngineManager sem = new ScriptEngineManager();
-		se = sem.getEngineByName("javascript");
-		helper = new MScriptHelper();
-		se.getBindings(ScriptContext.ENGINE_SCOPE).put("me", helper);
+		sem = new ScriptEngineManager();
 	}
 	
 	public void run(String code) {
 		try {
+			ScriptEngine se = sem.getEngineByName("javascript");
+			helper = new MScriptHelper();
+			se.getBindings(ScriptContext.ENGINE_SCOPE).put("me", helper);
 			se.eval(code);
 		} catch (ScriptException e) {
 			printError(e.getMessage());

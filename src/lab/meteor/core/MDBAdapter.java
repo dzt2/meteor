@@ -167,6 +167,7 @@ public interface MDBAdapter {
 	IDList listAllObjectIDs(long classID);
 	
 	void deleteAllObjects(long classID);
+	long getObjectClass(long obj_id);
 	
 	/**
 	 * A list of object in meteor system. It's a linked list.

@@ -29,6 +29,7 @@ public class ShellView extends View {
 	
 	public ShellView() {
 		shell = new MShell();
+		
 		textView = new EditableTextView() {
 			
 			@Override

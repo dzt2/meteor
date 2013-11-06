@@ -874,6 +874,8 @@ public class MDatabase {
 		MObject obj = objectsCache.get(id);
 		if (obj == null) {
 			obj = new MObject(id);
+			long cls_id = this.dbAdapter.getObjectClass(id);
+			obj.class_pt.setPointer(this.getClass(cls_id));
 			objectsCache.put(id, obj);
 		}
 		return obj;

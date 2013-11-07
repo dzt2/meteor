@@ -17,7 +17,11 @@ import java.util.ListIterator;
  */
 public class MList extends MCollection implements Iterable<Object> {
 
-	MList(MNotifiable parent) {
+	MList(MNotifiable root, MAttribute atb) {
+		super(root, atb);
+	}
+	
+	MList(MCollection parent) {
 		super(parent);
 	}
 

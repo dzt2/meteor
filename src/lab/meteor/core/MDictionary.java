@@ -20,7 +20,11 @@ import java.util.TreeMap;
  */
 public class MDictionary extends MCollection implements Iterable<Map.Entry<String, Object>> {
 	
-	MDictionary(MNotifiable parent) {
+	MDictionary(MNotifiable root, MAttribute atb) {
+		super(root, atb);
+	}
+	
+	MDictionary(MCollection parent) {
 		super(parent);
 	}
 

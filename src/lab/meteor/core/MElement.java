@@ -311,7 +311,8 @@ public abstract class MElement {
 	 * modification of element content.
 	 */
 	protected void setChanged(int flag) {
-		changed_flag |= flag;
+//		changed_flag |= flag;
+		forceSave(flag);
 	}
 
 	/**

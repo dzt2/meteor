@@ -701,13 +701,15 @@ public class MShell {
 			print(getPrintString((MEnum) e));
 	}
 	
-	private static String getPrintString(MClass cls) {
+	static String getPrintString(MClass cls) {
 		if (cls == null) {
 			return null;
 		}
 		StringBuilder builder = new StringBuilder();
-		builder.append(cls.toString()).append(" : ")
-			.append(cls.getSuperClass().getName()).append('\n');
+		builder.append(cls.toString());
+		if (cls.getSuperClass() != null)
+			builder.append(" : ").append(cls.getSuperClass().getName());
+		builder.append('\n');
 		String[] atbnames = cls.getAllAttributeNames();
 		for (String name : atbnames) {
 			MAttribute atb = cls.getAttribute(name);
@@ -722,7 +724,7 @@ public class MShell {
 		return builder.toString();
 	}
 	
-	private static String getPrintString(MEnum enm) {
+	static String getPrintString(MEnum enm) {
 		if (enm == null) {
 			return null;
 		}
@@ -737,7 +739,7 @@ public class MShell {
 		return builder.toString();
 	}
 	
-	private static String getPrintString(MPackage pkg) {
+	static String getPrintString(MPackage pkg) {
 		if (pkg == null)
 			return null;
 		StringBuilder builder = new StringBuilder();

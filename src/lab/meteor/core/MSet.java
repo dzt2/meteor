@@ -19,7 +19,11 @@ public class MSet extends MCollection implements Iterable<Object> {
 
 	final Set<Object> set = new HashSet<Object>();
 	
-	MSet(MNotifiable parent) {
+	MSet(MNotifiable root, MAttribute atb) {
+		super(root, atb);
+	}
+	
+	MSet(MCollection parent) {
 		super(parent);
 	}
 

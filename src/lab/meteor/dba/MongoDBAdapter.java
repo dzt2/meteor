@@ -68,7 +68,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		DBObject obj = new BasicDBObject();
 		obj.put("_id", id);
 		obj.put("type", MElementType.Object.toString());
-		obj.put("class", classIDToString(class_id));
+		obj.put("class", class_id);
 		ecol.insert(obj);
 	}
 	

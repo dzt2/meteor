@@ -104,6 +104,10 @@ public class MElementPointer {
 		}
 	}
 	
+	public boolean isNull() {
+		return id == MElement.NULL_ID;
+	}
+	
 	/**
 	 * Same with Long.
 	 */

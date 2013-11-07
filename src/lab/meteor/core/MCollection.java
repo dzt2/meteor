@@ -1,5 +1,8 @@
 package lab.meteor.core;
 
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * Base class of List, Set and Dictionary. The collection need notify the parent when it's
  * changed. The parent may be another collection or an object. The changed collection tells the
@@ -8,7 +11,7 @@ package lab.meteor.core;
  * @author Qiang
  *
  */
-public abstract class MCollection implements MNotifiable {
+public abstract class MCollection {
 	
 	/**
 	 * A "factory" of collection instances. Pass it to <code>MCollection.createCollection()</code>
@@ -27,22 +30,35 @@ public abstract class MCollection implements MNotifiable {
 	}
 	
 	/**
-	 * Parent for pass the update message.
+	 * The pointer of MObject that this collection belongs to.
 	 */
-	private MNotifiable parent;
+	private MNotifiable root;
+	
+	/**
+	 * The pointer of MAttribute.
+	 */
+	private MElementPointer attribute;
 	
 	/**
 	 * Constructor.
 	 * @param parent
 	 */
-	protected MCollection(MNotifiable parent) {
-		if (parent == null)
+	MCollection(MNotifiable root, MAttribute atb) {
+		if (root == null)
 			throw new MException(MException.Reason.NULL_NOTIFICABLE);
+		this.root = root;
+		this.attribute = new MElementPointer(atb);
 	}
 	
-	@Override
+	MCollection(MCollection parent) {
+		if (parent == null)
+			throw new MException(MException.Reason.NULL_NOTIFICABLE);
+		this.root = parent.root;
+		this.attribute = parent.attribute;
+	}
+	
 	public void notifyChanged() {
-		this.parent.notifyChanged();
+		root.setChanged(attribute);
 	}
 	
 	/**
@@ -70,7 +86,8 @@ public abstract class MCollection implements MNotifiable {
 		if (o instanceof MElement) {
 			return new MElementPointer((MElement) o);
 		} else if (o instanceof MCollection.Factory) {
-			return MCollection.createCollection((MCollection.Factory) o, this);
+			return MCollection.createCollection((MCollection.Factory) o, root, 
+					(MAttribute) attribute.getElement());
 		}
 		return o;
 	}
@@ -105,16 +122,83 @@ public abstract class MCollection implements MNotifiable {
 	 * <code>MSet</code> when factory is <code>Factory.Set</code>;
 	 * <code>MDictionary</code> when factory is <code>Factory.Dictionary</code>.
 	 */
-	protected static MCollection createCollection(Factory factory, MNotifiable parent) {
+	protected static MCollection createCollection(Factory factory, 
+			MNotifiable root, MAttribute atb) {
 		switch (factory) {
 		case List:
-			return new MList(parent);
+			return new MList(root, atb);
 		case Set:
-			return new MSet(parent);
+			return new MSet(root, atb);
 		case Dictionary:
-			return new MDictionary(parent);
+			return new MDictionary(root, atb);
 		}
 		return null;
+	}
+	
+	static void fromDBObject(MCollection parent, Object value, Object key) {
+		if (value instanceof MDBAdapter.DataList) {
+			MList list = new MList(parent);
+			MDBAdapter.DataList dl = (MDBAdapter.DataList) value;
+			for (Object o : dl) {
+				fromDBObject(list, o, null);
+			}
+			value = list;
+		} else if (value instanceof MDBAdapter.DataSet) {
+			MSet set = new MSet(parent);
+			MDBAdapter.DataSet ds = (MDBAdapter.DataSet) value;
+			for (Object o : ds) {
+				fromDBObject(set, o, null);
+			}
+			value = set;
+		} else if (value instanceof MDBAdapter.DataDict) {
+			MDictionary dict = new MDictionary(parent);
+			MDBAdapter.DataDict dd = (MDBAdapter.DataDict) value;
+			Iterator<Map.Entry<String, Object>> it = dd.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, Object> entry = it.next();
+				String k = entry.getKey();
+				Object o = entry.getValue();
+				fromDBObject(dict, o, k);
+			}
+			value = dict;
+		}
+		if (parent instanceof MList) {
+			((MList) parent).list.add(value);
+		} else if (parent instanceof MSet) {
+			((MSet) parent).set.add(value);
+		} else if (parent instanceof MDictionary) {
+			((MDictionary) parent).dict.put((String)key, value);
+		}
+	}
+	
+	static Object toDBObject(Object value) {
+		if (value instanceof MList) {
+			MDBAdapter.DataList dl = new MDBAdapter.DataList();
+			Iterator<Object> it = ((MList) value).list.iterator();
+			while (it.hasNext()) {
+				dl.add(toDBObject(it.next()));
+			}
+			return dl;
+		} else if (value instanceof MSet) {
+			MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
+			Iterator<Object> it = ((MSet) value).set.iterator();
+			while (it.hasNext()) {
+				ds.add(toDBObject(it.next()));
+			}
+			return ds;
+		} else if (value instanceof MDictionary) {
+			MDBAdapter.DataDict dd = new MDBAdapter.DataDict();
+			Iterator<Map.Entry<String, Object>> it = ((MDictionary) value).dict.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, Object> entry = it.next();
+				dd.put(entry.getKey(), toDBObject(entry.getValue()));
+			}
+			return dd;
+		} else if (value instanceof MElement) {
+			return new MElementPointer((MElement) value);
+		} else {
+			return value;
+		}
 	}
 	
 	@Override

@@ -122,7 +122,7 @@ public class MTag extends MElement implements MNotifiable {
 		if (value instanceof MElement) {
 			this.value = new MElementPointer((MElement) value);
 		} else if (value instanceof MCollection.Factory) {
-			this.value = MCollection.createCollection((MCollection.Factory) value, this);
+			this.value = MCollection.createCollection((MCollection.Factory) value, this, null);
 		} else {
 			this.value = value;
 		}
@@ -177,81 +177,37 @@ public class MTag extends MElement implements MNotifiable {
 		if (dbInfo.isFlagged(ATTRIB_FLAG_NAME))
 			tagDBInfo.name = this.name;
 		if (dbInfo.isFlagged(ATTRIB_FLAG_VALUE))
-			tagDBInfo.value = toDBObject(this.value);
+			tagDBInfo.value = MCollection.toDBObject(this.value);
 	}
 	
-	@Override
-	public void notifyChanged() {
-		setChanged(ATTRIB_FLAG_VALUE);
-	}
-
-	private static void fromDBObject(MNotifiable parent, Object value, Object key) {
+	private static void fromDBObject(MTag tag, Object value, Object key) {
 		if (value instanceof MDBAdapter.DataList) {
-			MList list = new MList(parent);
+			MList list = new MList(tag, null);
 			MDBAdapter.DataList dl = (MDBAdapter.DataList) value;
 			for (Object o : dl) {
-				fromDBObject(list, o, null);
+				MCollection.fromDBObject(list, o, null);
 			}
 			value = list;
 		} else if (value instanceof MDBAdapter.DataSet) {
-			MSet set = new MSet(parent);
+			MSet set = new MSet(tag, null);
 			MDBAdapter.DataSet ds = (MDBAdapter.DataSet) value;
 			for (Object o : ds) {
-				fromDBObject(set, o, null);
+				MCollection.fromDBObject(set, o, null);
 			}
 			value = set;
 		} else if (value instanceof MDBAdapter.DataDict) {
-			MDictionary dict = new MDictionary(parent);
+			MDictionary dict = new MDictionary(tag, null);
 			MDBAdapter.DataDict dd = (MDBAdapter.DataDict) value;
 			Iterator<Map.Entry<String, Object>> it = dd.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry<String, Object> entry = it.next();
 				String k = entry.getKey();
 				Object o = entry.getValue();
-				fromDBObject(dict, o, k);
+				MCollection.fromDBObject(dict, o, k);
 			}
 			value = dict;
 		}
-		
-		if (parent instanceof MTag) {
-			((MTag) parent).value = value;
-		} else if (parent instanceof MList) {
-			((MList) parent).list.add(value);
-		} else if (parent instanceof MSet) {
-			((MSet) parent).set.add(value);
-		} else if (parent instanceof MDictionary) {
-			((MDictionary) parent).dict.put((String)key, value);
-		}
-	}
-	
-	private static Object toDBObject(Object value) {
-		if (value instanceof MList) {
-			MDBAdapter.DataList dl = new MDBAdapter.DataList();
-			Iterator<Object> it = ((MList) value).list.iterator();
-			while (it.hasNext()) {
-				dl.add(toDBObject(it.next()));
-			}
-			return dl;
-		} else if (value instanceof MSet) {
-			MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
-			Iterator<Object> it = ((MSet) value).set.iterator();
-			while (it.hasNext()) {
-				ds.add(toDBObject(it.next()));
-			}
-			return ds;
-		} else if (value instanceof MDictionary) {
-			MDBAdapter.DataDict dd = new MDBAdapter.DataDict();
-			Iterator<Map.Entry<String, Object>> it = ((MDictionary) value).dict.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry<String, Object> entry = it.next();
-				dd.put(entry.getKey(), toDBObject(entry.getValue()));
-			}
-			return dd;
-		} else if (value instanceof MElement) {
-			return new MElementPointer((MElement) value);
-		} else {
-			return value;
-		}
+		tag.value = value;
 	}
 
 	void preloadName() {
@@ -323,5 +279,10 @@ public class MTag extends MElement implements MNotifiable {
 	
 	public static final int ATTRIB_FLAG_NAME = 0x00000001;
 	public static final int ATTRIB_FLAG_VALUE = 0x00000002;
+
+	@Override
+	public void setChanged(MElementPointer property) {
+		setChanged(ATTRIB_FLAG_VALUE);
+	}
 
 }

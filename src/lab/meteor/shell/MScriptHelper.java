@@ -3,7 +3,6 @@ package lab.meteor.shell;
 import java.util.Iterator;
 
 import lab.meteor.core.MClass;
-import lab.meteor.core.MDatabase;
 import lab.meteor.core.MDictionary;
 import lab.meteor.core.MElement;
 import lab.meteor.core.MElementPointer;
@@ -19,29 +18,29 @@ import lab.meteor.core.MTag;
 
 public class MScriptHelper {
 	
-	public Iterator<MObject> objects(MClass cls) {
+	public Iterator<MObject> objectItr(MClass cls) {
 		return cls.objectsIterator();
 	}
 	
-	public Iterator<MObject> objects(String className) throws MScriptException {
+	public Iterator<MObject> objectItr(String className) throws MScriptException {
 		MElement e = getElement(className);
 		if (e == null || e.getElementType() != MElementType.Class)
 			throw new MScriptException("class is not found.");
-		return objects((MClass) e);
+		return objectItr((MClass) e);
 	}
 	
-	public MObject object(MClass cls) {
+	public MObject newObject(MClass cls) {
 		if (cls == null)
 			return null;
 		return new MObject(cls);
 	}
 	
-	public MObject object(String clsName) throws MScriptException {
+	public MObject newObject(String clsName) throws MScriptException {
 		MClass cls = findClass(clsName);
-		return object(cls);
+		return newObject(cls);
 	}
 	
-	public MTag tag(MElement e, String name, Object value) {
+	public MTag newTag(MElement e, String name, Object value) {
 		return new MTag(e, name, value);
 	}
 	
@@ -74,6 +73,18 @@ public class MScriptHelper {
 		return (MObject)(new MElementPointer(id, MElementType.Object)).getElement();
 	}
 	
+	public void print(MPackage pkg) {
+		System.out.println(MShell.getPrintString(pkg));
+	}
+
+	public void print(MClass cls) {
+		System.out.println(MShell.getPrintString(cls));
+	}
+
+	public void print(MEnum enm) {
+		System.out.println(MShell.getPrintString(enm));
+	}
+
 	public Object get(MElement obj, String exp) throws MScriptException {
 		Tokenizer tn = new Tokenizer(exp);
 		Object it = obj;
@@ -221,7 +232,7 @@ public class MScriptHelper {
 				throw new MScriptException("wrong operation at \'" + t.name + "\'");
 			MObject o = (MObject) it;
 			o.load();
-			it = o.getProperty(t.name);
+			it = o.get(t.name);
 		} else if (t.type == TokenType.Bracket){
 			if (Character.isDigit(t.name.charAt(0))) {
 				int index = Integer.parseInt(t.name);

@@ -67,89 +67,46 @@ public class MObject extends MElement implements MNotifiable {
 		}
 	}
 	
-	public Object getProperty(String name) {
-		load();
-		
+	public Object get(String name) {
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
-		MProperty field = cls.getProperty(name);
-		if (field == null)
+		MProperty p = cls.getProperty(name);
+		if (p == null)
 			return null;
-		switch (field.getElementType()) {
+		switch (p.getElementType()) {
 		case Attribute:
-			return this.getAttribute((MAttribute) field);
+			return this.getAttribute((MAttribute) p);
 		case Reference:
-			return this.getReference((MReference) field);
+			return this.getReference((MReference) p);
 		default:
 			return null;
+		}
+	}
+	
+	public void set(String name, Object o) {
+		MClass cls = (MClass) class_pt.getElement();
+		if (cls == null)
+			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MAttribute p = cls.getAttribute(name);
+		if (p == null)
+			return;
+		this.setAttribute((MAttribute) p, o);
+	}
+	
+	public void set(String name, MObject o) {
+		MClass cls = (MClass) class_pt.getElement();
+		if (cls == null)
+			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MProperty p = cls.getProperty(name);
+		if (p == null)
+			return;
+		if (p.getElementType() == MElementType.Reference) {
+			this.setReference(p.name, o);
 		}
 	}
 
-	private Map<Long, Object> getValues() {
-		if (this.values == null)
-			this.values = new TreeMap<Long, Object>();
-		return this.values;
-	}
-	
-	private Object getAttribute(MAttribute atb) {
-		boolean changeFlag = false;
-		Object o = this.getValues().get(atb.id);
-		if (o != null) {
-			if (!MUtility.checkType(atb.getDataType(), o)) {
-				this.getValues().remove(atb.id);
-				changeFlag = true;
-			}
-		}
-		
-		MNativeDataType nType = atb.getDataType().getNativeDataType();
-		switch (nType) {
-		case List:
-			if (o == null) {
-				o = MCollection.createCollection(Factory.List, this);
-				this.getValues().put(atb.id, o);
-			}
-			break;
-		case Set:
-			if (o == null) {
-				o = MCollection.createCollection(Factory.Set, this);
-				this.getValues().put(atb.id, o);
-			}
-			break;
-		case Dictionary:
-			if (o == null) {
-				o = MCollection.createCollection(Factory.Dictionary, this);
-				this.getValues().put(atb.id, o);
-			}
-			break;
-		case Enum:
-			if (o != null) {
-				o = ((MElementPointer) o).getElement();
-			}
-			break;
-		default:
-			break;
-		}
-		if (changeFlag)
-			this.setChanged(ATTRIB_FLAG_VALUES);
-		return o;
-	}
-	
-	private void setAttribute(MAttribute atb, Object obj) {
-		Object o;
-		if (obj instanceof MElement) {
-			o = new MElementPointer((MElement) obj);
-		} else if (obj instanceof MCollection.Factory) {
-			o =  MCollection.createCollection((MCollection.Factory) obj, this);
-		} else {
-			o = obj;
-		}
-		this.getValues().put(atb.id, o);
-	}
-	
 	public Object getAttribute(String name) {
-		load();
-		
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -159,10 +116,39 @@ public class MObject extends MElement implements MNotifiable {
 		
 		return this.getAttribute(atb);
 	}
-	
-	public void setAttribute(String name, Object obj) {
-		load();
+
+	public MObject getReference(String name) {
+		MClass cls = (MClass) class_pt.getElement();
+		if (cls == null)
+			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MReference ref = cls.getReference(name);
+		if (ref == null)
+			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
 		
+		if (ref.getMultiplicity() == Multiplicity.Multiple)
+			return null;
+		
+		Object o = this.getReference(ref);
+		return (MObject) o;
+	}
+
+	public MObjectSet getReferences(String name) {
+		MClass cls = (MClass) class_pt.getElement();
+		if (cls == null)
+			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MReference ref = cls.getReference(name);
+		if (ref == null)
+			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
+		if (ref.getMultiplicity() == Multiplicity.One)
+			return null;
+		
+		Object o = this.getReference(ref);
+		MObjectSet set = (MObjectSet) o;
+		set.check();
+		return set;
+	}
+
+	public void setAttribute(String name, Object obj) {
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -173,48 +159,27 @@ public class MObject extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		
 		this.setAttribute(atb, obj);
-		this.notifyChanged();
-	}
-	
-	private Object getReference(MReference ref) {
-		Object value = this.getValues().get(ref.id);
-		if (ref.getMultiplicity() == Multiplicity.Multiple) {
-			if (value == null || !(value instanceof MPointerSet)) {
-				value = new MPointerSet();
-				this.getValues().put(ref.id, value);
-				this.setChanged(ATTRIB_FLAG_VALUES);
-			}
-		}
-		return value;
 	}
 
-	private void addReference(MReference ref, MObject obj) {
-		if (ref.getMultiplicity() == Multiplicity.One)
-			return;
-		MPointerSet set = (MPointerSet) this.getReference(ref);
-		set.add(new MElementPointer(obj));
-	}
-	
-	private void removeReference(MReference ref, MObject obj) {
-		if (ref.getMultiplicity() == Multiplicity.One)
-			return;
-		MPointerSet set = (MPointerSet) this.getReference(ref);
-		set.remove(new MElementPointer(obj));
-	}
-	
-	private void setReference(MReference ref, MObject obj) {
+	public void setReference(String name, MObject obj) {
+		MClass cls = (MClass) class_pt.getElement();
+		if (cls == null)
+			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MReference ref = cls.getReference(name);
+		if (ref == null)
+			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
 		if (ref.getMultiplicity() == Multiplicity.Multiple)
 			return;
-		if (obj == null)
-			this.getValues().remove(ref.id);
-		else
-			this.getValues().put(ref.id, obj);
+		if (!obj.isInstanceOf(ref.getOwner()))
+			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
+		
+		oppositeWhenSet(ref, obj);
+		this.setReference(ref, obj);
 	}
-	
+
 	public void addReference(String name, MObject obj) {
 		if (obj == null)
 			return;
-		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -223,9 +188,33 @@ public class MObject extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
 		if (ref.getMultiplicity() == Multiplicity.One)
 			return;
-		if (!obj.isInstanceOf(ref.getOwner()))
+		if (!obj.isInstanceOf(ref.getReference()))
 			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
 		
+		oppositeWhenAdd(ref, obj);
+		this.addReference(ref, obj);
+	}
+	
+	public void removeReference(String name, MObject obj) {
+		if (obj == null)
+			return;
+		MClass cls = (MClass) class_pt.getElement();
+		if (cls == null)
+			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MReference ref = cls.getReference(name);
+		if (ref == null)
+			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
+		if (ref.getMultiplicity() == Multiplicity.One)
+			return;
+		if (!obj.isInstanceOf(ref.getReference()))
+			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
+		
+		oppositeWhenRemove(ref, obj);
+		this.removeReference(ref, obj);
+	}
+
+	private void oppositeWhenAdd(MReference ref, MObject obj) {
+		load();
 		MReference ref_a = ref;
 		MReference ref_b = ref.getOpposite();
 		
@@ -237,6 +226,7 @@ public class MObject extends MElement implements MNotifiable {
 				if (o != null && o instanceof MElementPointer) {
 					MObject old_a = (MObject) ((MElementPointer) o).getElement();
 					// ref_a multiplicity is Multiple
+					// unlinke b and old_a
 					old_a.removeReference(ref_a, obj);
 				}
 				obj.setReference(ref_b, this);
@@ -244,26 +234,10 @@ public class MObject extends MElement implements MNotifiable {
 				obj.addReference(ref_b, this);
 			}
 		}
-		this.addReference(ref_a, obj);
-		this.setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
-	public void removeReference(String name, MObject obj) {
-		if (obj == null)
-			return;
+	private void oppositeWhenRemove(MReference ref, MObject obj) {
 		load();
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
-		MReference ref = cls.getReference(name);
-		if (ref == null)
-			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
-		if (ref.getMultiplicity() == Multiplicity.One)
-			return;
-		if (!obj.isInstanceOf(ref.getOwner()))
-			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
-		
-		MReference ref_a = ref;
 		MReference ref_b = ref.getOpposite();
 		
 		// have to handle the opposite references
@@ -275,35 +249,27 @@ public class MObject extends MElement implements MNotifiable {
 				obj.removeReference(ref_b, this);
 			}
 		}
-		this.removeReference(ref_a, obj);
-		this.setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
-	public void setReference(String name, MObject obj) {
+	private void oppositeWhenSet(MReference ref, MObject obj) {
 		load();
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
-		MReference ref = cls.getReference(name);
-		if (ref == null)
-			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
-		if (ref.getMultiplicity() == Multiplicity.Multiple)
-			return;
-		if (!obj.isInstanceOf(ref.getOwner()))
-			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
-		
+		// one
 		MReference ref_a = ref;
+		// one or multiply
 		MReference ref_b = ref.getOpposite();
 		
 		// have to handle the opposite references
 		if (ref_b != null) {
-			// this old reference
+			// this old reference, because multiplicity is one, so it must be MObject
 			Object o = this.getReference(ref_a);
 			if (o != null && o instanceof MElementPointer) {
 				MObject old_b = (MObject) ((MElementPointer) o).getElement();
+				// if opposite reference is one.
 				if (ref_b.getMultiplicity() == Multiplicity.One) {
+					// unlink old_b and a
 					old_b.setReference(ref_b, null);
 				} else {
+					// delete a in old_b
 					old_b.removeReference(ref_b, this);
 				}
 			}
@@ -315,76 +281,135 @@ public class MObject extends MElement implements MNotifiable {
 					if (o != null && o instanceof MElementPointer) {
 						MObject old_a = (MObject) ((MElementPointer) o).getElement();
 						// ref_a multiplicity is One
+						// unlink new_b and old_a
 						old_a.setReference(ref_a, null);
 					}
+					// link a and new_b
 					obj.setReference(ref_b, this);
 				} else { // B Multiple
+					// add a in new_b
 					obj.addReference(ref_b, this);
 				}
 			}
 		}
-		this.setReference(ref_a, obj);
-		this.setChanged(ATTRIB_FLAG_VALUES);
+	}
+
+	private Map<Long, Object> getValues() {
+		if (this.values == null)
+			this.values = new TreeMap<Long, Object>();
+		return this.values;
 	}
 	
-	public MObject getReference(String name) {
+	private Object getAttribute(MAttribute atb) {
 		load();
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
-		MReference ref = cls.getReference(name);
-		if (ref == null)
-			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
-		if (ref.getMultiplicity() == Multiplicity.Multiple)
-			return null;
-		
-		Object o = this.getReference(ref);
-		if (o == null)
-			return null;
-		if (o instanceof MElementPointer) {
-			MObject mo = (MObject) ((MElementPointer) o).getElement();
-			if (mo == null) {
-				this.setReference(ref, null);
-				this.setChanged(ATTRIB_FLAG_VALUES);
+		Object o = this.getValues().get(atb.id);
+		if (o != null) {
+			if (!MUtility.checkType(atb.getDataType(), o)) {
+				this.setAttribute(atb, null);
 			}
-			return mo;
+		}
+		
+		MNativeDataType nType = atb.getDataType().getNativeDataType();
+		switch (nType) {
+		case List:
+			if (o == null) {
+				o = MCollection.createCollection(Factory.List, this, atb);
+				this.getValues().put(atb.id, o);
+			}
+			break;
+		case Set:
+			if (o == null) {
+				o = MCollection.createCollection(Factory.Set, this, atb);
+				this.getValues().put(atb.id, o);
+			}
+			break;
+		case Dictionary:
+			if (o == null) {
+				o = MCollection.createCollection(Factory.Dictionary, this, atb);
+				this.getValues().put(atb.id, o);
+			}
+			break;
+		case Enum:
+			if (o != null) {
+				o = ((MElementPointer) o).getElement();
+			}
+			break;
+		default:
+			break;
+		}
+		return o;
+	}
+	
+	private void setAttribute(MAttribute atb, Object obj) {
+		load();
+		Object o;
+		if (obj == null) {
+			o = obj;
+		} else if (obj instanceof MElement) {
+			o = new MElementPointer((MElement) obj);
+		} else if (obj instanceof MCollection.Factory) {
+			o =  MCollection.createCollection((MCollection.Factory) obj, this, atb);
 		} else {
-			this.setReference(ref, null);
-			this.setChanged(ATTRIB_FLAG_VALUES);
-			return null;
+			o = obj;
 		}
+		this.getValues().put(atb.id, o);
+		this.setChanged(atb);
 	}
 	
-	public Set<MObject> getReferences(String name) {
+	private Object getReference(MReference ref) {
 		load();
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
-		MReference ref = cls.getReference(name);
-		if (ref == null)
-			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
-		if (ref.getMultiplicity() == Multiplicity.One)
-			return null;
-		
-		Object o = this.getReference(ref);
-		MPointerSet set = (MPointerSet) o;
-		Set<MObject> oset = new HashSet<MObject>();
-		boolean changeFlag = false;
-		Iterator<MElementPointer> it = set.iterator();
-		while (it.hasNext()) {
-			MElementPointer pt = it.next();
-			MObject mo = (MObject) pt.getElement();
-			// remove overdue pointer
-			if (mo == null) {
-				it.remove();
-				changeFlag = true;
+		Object value = this.getValues().get(ref.id);
+		if (ref.getMultiplicity() == Multiplicity.Multiple) {
+			if (value == null || !(value instanceof MObjectSet)) {
+				value = new MObjectSet(ref);
+				this.getValues().put(ref.id, value);
+			}
+		} else if (ref.getMultiplicity() == Multiplicity.One) {
+			if (value == null)
+				return null;
+			if (value instanceof MElementPointer) {
+				MObject mo = (MObject) ((MElementPointer) value).getElement();
+				if (mo == null) {
+					this.setReference(ref, null);
+				}
+				value = mo;
 			} else {
-				oset.add(mo);
+				this.setReference(ref, null);
+				value = null;
 			}
 		}
-		if (changeFlag)
-			this.setChanged(ATTRIB_FLAG_VALUES);
-		return oset;
+		return value;
+	}
+
+	private void addReference(MReference ref, MObject obj) {
+		load();
+		if (ref.getMultiplicity() == Multiplicity.One)
+			return;
+		MObjectSet set = (MObjectSet) this.getReference(ref);
+		set.pointers.add(new MElementPointer(ref));
+	}
+	
+	private void removeReference(MReference ref, MObject obj) {
+		load();
+		if (ref.getMultiplicity() == Multiplicity.One)
+			return;
+		MObjectSet set = (MObjectSet) this.getReference(ref);
+		set.pointers.remove(new MElementPointer(obj));
+	}
+	
+	private void setReference(MReference ref, MObject obj) {
+		load();
+		if (ref.getMultiplicity() == Multiplicity.Multiple)
+			return;
+		if (obj == null)
+			this.getValues().remove(ref.id);
+		else
+			this.getValues().put(ref.id, obj);
+		this.setChanged(ref);
+	}
+	
+	long getClazzID() {
+		return this.class_pt.getID();
 	}
 
 	@Override
@@ -407,7 +432,7 @@ public class MObject extends MElement implements MNotifiable {
 				if (!MUtility.checkType(atb.getDataType(), value)) {
 					changeFlag = true;
 				}
-				fromDBObject(this, value, id);
+				fromDBObject(this, atb, value, id);
 			// if reference
 			} else if (ele.getElementType() == MElementType.Reference) {
 				MReference ref = (MReference) ele;
@@ -421,10 +446,10 @@ public class MObject extends MElement implements MNotifiable {
 				// multiplicity multiple
 				} else if (value instanceof MDBAdapter.DataSet) {
 					if (ref.getMultiplicity() == Multiplicity.Multiple) {
-						MPointerSet ps = new MPointerSet();
+						MObjectSet ps = new MObjectSet(ref);
 						MDBAdapter.DataSet ds = (MDBAdapter.DataSet) value;
 						for (Object o : ds) {
-							ps.add((MElementPointer) o);
+							ps.pointers.add((MElementPointer) o);
 						}
 						this.getValues().put(id, ps);
 					} else {
@@ -454,14 +479,14 @@ public class MObject extends MElement implements MNotifiable {
 					long id = entry.getKey();
 					Object value = entry.getValue();
 					
-					if (value instanceof MPointerSet) {
+					if (value instanceof MObjectSet) {
 						MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
-						for (MElementPointer pt : (MPointerSet) value) {
+						for (MElementPointer pt : ((MObjectSet) value).pointers) {
 							ds.add(pt);
 						}
 						objDBInfo.values.put(MUtility.stringID(id), ds);
 					} else {
-						Object o = toDBObject(value);
+						Object o = MCollection.toDBObject(value);
 						objDBInfo.values.put(MUtility.stringID(id), o);
 					}
 				}
@@ -469,86 +494,133 @@ public class MObject extends MElement implements MNotifiable {
 		}
 	}
 
-	private static void fromDBObject(MNotifiable parent, Object value, Object key) {
+	private static void fromDBObject(MObject obj, MAttribute atb, Object value, Object key) {
 		if (value instanceof MDBAdapter.DataList) {
-			MList list = new MList(parent);
+			MList list = new MList(obj, atb);
 			MDBAdapter.DataList dl = (MDBAdapter.DataList) value;
 			for (Object o : dl) {
-				fromDBObject(list, o, null);
+				MCollection.fromDBObject(list, o, null);
 			}
 			value = list;
 		} else if (value instanceof MDBAdapter.DataSet) {
-			MSet set = new MSet(parent);
+			MSet set = new MSet(obj, atb);
 			MDBAdapter.DataSet ds = (MDBAdapter.DataSet) value;
 			for (Object o : ds) {
-				fromDBObject(set, o, null);
+				MCollection.fromDBObject(set, o, null);
 			}
 			value = set;
 		} else if (value instanceof MDBAdapter.DataDict) {
-			MDictionary dict = new MDictionary(parent);
+			MDictionary dict = new MDictionary(obj, atb);
 			MDBAdapter.DataDict dd = (MDBAdapter.DataDict) value;
 			Iterator<Map.Entry<String, Object>> it = dd.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry<String, Object> entry = it.next();
 				String k = entry.getKey();
 				Object o = entry.getValue();
-				fromDBObject(dict, o, k);
+				MCollection.fromDBObject(dict, o, k);
 			}
 			value = dict;
 		}
-		if (parent instanceof MObject) {
-			((MObject) parent).getValues().put((Long)key, value);
-		} else if (parent instanceof MList) {
-			((MList) parent).list.add(value);
-		} else if (parent instanceof MSet) {
-			((MSet) parent).set.add(value);
-		} else if (parent instanceof MDictionary) {
-			((MDictionary) parent).dict.put((String)key, value);
+		obj.getValues().put(atb.id, value);
+	}
+
+	public class MObjectSet implements Iterable<MObject> {
+		Set<MElementPointer> pointers = new HashSet<MElementPointer>();
+		MElementPointer refPointer;
+		
+		private MObjectSet(MReference ref) {
+			refPointer = new MElementPointer(ref);
+		}
+		
+		void changed() {
+			setChanged(refPointer);
+		}
+		
+		@Override
+		public Iterator<MObject> iterator() {
+			return new Itr();
+		}
+		
+		public void add(MObject o) {
+			MReference r = (MReference)refPointer.getElement();
+			oppositeWhenAdd(r, o);
+			addReference(r, o);
+		}
+
+		public void remove(MObject o) {
+			MReference r = (MReference)refPointer.getElement();
+			oppositeWhenRemove(r, o);
+			removeReference(r, o);
+		}
+		
+		public void clear() {
+			MReference r = (MReference)refPointer.getElement();
+			for (MElementPointer ep : pointers) {
+				MObject o = (MObject) ep.getElement();
+				oppositeWhenRemove(r, o);
+			}
+			pointers.clear();
+			changed();
+		}
+		
+		public boolean contains(MObject o) {
+			return pointers.contains(new MElementPointer(o));
+		}
+		
+		public boolean isEmpty() {
+			return pointers.isEmpty();
+		}
+		
+		public int size() {
+			return pointers.size();
+		}
+		
+		public void check() {
+			boolean changeFlag = false;
+			Iterator<MElementPointer> it = pointers.iterator();
+			while (it.hasNext()) {
+				MElementPointer pt = it.next();
+				MObject mo = (MObject) pt.getElement();
+				// remove overdue pointer
+				if (mo == null) {
+					it.remove();
+					changeFlag = true;
+				}
+			}
+			if (changeFlag)
+				changed();
+		}
+		
+		private class Itr implements Iterator<MObject> {
+
+			final Iterator<MElementPointer> it = MObjectSet.this.pointers.iterator();
+			MElementPointer last;
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			@Override
+			public MObject next() {
+				last = it.next();
+				return (MObject) last.getElement();
+			}
+
+			@Override
+			public void remove() {
+				MReference r = (MReference)refPointer.getElement();
+				MObject o = (MObject) last.getElement();
+				oppositeWhenRemove(r, o);
+				it.remove();
+				changed();
+			}
+			
 		}
 	}
 	
-	long getClazzID() {
-		return this.class_pt.getID();
-	}
-	
-	private static Object toDBObject(Object value) {
-		if (value instanceof MList) {
-			MDBAdapter.DataList dl = new MDBAdapter.DataList();
-			Iterator<Object> it = ((MList) value).list.iterator();
-			while (it.hasNext()) {
-				dl.add(toDBObject(it.next()));
-			}
-			return dl;
-		} else if (value instanceof MSet) {
-			MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
-			Iterator<Object> it = ((MSet) value).set.iterator();
-			while (it.hasNext()) {
-				ds.add(toDBObject(it.next()));
-			}
-			return ds;
-		} else if (value instanceof MDictionary) {
-			MDBAdapter.DataDict dd = new MDBAdapter.DataDict();
-			Iterator<Map.Entry<String, Object>> it = ((MDictionary) value).dict.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry<String, Object> entry = it.next();
-				dd.put(entry.getKey(), toDBObject(entry.getValue()));
-			}
-			return dd;
-		} else if (value instanceof MElement) {
-			return new MElementPointer((MElement) value);
-		} else {
-			return value;
-		}
-	}
-
-	@SuppressWarnings("serial")
-	static class MPointerSet extends HashSet<MElementPointer> {
-
-	}
-	
-	public String print() {
+	public String printString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Object(").append(this.id).append(")\n");
+		sb.append(this.getClazz().toString()).append("(").append(this.id).append(")\n");
 		for (Long id : this.getValues().keySet()) {
 			MElement e = MDatabase.getDB().getElement(id);
 			MProperty p = (MProperty) e;
@@ -558,9 +630,9 @@ public class MObject extends MElement implements MNotifiable {
 			} else {
 				MReference r = (MReference) e;
 				if (r.getMultiplicity() == Multiplicity.Multiple) {
-					MPointerSet set = (MPointerSet)this.values.get(r.name);
+					MObjectSet set = (MObjectSet)this.values.get(r.name);
 					sb.append("  \n{\n");
-					for (MElementPointer pt : set) {
+					for (MElementPointer pt : set.pointers) {
 						sb.append("    ").append(pt.getElement().toString()).append("\n");
 					}
 					sb.append("  }\n");
@@ -579,10 +651,19 @@ public class MObject extends MElement implements MNotifiable {
 		sb.append(this.getClazz().toString()).append("(").append(this.id).append(")");
 		return sb.toString();
 	}
-
-	@Override
-	public void notifyChanged() {
-		this.setChanged(ATTRIB_FLAG_VALUES);
+	
+	Set<Long> changedProperties = new TreeSet<Long>();
+	
+	public void setChanged(MElementPointer property) {
+		changedProperties.add(property.getID());
+	}
+	
+	void setChanged(MProperty p) {
+		changedProperties.add(p.id);
+	}
+	
+	void clearChange() {
+		changedProperties.clear();
 	}
 	
 	public static final int ATTRIB_FLAG_CLASS = 0x00000001;

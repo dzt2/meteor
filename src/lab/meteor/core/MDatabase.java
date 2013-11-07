@@ -413,7 +413,7 @@ public class MDatabase {
 		if (ele.isDeleted())
 			return;
 		
-		if (ele.isChanged() && ele.isLoaded()) {
+		if (ele.isLoaded()) {
 			checkExistenceAndType(ele.id, ele.getElementType());
 			
 			switch (ele.getElementType()) {
@@ -776,7 +776,7 @@ public class MDatabase {
 			ref = new MReference(id);
 			ref.forceLoad();
 			metaElements.put(id, ref);
-		} else if (meta instanceof MAttribute) {
+		} else if (meta instanceof MReference) {
 			ref = (MReference) meta;
 		} else {
 			throw new MException(MException.Reason.MISMATCHED_ELEMENT_TYPE);
@@ -874,8 +874,6 @@ public class MDatabase {
 		MObject obj = objectsCache.get(id);
 		if (obj == null) {
 			obj = new MObject(id);
-			long cls_id = this.dbAdapter.getObjectClass(id);
-			obj.class_pt.setPointer(this.getClass(cls_id));
 			objectsCache.put(id, obj);
 		}
 		return obj;

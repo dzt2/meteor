@@ -1,6 +1,5 @@
 package lab.meteor.core;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,7 @@ public class MObject extends MElement implements MNotifiable {
 		
 		this.initialize();
 		this.class_pt.setPointer(clazz);
-		
+
 		MDatabase.getDB().createElement(this);
 	}
 	
@@ -45,9 +44,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public MClass getClazz() {
-		if (!this.isLoaded())
-			this.forceLoad();
-		
+		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
 			throw new MException(MException.Reason.ELEMENT_MISSED);
@@ -68,9 +65,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public Object get(String name) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MProperty p = cls.getProperty(name);
 		if (p == null)
 			return null;
@@ -85,9 +80,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public void set(String name, Object o) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MAttribute p = cls.getAttribute(name);
 		if (p == null)
 			return;
@@ -95,9 +88,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public void set(String name, MObject o) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MProperty p = cls.getProperty(name);
 		if (p == null)
 			return;
@@ -107,9 +98,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public Object getAttribute(String name) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MAttribute atb = cls.getAttribute(name);
 		if (atb == null)
 			throw new MException(MException.Reason.ATTRIBUTE_NOT_FOUND);
@@ -118,9 +107,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public MObject getReference(String name) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
@@ -133,9 +120,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public MObjectSet getReferences(String name) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
@@ -149,9 +134,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public void setAttribute(String name, Object obj) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MAttribute atb = cls.getAttribute(name);
 		if (atb == null)
 			throw new MException(MException.Reason.ATTRIBUTE_NOT_FOUND);
@@ -162,9 +145,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public void setReference(String name, MObject obj) {
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
@@ -180,9 +161,7 @@ public class MObject extends MElement implements MNotifiable {
 	public void addReference(String name, MObject obj) {
 		if (obj == null)
 			return;
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
@@ -198,9 +177,7 @@ public class MObject extends MElement implements MNotifiable {
 	public void removeReference(String name, MObject obj) {
 		if (obj == null)
 			return;
-		MClass cls = (MClass) class_pt.getElement();
-		if (cls == null)
-			throw new MException(MException.Reason.ELEMENT_MISSED);
+		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
@@ -386,7 +363,7 @@ public class MObject extends MElement implements MNotifiable {
 		if (ref.getMultiplicity() == Multiplicity.One)
 			return;
 		MObjectSet set = (MObjectSet) this.getReference(ref);
-		set.pointers.add(new MElementPointer(ref));
+		set.pointers.add(new MElementPointer(obj));
 	}
 	
 	private void removeReference(MReference ref, MObject obj) {
@@ -417,7 +394,8 @@ public class MObject extends MElement implements MNotifiable {
 		boolean changeFlag = false;
 		
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
-		this.class_pt = new MElementPointer(objDBInfo.class_id, MElementType.Class);
+		if (dbInfo.isFlagged(ATTRIB_FLAG_CLASS))
+			this.class_pt = new MElementPointer(objDBInfo.class_id, MElementType.Class);
 		
 		Iterator<Map.Entry<String, Object>> it = objDBInfo.values.entrySet().iterator();
 		while (it.hasNext()) {
@@ -469,16 +447,11 @@ public class MObject extends MElement implements MNotifiable {
 	void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
 		objDBInfo.id = this.id;
-		if (dbInfo.isFlagged(ATTRIB_FLAG_CLASS))
-			objDBInfo.class_id = this.class_pt.getID();
+		objDBInfo.class_id = this.class_pt.getID();
 		if (dbInfo.isFlagged(ATTRIB_FLAG_VALUES)) {
 			if (this.values != null) {
-				Iterator<Map.Entry<Long, Object>> it = this.values.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry<Long, Object> entry = it.next();
-					long id = entry.getKey();
-					Object value = entry.getValue();
-					
+				for (Long id : changedProperties) {
+					Object value = values.get(id);
 					if (value instanceof MObjectSet) {
 						MDBAdapter.DataSet ds = new MDBAdapter.DataSet();
 						for (MElementPointer pt : ((MObjectSet) value).pointers) {
@@ -525,7 +498,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public class MObjectSet implements Iterable<MObject> {
-		Set<MElementPointer> pointers = new HashSet<MElementPointer>();
+		Set<MElementPointer> pointers = new TreeSet<MElementPointer>();
 		MElementPointer refPointer;
 		
 		private MObjectSet(MReference ref) {
@@ -630,14 +603,14 @@ public class MObject extends MElement implements MNotifiable {
 			} else {
 				MReference r = (MReference) e;
 				if (r.getMultiplicity() == Multiplicity.Multiple) {
-					MObjectSet set = (MObjectSet)this.values.get(r.name);
-					sb.append("  \n{\n");
+					MObjectSet set = (MObjectSet)this.values.get(r.id);
+					sb.append("\n  {\n");
 					for (MElementPointer pt : set.pointers) {
 						sb.append("    ").append(pt.getElement().toString()).append("\n");
 					}
 					sb.append("  }\n");
 				} else {
-					MElementPointer pt = (MElementPointer)this.values.get(r.name);
+					MElementPointer pt = (MElementPointer)this.values.get(r.id);
 					sb.append(pt.getElement().toString()).append("\n");
 				}
 			}
@@ -656,14 +629,23 @@ public class MObject extends MElement implements MNotifiable {
 	
 	public void setChanged(MElementPointer property) {
 		changedProperties.add(property.getID());
+		setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
 	void setChanged(MProperty p) {
 		changedProperties.add(p.id);
+		setChanged(ATTRIB_FLAG_VALUES);
 	}
 	
 	void clearChange() {
 		changedProperties.clear();
+	}
+	
+	@Override
+	public void save(int flag) {
+		super.save(flag);
+		if ((changed_flag & ATTRIB_FLAG_VALUES) == 0)
+			clearChange();
 	}
 	
 	public static final int ATTRIB_FLAG_CLASS = 0x00000001;

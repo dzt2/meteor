@@ -1,6 +1,5 @@
 package lab.meteor.core;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -289,7 +288,7 @@ public class MClass extends MElement implements MType {
 	 */
 	private Set<MClass> getSubclasses() {
 		if (this.subclasses == null)
-			this.subclasses = new HashSet<MClass>();
+			this.subclasses = new TreeSet<MClass>();
 		return this.subclasses;
 	}
 	
@@ -542,7 +541,7 @@ public class MClass extends MElement implements MType {
 	 */
 	private Set<MReference> getUtilizers() {
 		if (this.utilizers == null)
-			this.utilizers = new HashSet<MReference>();
+			this.utilizers = new TreeSet<MReference>();
 		return this.utilizers;
 	}
 	

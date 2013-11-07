@@ -36,7 +36,7 @@ import lab.meteor.core.MDBAdapter.DBInfo;
  * @author Qiang
  * @see MTag
  */
-public abstract class MElement {
+public abstract class MElement implements Comparable<MElement> {
 	
 	/**
 	 * The element type of MElement.
@@ -126,7 +126,7 @@ public abstract class MElement {
 	/**
 	 * A state of element.
 	 */
-	private int changed_flag = 0;
+	protected int changed_flag = 0;
 	
 	/**
 	 * A state of element.
@@ -176,7 +176,7 @@ public abstract class MElement {
 	 * @return <code>true</code> if changed.
 	 */
 	public boolean isChanged() {
-		return changed_flag == 0;
+		return changed_flag != 0;
 	}
 
 	/**
@@ -257,8 +257,10 @@ public abstract class MElement {
 	 * @param flag The flag that which attributes is going to be saved.
 	 */
 	public void save(int flag) {
-		if ((changed_flag & flag) != 0)
+		if ((changed_flag & flag) != 0) {
 			forceSave(changed_flag & flag);
+			changed_flag &= ~flag;
+		}
 	}
 	
 	/**
@@ -311,8 +313,7 @@ public abstract class MElement {
 	 * modification of element content.
 	 */
 	protected void setChanged(int flag) {
-//		changed_flag |= flag;
-		forceSave(flag);
+		changed_flag |= flag;
 	}
 
 	/**
@@ -649,6 +650,11 @@ public abstract class MElement {
 			return ((MElementPointer) obj).getID() == this.id;
 		}
 		return false;
+	}
+	
+	@Override
+	public int compareTo(MElement o) {
+		return Long.compare(id, o.id);
 	}
 	
 	public static final int FULL_ATTRIB_FLAG = 0xFFFFFFFF;

@@ -1,9 +1,9 @@
 package lab.meteor.core;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import lab.meteor.core.MDBAdapter.DBInfo;
 
@@ -143,7 +143,7 @@ public class MEnum extends MElement implements MDataType {
 	
 	private Set<MAttribute> getUtilizers() {
 		if (this.utilizers == null)
-			this.utilizers = new HashSet<MAttribute>();
+			this.utilizers = new TreeSet<MAttribute>();
 		return this.utilizers;
 	}
 

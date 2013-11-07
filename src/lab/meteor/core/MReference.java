@@ -72,8 +72,8 @@ public class MReference extends MProperty {
 	public void setOpposite(MReference opposite) {
 		if (opposite == this.opposite)
 			return;
-		if (opposite == this)
-			throw new MException(MException.Reason.INVALID_OPPOSITE);
+//		if (opposite == this)
+//			throw new MException(MException.Reason.INVALID_OPPOSITE);
 		if (opposite != null) {
 			if (opposite.reference != this.clazz)
 				throw new MException(MException.Reason.INVALID_OPPOSITE);

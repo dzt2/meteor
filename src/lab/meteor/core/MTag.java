@@ -38,10 +38,13 @@ public class MTag extends MElement implements MNotifiable {
 		} else {
 			this.value = value;
 		}
-
+		target.addTag(this);
+		
 		MDatabase.getDB().createElement(this);
 		MDatabase.getDB().saveTagElements(this);
-		target.addTag(this);
+		
+		loaded_elements = true;
+		changed_elements = false;
 	}
 	
 	public MTag(Collection<MElement> targets, String name) {
@@ -71,11 +74,15 @@ public class MTag extends MElement implements MNotifiable {
 			this.value = value;
 		}
 		
-		MDatabase.getDB().createElement(this);
-		MDatabase.getDB().saveTagElements(this);
 		for (MElement target : targets) {
 			target.addTag(this);
 		}
+		
+		MDatabase.getDB().createElement(this);
+		MDatabase.getDB().saveTagElements(this);
+		
+		loaded_elements = true;
+		changed_elements = false;
 	}
 	
 	/**

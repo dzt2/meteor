@@ -7,7 +7,7 @@ import lab.meteor.core.MElement.MElementType;
  * @author Qiang
  * @see MElement
  */
-public class MElementPointer {
+public class MElementPointer implements Comparable<MElementPointer> {
 	
 	/**
 	 * ID of element.
@@ -89,6 +89,8 @@ public class MElementPointer {
 			return MDatabase.getDB().getClass(id);
 		case Attribute:
 			return MDatabase.getDB().getAttribute(id);
+		case Reference:
+			return MDatabase.getDB().getReference(id);
 		case Enum:
 			return MDatabase.getDB().getEnum(id);
 		case Symbol:
@@ -124,6 +126,12 @@ public class MElementPointer {
 			return ((MElement) obj).id == this.id;
 		}
 		return false;
+	}
+
+
+	@Override
+	public int compareTo(MElementPointer o) {
+		return Long.compare(id, o.id);
 	}
 	
 }

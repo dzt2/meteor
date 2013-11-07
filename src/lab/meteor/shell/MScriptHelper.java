@@ -29,6 +29,10 @@ public class MScriptHelper {
 		return objectItr((MClass) e);
 	}
 	
+	public MObject object(long id) {
+		return (MObject)(new MElementPointer(id, MElementType.Object)).getElement();
+	}
+
 	public MObject newObject(MClass cls) {
 		if (cls == null)
 			return null;
@@ -67,10 +71,6 @@ public class MScriptHelper {
 		if (e == null || e.getElementType() != MElementType.Enum)
 			throw new MScriptException("enum is not found.");
 		return (MEnum) e;
-	}
-	
-	public MObject findObject(long id) {
-		return (MObject)(new MElementPointer(id, MElementType.Object)).getElement();
 	}
 	
 	public void print(MPackage pkg) {

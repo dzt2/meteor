@@ -78,7 +78,7 @@ public class MUtility {
 	
 	private static Map<Class<?>, MPrimitiveType> classes;
 	
-	{
+	static {
 		classes = new HashMap<Class<?>, MPrimitiveType>();
 		// Number
 		classes.put(java.lang.Integer.class, MPrimitiveType.Integer);

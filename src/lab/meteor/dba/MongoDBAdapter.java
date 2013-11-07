@@ -19,6 +19,7 @@ import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MElementPointer;
 import lab.meteor.core.MEnum;
 import lab.meteor.core.MException;
+import lab.meteor.core.MObject;
 import lab.meteor.core.MPackage;
 import lab.meteor.core.MReference;
 import lab.meteor.core.MReference.Multiplicity;
@@ -565,14 +566,19 @@ public class MongoDBAdapter implements MDBAdapter {
 			if (o == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
+		// load class
+		if (obj.isFlagged(MObject.ATTRIB_FLAG_CLASS))
+			obj.class_id = cls_id;
 		// load values
-		Iterator<String> it = o.keySet().iterator();
-		while (it.hasNext()) {
-			String key = it.next();
-			if (key.equals("_id"))
-				continue;
-			String k = key.substring(1);
-			obj.values.put(k, dbObjectToObject(o.get(key)));
+		if (obj.isFlagged(MObject.ATTRIB_FLAG_VALUES)) {
+			Iterator<String> it = o.keySet().iterator();
+			while (it.hasNext()) {
+				String key = it.next();
+				if (key.equals("_id"))
+					continue;
+				String k = key.substring(1);
+				obj.values.put(k, dbObjectToObject(o.get(key)));
+			}
 		}
 	}
 
@@ -591,24 +597,23 @@ public class MongoDBAdapter implements MDBAdapter {
 	@Override
 	public void updateObject(ObjectDBInfo obj) {
 		DBCollection col = db.getCollection(classIDToString(obj.class_id));
-		DBObject objObj = new BasicDBObject();
-		DBObject objQue = new BasicDBObject();
-		objQue.put("_id", obj.id);
+		DBObject o = new BasicDBObject();
+		DBObject que = new BasicDBObject();
+		que.put("_id", obj.id);
 		
 		// valid existence
 		checkExistence(col, obj.id);
 		
-		objObj.put("_id", obj.id);
 		Iterator<Entry<String, Object>> it = obj.values.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<String, Object> entry = it.next();
 			Object value = entry.getValue();
-			objObj.put("p" + entry.getKey(), objectToDBObject(value));
+			o.put("p" + entry.getKey(), objectToDBObject(value));
 		}
 		// TODO
-//		DBObject set = new BasicDBObject();
-//		set.put("$set", o);
-		col.update(objQue, objObj);
+		DBObject set = new BasicDBObject();
+		set.put("$set", o);
+		col.update(que, set);
 	}
 	
 	@Override
@@ -694,6 +699,44 @@ public class MongoDBAdapter implements MDBAdapter {
 		ecol.remove(que);
 	}
 	
+	@Override
+	public void loadElementTags(long id, IDList list) {
+		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject eleObj = eleCol.findOne(id);
+		// double check existence
+		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
+			if (eleObj == null)
+				throw new MException(MException.Reason.ELEMENT_MISSED);
+		}
+		BasicDBList tags = (BasicDBList) eleObj.get("tags");
+		if (tags == null)
+			return;
+		Iterator<Object> it = tags.iterator();
+		while (it.hasNext()) {
+			Long tid = (Long) it.next();
+			list.add(tid);
+		}
+	}
+
+	@Override
+	public void saveElementTags(long id, IDList list) {
+		DBCollection col = db.getCollection(COLLECT_NAME_ELEMENT);
+		DBObject que = new BasicDBObject();
+		que.put("_id", id);
+		
+		BasicDBList l = new BasicDBList();
+		Iterator<Long> it = list.iterator();
+		while (it.hasNext()) {
+			Long tid = it.next();
+			l.add(tid);
+		}
+		
+		DBObject obj = new BasicDBObject().append("tags", l);
+		DBObject setter = new BasicDBObject();
+		setter.put("$set", obj);
+		col.update(que, setter);
+	}
+
 	@Override
 	public void loadTagElements(long id, IDList list) {
 		DBCollection tagCol = db.getCollection(COLLECT_NAME_TAG);
@@ -942,41 +985,6 @@ public class MongoDBAdapter implements MDBAdapter {
 	private static MCode dbObjectToCode(DBObject obj) {
 		String code = (String) obj.get(KEY_CODE);
 		return new MCode(code);
-	}
-
-	@Override
-	public void loadElementTags(long id, IDList list) {
-		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
-		DBObject eleObj = eleCol.findOne(id);
-		// double check existence
-		if (ENABLE_DOUBLE_CHECK_EXISTENCE) {
-			if (eleObj == null)
-				throw new MException(MException.Reason.ELEMENT_MISSED);
-		}
-		BasicDBList tags = (BasicDBList) eleObj.get("tags");
-		if (tags == null)
-			return;
-		Iterator<Object> it = tags.iterator();
-		while (it.hasNext()) {
-			Long tid = (Long) it.next();
-			list.add(tid);
-		}
-	}
-
-	@Override
-	public void saveElementTags(long id, IDList list) {
-		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
-		DBObject eleQue = new BasicDBObject();
-		eleQue.put("_id", id);
-		BasicDBList eleObj = new BasicDBList();
-		Iterator<Long> it = list.iterator();
-		while (it.hasNext()) {
-			Long tid = it.next();
-			eleObj.add(tid);
-		}
-		DBObject setter = new BasicDBObject();
-		setter.put("$set", eleObj);
-		eleCol.update(eleQue, eleObj);
 	}
 
 	@Override

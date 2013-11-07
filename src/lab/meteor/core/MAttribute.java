@@ -69,6 +69,8 @@ public class MAttribute extends MProperty {
 	 * @return type.
 	 */
 	public MDataType getDataType() {
+		if (isDeleted())
+			return null;
 		return type;
 	}
 	
@@ -77,9 +79,11 @@ public class MAttribute extends MProperty {
 	 * @param type a MType instance, can be MPrimitiveType or MEnum.
 	 */
 	public void setDataType(MDataType type) {
-		if (type == this.type)
+		if (isDeleted())
 			return;
 		
+		if (type == this.type)
+			return;
 		if (this.type instanceof MEnum) {
 			((MEnum) this.type).removeUtilizer(this);
 		}
@@ -92,6 +96,8 @@ public class MAttribute extends MProperty {
 	
 	@Override
 	public MType getType() {
+		if (isDeleted())
+			return null;
 		return getDataType();
 	}
 	

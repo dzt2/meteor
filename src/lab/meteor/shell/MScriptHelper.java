@@ -149,7 +149,7 @@ public class MScriptHelper {
 				throw new MScriptException("wrong operation at \'" + t.name + "\'");
 			MElement o = (MElement) it;
 			o.loadTags();
-			MTag tag = o.getTag(t.name);
+			MTag tag = o.tag(t.name);
 			if (tag != null)
 				tag.setValue(value);
 			else {
@@ -255,7 +255,7 @@ public class MScriptHelper {
 				throw new MScriptException("wrong operation at \'" + t.name + "\'");
 			MElement o = (MElement) it;
 			o.loadTags();
-			MTag tag = o.getTag(t.name);
+			MTag tag = o.tag(t.name);
 			if (tag == null)
 				throw new MScriptException("interupt with null tag.");
 			tag.load();

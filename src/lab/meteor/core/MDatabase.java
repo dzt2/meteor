@@ -1,12 +1,11 @@
 package lab.meteor.core;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lab.meteor.core.MElement.MElementType;
+import lab.meteor.core.cache.MCache;
 
 public class MDatabase {
 	
@@ -37,6 +36,8 @@ public class MDatabase {
 		return database;
 	}
 	
+	private MCache cache;
+	
 	/*
 	 * ********************************
 	 *           CONSTRUCTOR
@@ -46,115 +47,8 @@ public class MDatabase {
 	 * Private constructor.
 	 */
 	private MDatabase() {
-		metaElements = new HashMap<Long, MElement>();
-		objectsCache = new HashMap<Long, MObject>();
-		tagsCache = new HashMap<Long, MTag>();
+		cache = new MCache();
 		dbAdapter = null;
-	}
-	
-	/*
-	 * ********************************
-	 *          MEMORY CACHE
-	 * ********************************
-	 */
-	
-	/**
-	 * The meta of system, i.e. the model, include class, attribute, reference, 
-	 * enum and symbol(enumeration literal).
-	 */
-	private Map<Long, MElement> metaElements;
-	
-	/**
-	 * The objects' cache.
-	 */
-	private Map<Long, MObject> objectsCache;
-	
-	/**
-	 * The tags' cache.
-	 */
-	private Map<Long, MTag> tagsCache;
-	
-	/**
-	 * Get a meta element with id.
-	 * @param id
-	 * @return the model, which could be class, attribute, reference, enum
-	 * and symbol(enumeration literal).
-	 */
-	protected MElement getMetaElement(long id) {
-		return metaElements.get(id);
-	}
-	
-	/**
-	 * Get an object with id.
-	 * @param id
-	 * @return the object.
-	 */
-	protected MObject getObjectElement(long id) {
-		return objectsCache.get(id);
-	}
-	
-	/**
-	 * Get a tag with id.
-	 * @param id
-	 * @return the tag.
-	 */
-	protected MTag getTagElement(long id) {
-		return tagsCache.get(id);
-	}
-	
-	/**
-	 * Check that an element has been loaded into cache.
-	 * @param id
-	 * @return true if element with specific id is in cache.
-	 */
-	protected boolean isElementLoaded(long id) {
-		if (metaElements.containsKey(id))
-			return true;
-		if (objectsCache.containsKey(id))
-			return true;
-		if (tagsCache.containsKey(id))
-			return true;
-		return false;
-	}
-	
-	/**
-	 * Get an element in cache.
-	 * @param id
-	 * @return
-	 */
-	protected MElement getElement(long id) {
-		MElement ele = metaElements.get(id);
-		if (ele == null)
-			ele = objectsCache.get(id);
-		if (ele == null)
-			ele = tagsCache.get(id);
-		return ele;
-	}
-	
-	/**
-	 * Add an element into system cache.
-	 * @param meta
-	 */
-	protected void addElement(MElement ele) {
-		if (ele instanceof MObject)
-			objectsCache.put(ele.id, (MObject) ele);
-		else if (ele instanceof MTag)
-			tagsCache.put(ele.id, (MTag) ele);
-		else
-			metaElements.put(ele.id, ele);
-	}
-	
-	/**
-	 * Remove an element from system cache.
-	 * @param meta
-	 */
-	protected void removeElement(MElement ele) {
-		if (ele instanceof MObject)
-			objectsCache.remove(ele.id);
-		else if (ele instanceof MTag)
-			tagsCache.remove(ele.id);
-		else
-			metaElements.remove(ele.id);
 	}
 	
 	/*
@@ -223,12 +117,10 @@ public class MDatabase {
 	 * This method calls <code>MDBAdapter.resetDB()</code>.
 	 */
 	public void reset() {
-		if (this.dbAdapter == null)
+		if (dbAdapter == null)
 			return;
-		this.dbAdapter.resetDB();
-		this.metaElements.clear();
-		this.objectsCache.clear();
-		this.tagsCache.clear();
+		dbAdapter.resetDB();
+		cache.clear();
 	}
 	
 	/*
@@ -278,17 +170,25 @@ public class MDatabase {
 	public MElementType getElementType(long id) {
 		if (dbAdapter == null)
 			throw new MException(MException.Reason.DB_ADAPTER_NOT_ATTACHED);
-		if (this.metaElements.containsKey(id)) {
-			MElement e = this.metaElements.get(id);
+		MElement e = cache.getElement(id);
+		if (e != null) {
 			return e.getElementType();
-		} else if (this.objectsCache.containsKey(id)) {
-			return MElementType.Object;
-		} else if (this.tagsCache.containsKey(id)) {
-			return MElementType.Tag;
 		} else {
 			MElementType type = this.dbAdapter.getElementType(id);
 			return type;
 		}
+	}
+	
+	MElement getElementInCache(long id) {
+		return cache.getElement(id);
+	}
+	
+	void addElementInCache(MElement e) {
+		cache.addElement(e);
+	}
+	
+	void removeElementInCache(MElement e) {
+		cache.removeElement(e);
 	}
 	
 	/**
@@ -698,13 +598,13 @@ public class MDatabase {
 	protected MPackage getPackage(long id) {
 		if (id == MElement.NULL_ID)
 			return MPackage.DEFAULT_PACKAGE;
-		MElement meta = metaElements.get(id);
+		MElement meta = cache.getMetaElement(id);
 		MPackage pkg = null;
 		if (meta == null) {
 			pkg = new MPackage(id);
-			pkg.forceLoad();
-			metaElements.put(id, pkg);
-		} else if (meta instanceof MPackage) {
+			pkg.load();
+			cache.addElement(pkg);
+		} else if (meta.getElementType() == MElementType.Package) {
 			pkg = (MPackage) meta;
 		} else {
 			throw new MException(MException.Reason.MISMATCHED_ELEMENT_TYPE);
@@ -722,12 +622,12 @@ public class MDatabase {
 	protected MClass getClass(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
-		MElement meta = metaElements.get(id);
+		MElement meta = cache.getMetaElement(id);;
 		MClass cls = null;
 		if (meta == null) {
 			cls = new MClass(id);
 			cls.forceLoad();
-			metaElements.put(id, cls);
+			cache.addElement(cls);
 		} else if (meta instanceof MClass) {
 			cls = (MClass) meta;
 		} else {
@@ -746,12 +646,12 @@ public class MDatabase {
 	protected MAttribute getAttribute(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
-		MElement meta = metaElements.get(id);
+		MElement meta = cache.getMetaElement(id);
 		MAttribute atb = null;
 		if (meta == null) {
 			atb = new MAttribute(id);
 			atb.forceLoad();
-			metaElements.put(id, atb);
+			cache.addElement(atb);
 		} else if (meta instanceof MAttribute) {
 			atb = (MAttribute) meta;
 		} else {
@@ -770,12 +670,12 @@ public class MDatabase {
 	protected MReference getReference(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
-		MElement meta = metaElements.get(id);
+		MElement meta = cache.getMetaElement(id);
 		MReference ref = null;
 		if (meta == null) {
 			ref = new MReference(id);
 			ref.forceLoad();
-			metaElements.put(id, ref);
+			cache.addElement(ref);
 		} else if (meta instanceof MReference) {
 			ref = (MReference) meta;
 		} else {
@@ -794,12 +694,12 @@ public class MDatabase {
 	protected MEnum getEnum(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
-		MElement meta = metaElements.get(id);
+		MElement meta = cache.getMetaElement(id);
 		MEnum enm = null;
 		if (meta == null) {
 			enm = new MEnum(id);
 			enm.forceLoad();
-			metaElements.put(id, enm);
+			cache.addElement(enm);
 		} else if (meta instanceof MEnum) {
 			enm = (MEnum) meta;
 		} else {
@@ -818,12 +718,12 @@ public class MDatabase {
 	protected MSymbol getSymbol(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
-		MElement meta = metaElements.get(id);
+		MElement meta = cache.getMetaElement(id);
 		MSymbol sym = null;
 		if (meta == null) {
 			sym = new MSymbol(id);
 			sym.forceLoad();
-			metaElements.put(id, sym);
+			cache.addElement(sym);
 		} else if (meta instanceof MSymbol) {
 			sym = (MSymbol) meta;
 		} else {
@@ -871,34 +771,12 @@ public class MDatabase {
 	protected MObject getLazyObject(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
-		MObject obj = objectsCache.get(id);
+		MObject obj = cache.getObjectElement(id);
 		if (obj == null) {
 			obj = new MObject(id);
-			objectsCache.put(id, obj);
+			cache.addElement(obj);
 		}
 		return obj;
-	}
-	
-	/**
-	 * Get the tag by id. The loading will also load the tag into cache.
-	 * @param id The ID of tag.
-	 * @return tag
-	 */
-	protected MTag getTag(long id) {
-		MTag tag = getLazyTag(id);
-		if (tag == null)
-			return null;
-		try {
-			if (!tag.isLoaded())
-				tag.forceLoad();
-		} catch (MException e) {
-			if (e.getReason() == MException.Reason.ELEMENT_MISSED) {
-				tag.delete();
-				return null;
-			} else
-				throw e;
-		}
-		return tag;
 	}
 	
 	/**
@@ -912,10 +790,10 @@ public class MDatabase {
 	protected MTag getLazyTag(long id) {
 		if (id == MElement.NULL_ID)
 			return null;
-		MTag tag = tagsCache.get(id);
+		MTag tag = cache.getTagElement(id);
 		if (tag == null) {
 			tag = new MTag(id);
-			tagsCache.put(id, tag);
+			cache.addElement(tag);
 		}
 		return tag;
 	}

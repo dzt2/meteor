@@ -149,7 +149,7 @@ public abstract class MElement implements Comparable<MElement> {
 	protected MElement(long id, MElementType type) {
 		this.id = id;
 		this.type = type;
-		MDatabase.getDB().addElement(this);
+		MDatabase.getDB().addElementInCache(this);
 	}
 	
 	/**
@@ -160,7 +160,7 @@ public abstract class MElement implements Comparable<MElement> {
 		this.id = MDatabase.getDB().getNewID();
 		this.loaded = true;
 		this.changed_flag = 0;
-		MDatabase.getDB().addElement(this);
+		MDatabase.getDB().addElementInCache(this);
 	}
 	
 	/**
@@ -235,9 +235,7 @@ public abstract class MElement implements Comparable<MElement> {
 	 * @param flag The flag that which attributes is going to be loaded.
 	 */
 	public void forceLoad(int flag) {
-		if (deleted)
-			return;
-		if (id == NULL_ID)
+		if (deleted || id == NULL_ID)
 			return;
 		MDatabase.getDB().loadElement(this, flag);
 	}
@@ -276,9 +274,7 @@ public abstract class MElement implements Comparable<MElement> {
 	 * @param flag The flag that which attributes is going to be saved.
 	 */
 	public void forceSave(int flag) {
-		if (deleted)
-			return;
-		if (id == NULL_ID)
+		if (deleted || id == NULL_ID)
 			return;
 		if (!loaded)
 			throw new MException(MException.Reason.FORBIDEN_SAVE_BEFORE_LOAD);
@@ -289,20 +285,18 @@ public abstract class MElement implements Comparable<MElement> {
 	 * Delete the element from database.
 	 */
 	public void delete() {
-		if (deleted)
-			return;
-		if (id == NULL_ID)
+		if (deleted || id == NULL_ID)
 			return;
 		
 		loadTags();
-		Iterator<MTag> it = tagIterator();
+		Iterator<String> it = getTags().keySet().iterator();
 		while (it.hasNext()) {
-			MTag tag = it.next();
-			removeTag(tag);
+			String name = it.next();
+			cleanTags(name);
 			it.remove();
 		}
 		
-		MDatabase.getDB().removeElement(this);
+		MDatabase.getDB().removeElementInCache(this);
 		MDatabase.getDB().deleteElement(this);
 		deleted = true;
 		changed_flag = 0;
@@ -331,9 +325,8 @@ public abstract class MElement implements Comparable<MElement> {
 	 *
 	 */
 	private class TagItr implements Iterator<MTag> {
-		private final Iterator<Map.Entry<String, Set<MElementPointer>>> mapit;
-		private Iterator<MElementPointer> setit;
-		private MElementPointer current;
+		private final Iterator<Map.Entry<String, MTagSet>> mapit;
+		private Iterator<MTag> setit;
 		
 		TagItr() {
 			mapit = MElement.this.tags.entrySet().iterator();
@@ -362,17 +355,14 @@ public abstract class MElement implements Comparable<MElement> {
 					setit = null;
 			}
 			if (setit != null) {
-				current = setit.next();
-				return (MTag) current.getElement();
+				return setit.next();
 			}
-			current = null;
 			return null;
 		}
 
 		@Override
 		public void remove() {
 			setit.remove();
-			current.getElement().delete();
 		}
 		
 	}
@@ -380,7 +370,7 @@ public abstract class MElement implements Comparable<MElement> {
 	/**
 	 * The tags.
 	 */
-	private Map<String, Set<MElementPointer>> tags;
+	private Map<String, MTagSet> tags;
 	
 	/**
 	 * A state of tags.
@@ -396,9 +386,7 @@ public abstract class MElement implements Comparable<MElement> {
 	 * Forcibly load tags from database.
 	 */
 	public void forceLoadTags() {
-		if (deleted)
-			return;
-		if (this.id == NULL_ID)
+		if (deleted || id == NULL_ID)
 			return;
 		MDatabase.getDB().loadElementTags(this);
 		changed_tags = false;
@@ -418,9 +406,7 @@ public abstract class MElement implements Comparable<MElement> {
 	 * Forcibly save tags to database.
 	 */
 	public void forceSaveTags() {
-		if (deleted)
-			return;
-		if (this.id == NULL_ID)
+		if (deleted || id == NULL_ID)
 			return;
 		if (!loaded_tags)
 			throw new MException(MException.Reason.FORBIDEN_SAVE_BEFORE_LOAD);
@@ -442,16 +428,12 @@ public abstract class MElement implements Comparable<MElement> {
 	 * @param tag The tag.
 	 */
 	public void addTag(MTag tag) {
-		if (deleted)
+		if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
 			return;
-		if (this.id == NULL_ID)
-			return;
-		if (!loaded_tags)
-			this.loadTags();
 		
+		loadTags();
 		addTag(tag.getName(), tag.getID());
 		tag.addElement(this);
-		this.changed_tags = true;
 	}
 	
 	/**
@@ -459,78 +441,66 @@ public abstract class MElement implements Comparable<MElement> {
 	 * @param tag The tag.
 	 */
 	public void removeTag(MTag tag) {
-		if (deleted)
+		if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
 			return;
-		if (this.id == NULL_ID)
-			return;
-		if (!loaded_tags)
-			this.loadTags();
 		
+		loadTags();
 		removeTag(tag.getName(), tag.getID());
 		tag.removeElement(this);
-		this.changed_tags = true;
 	}
 	
 	/**
 	 * Remove all tags with a common name.
 	 * @param name The common name.
 	 */
-	public void removeTags(String name) {
-		if (deleted)
+	public void cleanTags(String name) {
+		if (deleted || id == NULL_ID || name == null)
 			return;
-		if (this.id == NULL_ID)
-			return;
-		if (!loaded_tags)
-			this.loadTags();
+		loadTags();
 		
-		Set<MElementPointer> tags = this.getTags().get(name);
+		MTagSet tags = this.getTags().get(name);
 		if (tags == null)
 			return;
-		for (MElementPointer tag_pt : tags) {
-			MTag tag = (MTag) tag_pt.getElement();
-			if (tag != null)
+		for (MElementPointer pt : tags.pointers) {
+			MTag tag = (MTag) pt.getElement();
+			if (tag != null && !tag.isDeleted())
 				tag.removeElement(this);
 		}
-		tags.clear();
-		this.getTags().remove(name);
+		tags.pointers.clear();
 		this.changed_tags = true;
 	}
 	
 	/**
-	 * Get a tag with the specific name.
+	 * Get a tag with the specific name. If there are more than 2 tags, return null.
 	 * @param name The name.
 	 * @return Tag with specific name.
 	 */
-	public MTag getTag(String name) {
-		if (deleted)
+	public MTag tag(String name) {
+		if (deleted || id == NULL_ID)
 			return null;
-		if (this.id == NULL_ID)
-			return null;
-		if (!loaded_tags)
-			this.loadTags();
+		loadTags();
 		
-		Set<MElementPointer> tags = this.getTags().get(name);
-		if (tags == null)
+		MTagSet tags = getTags().get(name);
+		if (tags == null || tags.size() != 1)
 			return null;
-		Iterator<MElementPointer> it = tags.iterator();
-		if (it.hasNext()) {
-			MElementPointer tag_pt = it.next();
-			return (MTag) tag_pt.getElement();
-		} else
-			return null;
+		Iterator<MTag> it = tags.iterator();
+		MTag tag = it.next();
+		if (tag == null) {
+			it.remove();
+			getTags().remove(name);
+		}
+		changed_tags = true;
+		return tag;
 	}
 	
 	/**
 	 * Get all tags' names.
 	 * @return Tags' names.
 	 */
-	public String[] getTagNames() {
-		if (deleted)
+	public String[] tagNames() {
+		if (deleted || id == NULL_ID)
 			return null;
-		if (this.id == NULL_ID)
-			return null;
-		if (!loaded_tags)
-			this.loadTags();
+		loadTags();
 		
 		return this.getTags().keySet().toArray(new String[0]);
 	}
@@ -540,32 +510,21 @@ public abstract class MElement implements Comparable<MElement> {
 	 * @param name The name.
 	 * @return Tags with specific name.
 	 */
-	public MTag[] getTags(String name) {
-		if (deleted)
+	public MTagSet tags(String name) {
+		if (deleted || id == NULL_ID)
 			return null;
-		if (this.id == NULL_ID)
-			return null;
-		if (!loaded_tags)
-			this.loadTags();
-		
-		if (!this.getTags().containsKey(name))
-			return null;
-		Set<MTag> tags = new TreeSet<MTag>();
-		Set<MElementPointer> tag_pts = this.getTags().get(name);
-		for (MElementPointer pt : tag_pts) {
-			MTag tag = (MTag) pt.getElement();
-			tags.add(tag);
-		}
-		return tags.toArray(new MTag[0]);
+		loadTags();
+
+		return getTags().get(name);
 	}
 
 	/**
 	 * Get all tags, which labeled by names.
 	 * @return The map from name to tags.
 	 */
-	private Map<String, Set<MElementPointer>> getTags() {
+	private Map<String, MTagSet> getTags() {
 		if (this.tags == null)
-			this.tags = new TreeMap<String, Set<MElementPointer>>();
+			this.tags = new TreeMap<String, MTagSet>();
 		return this.tags;
 	}
 
@@ -577,12 +536,13 @@ public abstract class MElement implements Comparable<MElement> {
 	void addTag(String name, long id) {
 		if (name == null)
 			return;
-		Set<MElementPointer> tags = this.getTags().get(name);
+		MTagSet tags = this.getTags().get(name);
 		if (tags == null) {
-			tags = new TreeSet<MElementPointer>();
+			tags = new MTagSet(name);
 			this.getTags().put(name, tags);
 		}
-		tags.add(new MElementPointer(id, MElementType.Tag));
+		tags.pointers.add(new MElementPointer(id, MElementType.Tag));
+		changed_tags = true;
 	}
 
 	/**
@@ -593,10 +553,11 @@ public abstract class MElement implements Comparable<MElement> {
 	void removeTag(String name, long id) {
 		if (name == null)
 			return;
-		Set<MElementPointer> tags = this.getTags().get(name);
+		MTagSet tags = this.getTags().get(name);
 		if (tags == null)
 			return;
-		tags.remove(new MElementPointer(id, MElementType.Tag));
+		tags.pointers.remove(new MElementPointer(id, MElementType.Tag));
+		changed_tags = true;
 	}
 
 	/**
@@ -604,12 +565,12 @@ public abstract class MElement implements Comparable<MElement> {
 	 * @param dbInfo
 	 */
 	void loadTagsFromDBInfo(MDBAdapter.IDList idList) {
-		for (Long tag_id : idList) {
-			MTag tag = MDatabase.getDB().getTag(tag_id);
+		for (Long id : idList) {
+			MTag tag = MDatabase.getDB().getLazyTag(id);
 			if (tag == null)
 				continue;
 			tag.preloadName();
-			addTag(tag.getName(), tag_id);
+			addTag(tag.getName(), id);
 		}
 	}
 	
@@ -619,8 +580,8 @@ public abstract class MElement implements Comparable<MElement> {
 	 */
 	void saveTagsToDBInfo(MDBAdapter.IDList idList) {
 		if (this.tags != null) {
-			for (Set<MElementPointer> set : this.tags.values()) {
-				for (MElementPointer pt : set) {
+			for (MTagSet set : this.tags.values()) {
+				for (MElementPointer pt : set.pointers) {
 					idList.add(pt.getID());
 				}
 			}
@@ -658,4 +619,110 @@ public abstract class MElement implements Comparable<MElement> {
 	}
 	
 	public static final int FULL_ATTRIB_FLAG = 0xFFFFFFFF;
+	
+	public class MTagSet implements Iterable<MTag> {
+
+		Set<MElementPointer> pointers = new TreeSet<MElementPointer>();
+		final String name;
+		
+		private MTagSet(String name) {
+			this.name = name;
+		}
+		
+		void changed() {
+			changed_tags = true;
+		}
+		
+		public void add(MTag tag) {
+			if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
+				return;
+			if (!tag.name.equals(name))
+				return;
+			pointers.add(new MElementPointer(tag));
+			changed_tags = true;
+		}
+
+		public void remove(MTag tag) {
+			if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
+				return;
+			if (!tag.name.equals(name))
+				return;
+			pointers.remove(new MElementPointer(tag));
+			changed_tags = true;
+		}
+		
+		public void clear() {
+			if (deleted || id == NULL_ID)
+				return;
+			for (MElementPointer pt : pointers) {
+				MTag tag = (MTag) pt.getElement();
+				if (tag != null && !tag.isDeleted())
+					tag.removeElement(MElement.this);
+			}
+			pointers.clear();
+			changed_tags = true;
+		}
+		
+		public boolean contains(MTag tag) {
+			if (deleted || id == NULL_ID)
+				return false;
+			return pointers.contains(new MElementPointer(tag));
+		}
+		
+		public boolean isEmpty() {
+			if (deleted || id == NULL_ID)
+				return true;
+			return pointers.isEmpty();
+		}
+		
+		public int size() {
+			if (deleted || id == NULL_ID)
+				return 0;
+			return pointers.size();
+		}
+		
+		@Override
+		public Iterator<MTag> iterator() {
+			return new Itr();
+		}
+		
+		private class Itr implements Iterator<MTag> {
+			
+			final Iterator<MElementPointer> it = pointers.iterator();
+			MElementPointer last;
+			
+			@Override
+			public boolean hasNext() {
+				if (deleted || id == NULL_ID)
+					return false;
+				return it.hasNext();
+			}
+
+			@Override
+			public MTag next() {
+				if (deleted || id == NULL_ID)
+					return null;
+				last = it.next();
+				MTag tag = (MTag) last.getElement();
+				while (tag == null || tag.isDeleted()) {
+					it.remove();
+					last = it.next();
+					tag = (MTag) last.getElement();
+					changed_tags = true;
+				}
+				return tag;
+			}
+
+			@Override
+			public void remove() {
+				if (deleted || id == NULL_ID)
+					return;
+				MTag tag = (MTag) last.getElement();
+				tag.removeElement(MElement.this);
+				it.remove();
+			}
+			
+		}
+		
+	}
 }

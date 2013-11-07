@@ -20,7 +20,7 @@ public abstract class BlockWidget extends Widget implements Linable {
 	View contentView;
 	TextView titleView;
 	TextView titleShadowView;
-	ShadowDecorator shadowDecorator;
+//	ShadowDecorator shadowDecorator;
 	
 	final static int margin = 2;
 	final static int titleHeight = 30;
@@ -31,7 +31,7 @@ public abstract class BlockWidget extends Widget implements Linable {
 		setClipped(false);
 
 		listView = new ListView();
-		shadowDecorator = new ShadowDecorator();
+//		shadowDecorator = new ShadowDecorator();
 		
 		listView.setPosition(margin, titleHeight + margin);
 		
@@ -44,10 +44,10 @@ public abstract class BlockWidget extends Widget implements Linable {
 				g.setColor(getBorderColor());
 				g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 				
-				g.setColor(Color.white);
+//				g.setColor(Color.white);
 				g.setFont(Resources.FONT_CLASS_ENUM);
 
-				g.drawString(getTitle(), 20, 25);
+//				g.drawString(getTitle(), 20, 25);
 				g.setColor(getTitleColor());
 				g.drawString(getTitle(), 19, 24);
 				
@@ -55,7 +55,7 @@ public abstract class BlockWidget extends Widget implements Linable {
 		};
 		contentView.setBackgroundColor(null);
 		
-		addSubview(shadowDecorator);
+//		addSubview(shadowDecorator);
 		addSubview(contentView);
 		addSubview(listView);
 	}
@@ -69,7 +69,7 @@ public abstract class BlockWidget extends Widget implements Linable {
 	public void setSize(int width, int height) {
 		super.setSize(width, height);
 		listView.setSize(width - margin * 2, height - titleHeight - margin * 2);
-		shadowDecorator.setSize(width, height);
+//		shadowDecorator.setSize(width, height);
 		contentView.setSize(width, height);
 	}
 	

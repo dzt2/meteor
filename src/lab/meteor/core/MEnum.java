@@ -74,10 +74,15 @@ public class MEnum extends MElement implements MDataType {
 	}
 	
 	public String getName() {
+		if (isDeleted())
+			return null;
 		return this.name;
 	}
 	
 	public void setName(String name) throws MException {
+		if (isDeleted())
+			return;
+		
 		if (name.equals(this.name))
 			return;
 		if (this.parent.hasClass(this.name) || this.parent.hasEnum(this.name))
@@ -104,22 +109,32 @@ public class MEnum extends MElement implements MDataType {
 	}
 	
 	public String[] getSymbolNames() {
+		if (isDeleted())
+			return null;
 		return this.getSymbols().keySet().toArray(new String[0]);
 	}
 	
 	public MSymbol getSymbol(String sym) {
+		if (isDeleted())
+			return null;
 		return this.getSymbols().get(sym);
 	}
 	
 	public boolean hasSymbol(String sym) {
+		if (isDeleted())
+			return false;
 		return this.getSymbols().containsKey(sym);
 	}
 	
 	public MPackage getPackage() {
+		if (isDeleted())
+			return null;
 		return this.parent;
 	}
 	
 	public void setPackage(MPackage pkg) throws MException {
+		if (isDeleted())
+			return;
 		if (pkg == null)
 			pkg = MPackage.DEFAULT_PACKAGE;
 		if (pkg == this.parent)
@@ -149,11 +164,15 @@ public class MEnum extends MElement implements MDataType {
 
 	@Override
 	public MNativeDataType getNativeDataType() {
+		if (isDeleted())
+			return null;
 		return MNativeDataType.Enum;
 	}
 
 	@Override
 	public String getTypeIdentifier() {
+		if (isDeleted())
+			return null;
 		return String.valueOf(MElement.ID_PREFIX) + MUtility.stringID(this.id);
 	}
 	

@@ -216,6 +216,8 @@ public class MClass extends MElement implements MType {
 	 * @return name.
 	 */
 	public String getName() {
+		if (isDeleted())
+			return null;
 		return this.name;
 	}
 	
@@ -226,6 +228,9 @@ public class MClass extends MElement implements MType {
 	 * @param name the name of class.
 	 */
 	public void setName(String name) {
+		if (isDeleted())
+			return;
+		
 		if (name.equals(this.name))
 			return;
 		if (this.parent.hasChild(name))
@@ -242,6 +247,8 @@ public class MClass extends MElement implements MType {
 	 * @return superclass.
 	 */
 	public MClass getSuperClass() {
+		if (isDeleted())
+			return null;
 		return this.superclass;
 	}
 	
@@ -251,6 +258,9 @@ public class MClass extends MElement implements MType {
 	 * @param clazz superclass.
 	 */
 	public void setSuperClass(MClass clazz) {
+		if (isDeleted())
+			return;
+		
 		if (this.superclass == clazz)
 			return;
 		MClass cp = clazz;
@@ -274,6 +284,9 @@ public class MClass extends MElement implements MType {
 	 * @return {@code true} if is sub-class.
 	 */
 	public boolean asSubClass(MClass clazz) {
+		if (isDeleted())
+			return false;
+		
 		MClass cp = this.superclass;
 		do {
 			if (cp == clazz)
@@ -297,6 +310,8 @@ public class MClass extends MElement implements MType {
 	 * @return package.
 	 */
 	public MPackage getPackage() {
+		if (isDeleted())
+			return null;
 		return this.parent;
 	}
 	
@@ -305,6 +320,9 @@ public class MClass extends MElement implements MType {
 	 * @param pkg package.
 	 */
 	public void setPackage(MPackage pkg) {
+		if (isDeleted())
+			return;
+		
 		if (pkg == null)
 			pkg = MPackage.DEFAULT_PACKAGE;
 		if (pkg == this.parent)
@@ -325,6 +343,8 @@ public class MClass extends MElement implements MType {
 	 * @return {@code true} if there is.
 	 */
 	public boolean hasProperty(String name) {
+		if (isDeleted())
+			return false;
 		return this.hasAttribute(name) || this.hasReference(name);
 	}
 	
@@ -335,6 +355,8 @@ public class MClass extends MElement implements MType {
 	 * is reference, <code>null</code> if there is no property named after the given name. 
 	 */
 	public MProperty getProperty(String name) {
+		if (isDeleted())
+			return null;
 		MProperty p = this.getAttribute(name);
 		if (p == null)
 			p = this.getReference(name);
@@ -366,6 +388,8 @@ public class MClass extends MElement implements MType {
 	 * @return the set of attribute names.
 	 */
 	public String[] getAttributeNames() {
+		if (isDeleted())
+			return null;
 		return this.getAttributes().keySet().toArray(new String[0]);
 	}
 	
@@ -374,6 +398,8 @@ public class MClass extends MElement implements MType {
 	 * @return the set of attribute names.
 	 */
 	public String[] getAllAttributeNames() {
+		if (isDeleted())
+			return null;
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
@@ -389,6 +415,8 @@ public class MClass extends MElement implements MType {
 	 * @return attribute with specific name. {@code null} if there is no one.
 	 */
 	public MAttribute getAttribute(String name) {
+		if (isDeleted())
+			return null;
 		MAttribute atb = null;
 
 		MClass cls = this;
@@ -407,6 +435,8 @@ public class MClass extends MElement implements MType {
 	 * @return {@code true} if there is.
 	 */
 	public boolean hasAttribute(String name) {
+		if (isDeleted())
+			return false;
 		MClass cls = this;
 		while (cls != null) {
 			if (cls.getAttributes().containsKey(name))
@@ -453,6 +483,8 @@ public class MClass extends MElement implements MType {
 	 * @return the set of reference names.
 	 */
 	public String[] getReferenceNames() {
+		if (isDeleted())
+			return null;
 		return this.getReferences().keySet().toArray(new String[0]);
 	}
 	
@@ -461,6 +493,8 @@ public class MClass extends MElement implements MType {
 	 * @return the set of reference names.
 	 */
 	public String[] getAllReferenceNames() {
+		if (isDeleted())
+			return null;
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
@@ -476,6 +510,8 @@ public class MClass extends MElement implements MType {
 	 * @return reference with specific name. {@code null} if there is no one.
 	 */
 	public MReference getReference(String name) {
+		if (isDeleted())
+			return null;
 		MReference ref = null;
 		
 		MClass cls = this;
@@ -494,6 +530,8 @@ public class MClass extends MElement implements MType {
 	 * @return {@code true} if there is.
 	 */
 	public boolean hasReference(String name) {
+		if (isDeleted())
+			return false;
 		MClass cls = this;
 		while (cls != null) {
 			if (cls.getReferences().containsKey(name))

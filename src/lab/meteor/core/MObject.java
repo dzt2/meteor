@@ -44,6 +44,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public MClass getClazz() {
+		if (isDeleted())
+			return null;
 		load();
 		MClass cls = (MClass) class_pt.getElement();
 		if (cls == null)
@@ -52,6 +54,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public boolean isInstanceOf(MClass clazz) throws MException {
+		if (isDeleted())
+			return false;
 		load();
 		
 		if (this.class_pt.getID() == clazz.getID())
@@ -65,6 +69,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public Object get(String name) {
+		if (isDeleted())
+			return null;
 		MClass cls = getClazz();
 		MProperty p = cls.getProperty(name);
 		if (p == null)
@@ -80,6 +86,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public void set(String name, Object o) {
+		if (isDeleted())
+			return;
 		MClass cls = getClazz();
 		MAttribute p = cls.getAttribute(name);
 		if (p == null)
@@ -88,6 +96,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public void set(String name, MObject o) {
+		if (isDeleted())
+			return;
 		MClass cls = getClazz();
 		MProperty p = cls.getProperty(name);
 		if (p == null)
@@ -98,6 +108,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public Object getAttribute(String name) {
+		if (isDeleted())
+			return null;
 		MClass cls = getClazz();
 		MAttribute atb = cls.getAttribute(name);
 		if (atb == null)
@@ -107,6 +119,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public MObject getReference(String name) {
+		if (isDeleted())
+			return null;
 		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
@@ -120,6 +134,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public MObjectSet getReferences(String name) {
+		if (isDeleted())
+			return null;
 		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
@@ -134,6 +150,8 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public void setAttribute(String name, Object obj) {
+		if (isDeleted())
+			return;
 		MClass cls = getClazz();
 		MAttribute atb = cls.getAttribute(name);
 		if (atb == null)
@@ -145,6 +163,10 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public void setReference(String name, MObject obj) {
+		if (isDeleted())
+			return;
+		if (obj != null && obj.isDeleted())
+			return;
 		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
 		if (ref == null)
@@ -159,7 +181,9 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	public void addReference(String name, MObject obj) {
-		if (obj == null)
+		if (isDeleted())
+			return;
+		if (obj == null || obj.isDeleted())
 			return;
 		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
@@ -175,7 +199,9 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	public void removeReference(String name, MObject obj) {
-		if (obj == null)
+		if (isDeleted())
+			return;
+		if (obj == null || obj.isDeleted())
 			return;
 		MClass cls = getClazz();
 		MReference ref = cls.getReference(name);
@@ -401,19 +427,19 @@ public class MObject extends MElement implements MNotifiable {
 		while (it.hasNext()) {
 			Map.Entry<String, Object> entry = it.next();
 			long id = MUtility.parseID(entry.getKey());
-			MElement ele = MDatabase.getDB().getElement(id);
+			MElementType type = MDatabase.getDB().getElementType(id);
 			Object value = entry.getValue();
 			
 			// if attribute
-			if (ele.getElementType() == MElementType.Attribute) {
-				MAttribute atb = (MAttribute) ele;
+			if (type == MElementType.Attribute) {
+				MAttribute atb = MDatabase.getDB().getAttribute(id);
 				if (!MUtility.checkType(atb.getDataType(), value)) {
 					changeFlag = true;
 				}
 				fromDBObject(this, atb, value, id);
 			// if reference
-			} else if (ele.getElementType() == MElementType.Reference) {
-				MReference ref = (MReference) ele;
+			} else if (type == MElementType.Reference) {
+				MReference ref = MDatabase.getDB().getReference(id);
 				// multiplicity one
 				if (value instanceof MElementPointer) {
 					if (ref.getMultiplicity() == Multiplicity.One) {
@@ -515,36 +541,53 @@ public class MObject extends MElement implements MNotifiable {
 		}
 		
 		public void add(MObject o) {
+			if (isDeleted())
+				return;
+			if (o == null || o.isDeleted())
+				return;
 			MReference r = (MReference)refPointer.getElement();
 			oppositeWhenAdd(r, o);
 			addReference(r, o);
 		}
 
 		public void remove(MObject o) {
+			if (isDeleted())
+				return;
+			if (o == null || o.isDeleted())
+				return;
 			MReference r = (MReference)refPointer.getElement();
 			oppositeWhenRemove(r, o);
 			removeReference(r, o);
 		}
 		
 		public void clear() {
+			if (isDeleted())
+				return;
 			MReference r = (MReference)refPointer.getElement();
 			for (MElementPointer ep : pointers) {
 				MObject o = (MObject) ep.getElement();
-				oppositeWhenRemove(r, o);
+				if (o != null && !o.isDeleted())
+					oppositeWhenRemove(r, o);
 			}
 			pointers.clear();
 			changed();
 		}
 		
 		public boolean contains(MObject o) {
+			if (isDeleted())
+				return false;
 			return pointers.contains(new MElementPointer(o));
 		}
 		
 		public boolean isEmpty() {
+			if (isDeleted())
+				return true;
 			return pointers.isEmpty();
 		}
 		
 		public int size() {
+			if (isDeleted())
+				return 0;
 			return pointers.size();
 		}
 		
@@ -555,7 +598,7 @@ public class MObject extends MElement implements MNotifiable {
 				MElementPointer pt = it.next();
 				MObject mo = (MObject) pt.getElement();
 				// remove overdue pointer
-				if (mo == null) {
+				if (mo == null || mo.isDeleted()) {
 					it.remove();
 					changeFlag = true;
 				}
@@ -570,17 +613,23 @@ public class MObject extends MElement implements MNotifiable {
 			MElementPointer last;
 			@Override
 			public boolean hasNext() {
+				if (isDeleted())
+					return false;
 				return it.hasNext();
 			}
 
 			@Override
 			public MObject next() {
+				if (isDeleted())
+					return null;
 				last = it.next();
 				return (MObject) last.getElement();
 			}
 
 			@Override
 			public void remove() {
+				if (isDeleted())
+					return;
 				MReference r = (MReference)refPointer.getElement();
 				MObject o = (MObject) last.getElement();
 				oppositeWhenRemove(r, o);
@@ -591,17 +640,18 @@ public class MObject extends MElement implements MNotifiable {
 		}
 	}
 	
-	public String printString() {
+	public String details() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getClazz().toString()).append("(").append(this.id).append(")\n");
 		for (Long id : this.getValues().keySet()) {
-			MElement e = MDatabase.getDB().getElement(id);
-			MProperty p = (MProperty) e;
-			sb.append("  ").append(p.name).append(" : ");
-			if (e.getElementType() == MElementType.Attribute) {
+			MElementType type = MDatabase.getDB().getElementType(id);
+			sb.append("  ");
+			if (type == MElementType.Attribute) {
+				MAttribute a = MDatabase.getDB().getAttribute(id);
+				sb.append(a.name).append(" : ");
 				sb.append(this.values.get(id).toString()).append("\n");
 			} else {
-				MReference r = (MReference) e;
+				MReference r = MDatabase.getDB().getReference(id);
 				if (r.getMultiplicity() == Multiplicity.Multiple) {
 					MObjectSet set = (MObjectSet)this.values.get(r.id);
 					sb.append("\n  {\n");

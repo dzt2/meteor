@@ -137,6 +137,9 @@ public class MTag extends MElement implements MNotifiable {
 	}
 	
 	void addElement(MElement e) {
+		if (isDeleted() || e == null || e.isDeleted())
+			return;
+		loadElements();
 		MElementPointer ep = new MElementPointer(e);
 		if (elements.contains(ep))
 			return;
@@ -145,6 +148,9 @@ public class MTag extends MElement implements MNotifiable {
 	}
 	
 	void removeElement(MElement e) {
+		if (isDeleted() || e == null || e.isDeleted())
+			return;
+		loadElements();
 		MElementPointer ep = new MElementPointer(e);
 		if (!elements.contains(ep))
 			return;
@@ -157,7 +163,7 @@ public class MTag extends MElement implements MNotifiable {
 	
 	void relink(String oldName, String newName) {
 		for (MElementPointer pt : this.elements) {
-			MElement e = MDatabase.getDB().getElement(pt.getID());
+			MElement e = MDatabase.getDB().getElementInCache(pt.getID());
 			if (e != null) {
 				e.removeTag(oldName, this.id);
 				e.addTag(newName, this.id);

@@ -424,6 +424,27 @@ public class MPackage extends MElement {
 		return this.parent.toString() + "::" + this.name;
 	}
 	
+	@Override
+	public String details() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Package(").append(id).append(")\n");
+		sb.append(toString()).append('\n');
+		String[] names = getPackageNames();
+		for (String name : names) {
+			sb.append(name).append(" <P>\n");
+		}
+		names = getClassNames();
+		for (String name : names) {
+			sb.append(name).append(" <C>\n");
+		}
+		names = getEnumNames();
+		for (String name : names) {
+			sb.append(name).append(" <E>\n");
+		}
+		sb.setLength(sb.length() - 1);
+		return sb.toString();
+	}
+	
 	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
 	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 	

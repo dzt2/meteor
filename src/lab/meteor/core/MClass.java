@@ -680,6 +680,36 @@ public class MClass extends MElement implements MType {
 		return this.parent.toString() + "::" + this.name;
 	}
 	
+	@Override
+	public String details() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Class(").append(id).append(")\n");
+		sb.append(toString());
+		if (getSuperClass() != null)
+			sb.append(" : ").append(getSuperClass().getName());
+		sb.append('\n');
+		String[] atbnames = getAllAttributeNames();
+		for (String name : atbnames) {
+			MAttribute atb = getAttribute(name);
+			sb.append(atb.toString());
+			if (atb.clazz == this)
+				sb.append(" <A>\n");
+			else
+				sb.append(" <AI>\n");
+		}
+		String[] refnames = getAllReferenceNames();
+		for (String name : refnames) {
+			MReference ref = getReference(name);
+			sb.append(ref.toString());
+			if (ref.clazz == this)
+				sb.append(" <R>\n");
+			else
+				sb.append(" <RI>\n");
+		}
+		sb.setLength(sb.length() - 1);
+		return sb.toString();
+	}
+	
 	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
 	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 	public static final int ATTRIB_FLAG_SUPERCLASS = 0x00000004;

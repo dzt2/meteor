@@ -194,6 +194,15 @@ public class MAttribute extends MProperty {
 		return builder.toString();
 	}
 	
+	@Override
+	public String details() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Attribute(").append(id).append(")\n  ")
+			.append(clazz.toString()).append('.')
+			.append(this.name).append(" : ").append(this.type);
+		return sb.toString();
+	}
+	
 	public static final int ATTRIB_FLAG_DATATYPE = 0x00000004;
 	
 }

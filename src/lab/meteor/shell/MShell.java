@@ -705,59 +705,20 @@ public class MShell {
 		if (cls == null) {
 			return null;
 		}
-		StringBuilder builder = new StringBuilder();
-		builder.append(cls.toString());
-		if (cls.getSuperClass() != null)
-			builder.append(" : ").append(cls.getSuperClass().getName());
-		builder.append('\n');
-		String[] atbnames = cls.getAllAttributeNames();
-		for (String name : atbnames) {
-			MAttribute atb = cls.getAttribute(name);
-			builder.append(atb.toString()).append(" - Attribute\n");
-		}
-		String[] refnames = cls.getAllReferenceNames();
-		for (String name : refnames) {
-			MReference ref = cls.getReference(name);
-			builder.append(ref.toString()).append(" - Reference\n");
-		}
-		builder.setLength(builder.length() - 1);
-		return builder.toString();
+		return cls.details();
 	}
 	
 	static String getPrintString(MEnum enm) {
 		if (enm == null) {
 			return null;
 		}
-		StringBuilder builder = new StringBuilder();
-		builder.append(enm.toString()).append('\n');
-		String[] symnames = enm.getSymbolNames();
-		for (String name : symnames) {
-			MSymbol sym = enm.getSymbol(name);
-			builder.append(sym.toString()).append('\n');
-		}
-		builder.setLength(builder.length() - 1);
-		return builder.toString();
+		return enm.details();
 	}
 	
 	static String getPrintString(MPackage pkg) {
 		if (pkg == null)
 			return null;
-		StringBuilder builder = new StringBuilder();
-		builder.append(pkg.toString()).append('\n');
-		String[] names = pkg.getPackageNames();
-		for (String name : names) {
-			builder.append(name).append(" - Package\n");
-		}
-		names = pkg.getClassNames();
-		for (String name : names) {
-			builder.append(name).append(" - Class\n");
-		}
-		names = pkg.getEnumNames();
-		for (String name : names) {
-			builder.append(name).append(" - Enum\n");
-		}
-		builder.setLength(builder.length() - 1);
-		return builder.toString();
+		return pkg.details();
 	}
 	
 	static class MShellException extends Exception {

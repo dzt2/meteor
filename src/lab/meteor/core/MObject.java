@@ -640,6 +640,7 @@ public class MObject extends MElement implements MNotifiable {
 		}
 	}
 	
+	@Override
 	public String details() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getClazz().toString()).append("(").append(this.id).append(")\n");

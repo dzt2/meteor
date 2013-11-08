@@ -122,7 +122,7 @@ public abstract class MCollection {
 	 * <code>MSet</code> when factory is <code>Factory.Set</code>;
 	 * <code>MDictionary</code> when factory is <code>Factory.Dictionary</code>.
 	 */
-	protected static MCollection createCollection(Factory factory, 
+	static MCollection createCollection(Factory factory, 
 			MNotifiable root, MAttribute atb) {
 		switch (factory) {
 		case List:

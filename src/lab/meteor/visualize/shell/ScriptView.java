@@ -10,6 +10,7 @@ import co.gongzh.snail.View;
 import co.gongzh.snail.ViewGraphics;
 import co.gongzh.snail.text.EditableTextView;
 import co.gongzh.snail.util.Alignment;
+import co.gongzh.snail.util.Insets;
 import co.gongzh.snail.util.Vector2D;
 
 public class ScriptView extends View {
@@ -43,13 +44,14 @@ public class ScriptView extends View {
 		};
 		startButton.setSize(15, 15);
 		
-		textView.setPosition(padding, padding);
+//		textView.setPosition(padding, padding);
 		textView.setDefaultTextColor(Color.white);
 		textView.setDefaultFont(Resources.FONT_CMD_PRINT);
 		textView.getCaretView().setBackgroundColor(Color.white);
 		textView.setBreakIterator(BreakIterator.getLineInstance());
 		textView.setTextAlignment(Alignment.LEFT_TOP);
 		textView.setBackgroundColor(null);
+		textView.setInsets(Insets.make(padding, padding, padding, padding));
 		
 		addSubview(textView);
 		addSubview(startButton);
@@ -57,7 +59,7 @@ public class ScriptView extends View {
 	
 	@Override
 	public void setSize(int width, int height) {
-		textView.setSize(width - padding * 2, height - padding * 2);
+		textView.setSize(width, height);
 		startButton.setLeft(width - startButton.getWidth());
 		super.setSize(width, height);
 	}
@@ -67,7 +69,7 @@ public class ScriptView extends View {
 	@Override
 	protected void mousePressed(MouseEvent e) {
 		pos0 = e.getPosition(this);
-		this.getSuperView().setSubviewIndex(this, this.getSuperView().count() - 2);
+//		this.getSuperView().setSubviewIndex(this, this.getSuperView().count() - 2);
 	}
 	
 	@Override

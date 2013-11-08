@@ -30,7 +30,7 @@ public class MDictionary extends MCollection implements Iterable<Map.Entry<Strin
 
 	final Map<String, Object> dict = new TreeMap<String, Object>();
 	
-	public Object add(String key, Object value) {
+	public Object put(String key, Object value) {
 		checkType(value);
 		
 		value = toInputObject(value);
@@ -40,14 +40,14 @@ public class MDictionary extends MCollection implements Iterable<Map.Entry<Strin
 		return o;
 	}
 
-	public Object remove(Object key) {
+	public Object remove(String key) {
 		Object o = dict.remove(key);
 		o = toOutputObject(o);
 		this.notifyChanged();
 		return o;
 	}
 
-	public Object get(Object key) {
+	public Object get(String key) {
 		Object o = dict.get(key);
 		o = toOutputObject(o);
 		return o;
@@ -58,7 +58,7 @@ public class MDictionary extends MCollection implements Iterable<Map.Entry<Strin
 		this.notifyChanged();
 	}
 
-	public boolean containsKey(Object key) {
+	public boolean containsKey(String key) {
 		return dict.containsKey(key);
 	}
 

@@ -240,6 +240,20 @@ public class MEnum extends MElement implements MDataType {
 		return this.parent.toString() + "::" + this.name;
 	}
 	
+	@Override
+	public String details() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Enum(").append(id).append(")\n");
+		sb.append(toString()).append('\n');
+		String[] symnames = getSymbolNames();
+		for (String name : symnames) {
+			MSymbol sym = getSymbol(name);
+			sb.append(sym.toString()).append('\n');
+		}
+		sb.setLength(sb.length() - 1);
+		return sb.toString();
+	}
+	
 	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
 	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 

@@ -567,7 +567,7 @@ public class MDatabase {
 		MDBAdapter.TagDBInfo tagDBInfo = new MDBAdapter.TagDBInfo(MTag.ATTRIB_FLAG_NAME);
 		tagDBInfo.id = tag.id;
 		dbAdapter.loadTag(tagDBInfo);
-		
+		tag.name = tagDBInfo.name;
 	}
 	
 	List<Long> listAllObjectsID(MClass cls) {

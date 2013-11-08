@@ -600,6 +600,8 @@ public abstract class MElement implements Comparable<MElement> {
 	 */
 	abstract void saveToDBInfo(DBInfo dbInfo);
 	
+	public abstract String details();
+	
 	/**
 	 * An element can equal to its pointer.
 	 */

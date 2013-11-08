@@ -30,6 +30,9 @@ public class MTag extends MElement implements MNotifiable {
 		if (!MUtility.isValidValue(value))
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		
+		loaded_elements = true;
+		changed_elements = false;
+		
 		this.initialize();
 		this.name = name;
 		this.elements = new TreeSet<MElementPointer>();
@@ -38,13 +41,11 @@ public class MTag extends MElement implements MNotifiable {
 		} else {
 			this.value = value;
 		}
+		
 		target.addTag(this);
 		
 		MDatabase.getDB().createElement(this);
 		MDatabase.getDB().saveTagElements(this);
-		
-		loaded_elements = true;
-		changed_elements = false;
 	}
 	
 	public MTag(Collection<MElement> targets, String name) {
@@ -65,6 +66,9 @@ public class MTag extends MElement implements MNotifiable {
 				throw new MException(MException.Reason.ELEMENT_MISSED);
 		}
 		
+		loaded_elements = true;
+		changed_elements = false;
+		
 		this.initialize();
 		this.name = name;
 		this.elements = new TreeSet<MElementPointer>();
@@ -81,8 +85,6 @@ public class MTag extends MElement implements MNotifiable {
 		MDatabase.getDB().createElement(this);
 		MDatabase.getDB().saveTagElements(this);
 		
-		loaded_elements = true;
-		changed_elements = false;
 	}
 	
 	/**
@@ -103,12 +105,13 @@ public class MTag extends MElement implements MNotifiable {
 	}
 	
 	public String getName() {
-		if (!isLoaded())
-			load(ATTRIB_FLAG_NAME);
+//		if (!isLoaded())
+//			load(ATTRIB_FLAG_NAME);
 		return this.name;
 	}
 	
 	public void setName(String name) {
+		load();
 		if (this.name.equals(name))
 			return;
 		relink(this.name, name);
@@ -116,14 +119,16 @@ public class MTag extends MElement implements MNotifiable {
 		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
-	public Object getValue() {
+	public Object get() {
+		load();
 		if (this.value instanceof MElementPointer)
 			return ((MElementPointer) value).getElement();
 		else
 			return this.value;
 	}
 	
-	public void setValue(Object value) {
+	public void set(Object value) {
+		load();
 		if (!MUtility.isValidValue(value))
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		if (value instanceof MElement) {
@@ -296,6 +301,19 @@ public class MTag extends MElement implements MNotifiable {
 	@Override
 	public void setChanged(MElementPointer property) {
 		setChanged(ATTRIB_FLAG_VALUE);
+	}
+	
+	@Override
+	public String toString() {
+		return "Tag(" + this.id + ") : " + this.name;
+	}
+	
+	@Override
+	public String details() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Tag(").append(id).append(")\n");
+		sb.append(name).append("\n  ").append(get());
+		return sb.toString();
 	}
 
 }

@@ -142,7 +142,7 @@ public class MScriptHelper {
 				if (!(it instanceof MDictionary))
 					throw new MScriptException("wrong operation at \'" + t.name + "\'");
 				MDictionary dict = (MDictionary) it;
-				dict.add(t.name, value);
+				dict.put(t.name, value);
 			}
 		} else if (t.type == TokenType.Angular) {
 			if (!(it instanceof MObject))
@@ -151,7 +151,7 @@ public class MScriptHelper {
 			o.loadTags();
 			MTag tag = o.tag(t.name);
 			if (tag != null)
-				tag.setValue(value);
+				tag.set(value);
 			else {
 				new MTag(o, t.name, value);
 			}
@@ -259,7 +259,7 @@ public class MScriptHelper {
 			if (tag == null)
 				throw new MScriptException("interupt with null tag.");
 			tag.load();
-			it = tag.getValue();
+			it = tag.get();
 		}
 		return it;
 	}

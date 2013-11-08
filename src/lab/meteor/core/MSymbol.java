@@ -134,6 +134,14 @@ public class MSymbol extends MElement {
 		return this.name;
 	}
 	
+	@Override
+	public String details() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Symbol(").append(id).append(")\n  ")
+			.append(envm.toString()).append('.').append(this.name);
+		return sb.toString();
+	}
+	
 	public static final int ATTRIB_FLAG_PARENT = 0x00000001;
 	public static final int ATTRIB_FLAG_NAME = 0x00000002;
 	

@@ -174,6 +174,17 @@ public class MReference extends MProperty {
 		return builder.toString();
 	}
 	
+	@Override
+	public String details() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Reference(").append(id).append(")\n  ")
+			.append(clazz.toString()).append('.')
+			.append(this.name).append(" : ").append(this.reference.toString());
+		if (this.multi == Multiplicity.Multiple)
+			sb.append('*');
+		return sb.toString();
+	}
+	
 	public static final int ATTRIB_FLAG_REFERENCE = 0x00000001;
 	public static final int ATTRIB_FLAG_MULTIPLICITY = 0x00000002;
 	public static final int ATTRIB_FLAG_OPPOSITE = 0x00000004;

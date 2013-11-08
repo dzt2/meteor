@@ -8,7 +8,7 @@ import lab.meteor.core.MObject;
 import lab.meteor.core.MTag;
 import lab.meteor.core.MElement.MElementType;
 
-public class MCache {
+public class MCaches {
 
 	/**
 	 * The meta of system, i.e. the model, include class, attribute, reference, 
@@ -19,17 +19,17 @@ public class MCache {
 	/**
 	 * The objects' cache.
 	 */
-	private Map<Long, MObject> objectsCache;
+	private MGCCache<MObject> objectsCache;
 	
 	/**
 	 * The tags' cache.
 	 */
-	private Map<Long, MTag> tagsCache;
+	private MGCCache<MTag> tagsCache;
 	
-	public MCache() {
+	public MCaches() {
 		metaElements = new HashMap<Long, MElement>();
-		objectsCache = new HashMap<Long, MObject>();
-		tagsCache = new HashMap<Long, MTag>();
+		objectsCache = new MGCCache<MObject>();
+		tagsCache = new MGCCache<MTag>();
 	}
 	
 	/**
@@ -68,9 +68,9 @@ public class MCache {
 	public boolean isElementInCache(long id) {
 		if (metaElements.containsKey(id))
 			return true;
-		if (objectsCache.containsKey(id))
+		if (objectsCache.contains(id))
 			return true;
-		if (tagsCache.containsKey(id))
+		if (tagsCache.contains(id))
 			return true;
 		return false;
 	}
@@ -95,9 +95,9 @@ public class MCache {
 	 */
 	public void addElement(MElement ele) {
 		if (ele.getElementType() == MElementType.Object)
-			objectsCache.put(ele.getID(), (MObject) ele);
+			objectsCache.add(ele.getID(), (MObject) ele);
 		else if (ele.getElementType() == MElementType.Tag)
-			tagsCache.put(ele.getID(), (MTag) ele);
+			tagsCache.add(ele.getID(), (MTag) ele);
 		else
 			metaElements.put(ele.getID(), ele);
 	}

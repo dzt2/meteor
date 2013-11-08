@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lab.meteor.core.MElement.MElementType;
-import lab.meteor.core.cache.MCache;
+import lab.meteor.core.cache.MCaches;
 
 public class MDatabase {
 	
@@ -36,7 +36,7 @@ public class MDatabase {
 		return database;
 	}
 	
-	private MCache cache;
+	private MCaches cache;
 	
 	/*
 	 * ********************************
@@ -47,7 +47,7 @@ public class MDatabase {
 	 * Private constructor.
 	 */
 	private MDatabase() {
-		cache = new MCache();
+		cache = new MCaches();
 		dbAdapter = null;
 	}
 	

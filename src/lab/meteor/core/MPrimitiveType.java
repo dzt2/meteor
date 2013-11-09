@@ -35,6 +35,16 @@ public class MPrimitiveType implements MDataType {
 	public MNativeDataType getNativeDataType() {
 		return this.nType;
 	}
+	
+	@Override
+	public String getName() {
+		return this.getTypeIdentifier();
+	}
+	
+	@Override
+	public void setName(String name) {
+		return;
+	}
 
 	@Override
 	public String getTypeIdentifier() {

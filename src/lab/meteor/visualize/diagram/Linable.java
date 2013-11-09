@@ -7,6 +7,8 @@ public interface Linable {
 	void addLine(Line line);
 	void removeLine(Line line);
 	
-	Vector2D getArchor(Vector2D target);
+	Vector2D getArchor(Vector2D center);
 	Vector2D getCenter();
+	
+	boolean isHidden();
 }

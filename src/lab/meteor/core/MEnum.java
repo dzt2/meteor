@@ -73,12 +73,14 @@ public class MEnum extends MElement implements MDataType {
 		super.delete();
 	}
 	
+	@Override
 	public String getName() {
 		if (isDeleted())
 			return null;
 		return this.name;
 	}
 	
+	@Override
 	public void setName(String name) throws MException {
 		if (isDeleted())
 			return;
@@ -94,36 +96,36 @@ public class MEnum extends MElement implements MDataType {
 		this.setChanged(ATTRIB_FLAG_NAME);
 	}
 	
-	private Map<String, MSymbol> getSymbols() {
+	private Map<String, MSymbol> symbols() {
 		if (this.symbols == null)
 			this.symbols = new TreeMap<String, MSymbol>();
 		return this.symbols;
 	}
 	
 	protected void addSymbol(MSymbol sym) {
-		this.getSymbols().put(sym.getName(), sym);
+		this.symbols().put(sym.getName(), sym);
 	}
 	
 	protected void removeSymbol(MSymbol sym) {
-		this.getSymbols().remove(sym.getName());
+		this.symbols().remove(sym.getName());
 	}
 	
 	public String[] getSymbolNames() {
 		if (isDeleted())
 			return null;
-		return this.getSymbols().keySet().toArray(new String[0]);
+		return this.symbols().keySet().toArray(new String[0]);
 	}
 	
 	public MSymbol getSymbol(String sym) {
 		if (isDeleted())
 			return null;
-		return this.getSymbols().get(sym);
+		return this.symbols().get(sym);
 	}
 	
 	public boolean hasSymbol(String sym) {
 		if (isDeleted())
 			return false;
-		return this.getSymbols().containsKey(sym);
+		return this.symbols().containsKey(sym);
 	}
 	
 	public MPackage getPackage() {
@@ -148,15 +150,19 @@ public class MEnum extends MElement implements MDataType {
 		this.setChanged(ATTRIB_FLAG_PARENT);
 	}
 	
+	public MAttribute[] getUtilizers() {
+		return utilizers().toArray(new MAttribute[0]);
+	}
+	
 	void addUtilizer(MAttribute atb) {
-		this.getUtilizers().add(atb);
+		this.utilizers().add(atb);
 	}
 	
 	void removeUtilizer(MAttribute atb) {
-		this.getUtilizers().remove(atb);
+		this.utilizers().remove(atb);
 	}
 	
-	private Set<MAttribute> getUtilizers() {
+	private Set<MAttribute> utilizers() {
 		if (this.utilizers == null)
 			this.utilizers = new TreeSet<MAttribute>();
 		return this.utilizers;
@@ -243,14 +249,14 @@ public class MEnum extends MElement implements MDataType {
 	@Override
 	public String details() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Enum(").append(id).append(")\n");
-		sb.append(toString()).append('\n');
+		sb.append("Enum(").append(id).append(") - ");
+		sb.append(toString()).append(" {\n");
 		String[] symnames = getSymbolNames();
 		for (String name : symnames) {
 			MSymbol sym = getSymbol(name);
-			sb.append(sym.toString()).append('\n');
+			sb.append("  ").append(sym.toString()).append('\n');
 		}
-		sb.setLength(sb.length() - 1);
+		sb.append("}");
 		return sb.toString();
 	}
 	

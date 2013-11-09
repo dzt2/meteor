@@ -17,6 +17,11 @@ public abstract class Line extends Layer {
 	
 	LinesView linesView;
 	
+	public Line(Linable start, Linable end) {
+		setStart(start);
+		setEnd(end);
+	}
+	
 	public abstract Stroke getLineStroke();
 	public abstract Color getLineColor();
 	
@@ -24,14 +29,23 @@ public abstract class Line extends Layer {
 	private AffineTransform boxTransform;
 	
 	public void setStart(Linable start) {
+		if (this.start != null)
+			this.start.removeLine(this);
 		this.start = start;
+		if (this.start != null)
+			start.addLine(this);
 	}
 	
 	public void setEnd(Linable end) {
+		if (this.end != null)
+			this.end.removeLine(this);
 		this.end = end;
+		if (this.end != null)
+			end.addLine(this);
 	}
 	
-	private boolean hitTest(Vector2D p1, Vector2D p2) {
+	@Deprecated
+	boolean hitTest(Vector2D p1, Vector2D p2) {
 		boolean hit = false;
 		View[] views = this.linesView.diagramView.getSubviewHierachyAtPoint(p1);
 		if (views != null) {
@@ -61,12 +75,11 @@ public abstract class Line extends Layer {
 	
 	@Override
 	protected void repaintLayer(ViewGraphics g) {
-		
+		if (start.isHidden() || end.isHidden())
+			return;
 		Vector2D p1 = start.getArchor(end.getCenter()); // point 1
 		Vector2D p2 = end.getArchor(start.getCenter()); // point 2
 		if (p1.equals(p2))
-			return;
-		if (!hitTest(p1, p2))
 			return;
 
 		g.translate(p2.x, p2.y);
@@ -77,7 +90,7 @@ public abstract class Line extends Layer {
 		g.rotate(theta);
 		g.setStroke(getLineStroke());
 		g.setColor(getLineColor());
-		g.drawLine(0, 0, length, 0); // draw the line
+		drawLine(g, length);
 		
 		// update detection box
 		final int radius = 3;
@@ -88,10 +101,12 @@ public abstract class Line extends Layer {
 		g.rotate(-theta);
 		g.translate(-p2.x, -p2.y);
 	}
+	
+	protected abstract void drawLine(ViewGraphics g, int length);
+	
 	@Override
 	public boolean isInside(Vector2D point) {
-		// TODO Auto-generated method stub
-		return false;
+		return box.contains(point.x, point.y);
 	}
 	
 	

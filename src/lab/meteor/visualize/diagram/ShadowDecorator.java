@@ -4,6 +4,7 @@ import lab.meteor.visualize.resource.Resources;
 import co.gongzh.snail.View;
 import co.gongzh.snail.ViewGraphics;
 
+@Deprecated
 public class ShadowDecorator extends View {
 	
 	public ShadowDecorator() {

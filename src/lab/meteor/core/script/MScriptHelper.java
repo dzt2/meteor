@@ -1,4 +1,4 @@
-package lab.meteor.shell;
+package lab.meteor.core.script;
 
 import java.util.Iterator;
 
@@ -73,16 +73,8 @@ public class MScriptHelper {
 		return (MEnum) e;
 	}
 	
-	public void print(MPackage pkg) {
-		System.out.println(MShell.getPrintString(pkg));
-	}
-
-	public void print(MClass cls) {
-		System.out.println(MShell.getPrintString(cls));
-	}
-
-	public void print(MEnum enm) {
-		System.out.println(MShell.getPrintString(enm));
+	public void print(MElement e) {
+		System.out.println(e.details());
 	}
 
 	public Object get(MElement obj, String exp) throws MScriptException {

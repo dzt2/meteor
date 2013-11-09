@@ -1,10 +1,23 @@
 package lab.meteor.visualize.diagram;
 
+import java.util.Map;
+import java.util.TreeMap;
+
+import lab.meteor.core.MClass;
+import lab.meteor.core.MElement;
+import lab.meteor.core.MEnum;
+import lab.meteor.core.MElement.MElementType;
+import lab.meteor.shell.IShowListener;
+import lab.meteor.visualize.diagram.widgets.ClassWidget;
+import lab.meteor.visualize.diagram.widgets.EnumWidget;
 import co.gongzh.snail.View;
 
-public class DiagramView extends View {
+public class DiagramView extends View implements IShowListener {
 	
 	LinesView lineView;
+	
+	private Map<Long, ClassWidget> classes = new TreeMap<Long, ClassWidget>();
+	private Map<Long, EnumWidget> enumes = new TreeMap<Long, EnumWidget>();
 	
 	public DiagramView() {
 		lineView = new LinesView();
@@ -19,33 +32,64 @@ public class DiagramView extends View {
 		super.setSize(width, height);
 	}
 	
-	public void addClassWidget(ClassWidget widget) {
-		this.addSubview(widget);
+	public void addClass(MClass c) {
+		if (classes.containsKey(c.getID()))
+			return;
+		ClassWidget widget = new ClassWidget(c, this);
+		classes.put(c.getID(), widget);
+		addSubview(widget);
 		widget.diagramView = this;
 	}
 	
-	public void removeClassWidget(ClassWidget widget) {
+	public void removeClass(MClass c) {
+		if (!classes.containsKey(c.getID()))
+			return;
+		ClassWidget widget = classes.get(c.getID());
 		widget.removeFromSuperView();
 		widget.diagramView = null;
+		classes.remove(c.getID());
 	}
 	
-	public void addEnumWidget(EnumWidget widget) {
-		this.addSubview(widget);
+	public void addEnum(MEnum e) {
+		if (enumes.containsKey(e.getID()))
+			return;
+		EnumWidget widget = new EnumWidget(e, this);
+		enumes.put(e.getID(), widget);
+		addSubview(widget);
 		widget.diagramView = this;
 	}
 	
-	public void removeEnumWidget(EnumWidget widget) {
+	public void removeEnum(MEnum e) {
+		if (!enumes.containsKey(e.getID()))
+			return;
+		EnumWidget widget = enumes.get(e.getID());
 		widget.removeFromSuperView();
 		widget.diagramView = null;
+		enumes.remove(e.getID());
+	}
+	
+	public ClassWidget getClassWidget(long id) {
+		return classes.get(id);
+	}
+	
+	public EnumWidget getEnumWidget(long id) {
+		return enumes.get(id);
 	}
 	
 	public void addLine(Line line) {
 		lineView.addLine(line);
-		setSubviewIndex(lineView, count() - 1);
 	}
 	
 	public void removeLine(Line line) {
 		lineView.removeLine(line);
-		setSubviewIndex(lineView, count() - 1);
+	}
+
+	@Override
+	public void show(MElement e) {
+		if (e.getElementType() == MElementType.Class) {
+			addClass((MClass) e);
+		} else if (e.getElementType() == MElementType.Enum) {
+			addEnum((MEnum) e);
+		}
 	}
 }

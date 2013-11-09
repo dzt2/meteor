@@ -3,14 +3,13 @@ package lab.meteor.visualize.shell;
 import java.awt.Color;
 import java.text.BreakIterator;
 
-import lab.meteor.shell.MScriptEngine;
+import lab.meteor.core.script.MScriptEngine;
 import lab.meteor.visualize.resource.Resources;
 import co.gongzh.snail.MouseEvent;
 import co.gongzh.snail.View;
 import co.gongzh.snail.ViewGraphics;
 import co.gongzh.snail.text.EditableTextView;
 import co.gongzh.snail.util.Alignment;
-import co.gongzh.snail.util.Insets;
 import co.gongzh.snail.util.Vector2D;
 
 public class ScriptView extends View {
@@ -44,14 +43,14 @@ public class ScriptView extends View {
 		};
 		startButton.setSize(15, 15);
 		
-//		textView.setPosition(padding, padding);
+		textView.setPosition(padding, padding);
 		textView.setDefaultTextColor(Color.white);
 		textView.setDefaultFont(Resources.FONT_CMD_PRINT);
 		textView.getCaretView().setBackgroundColor(Color.white);
 		textView.setBreakIterator(BreakIterator.getLineInstance());
 		textView.setTextAlignment(Alignment.LEFT_TOP);
 		textView.setBackgroundColor(null);
-		textView.setInsets(Insets.make(padding, padding, padding, padding));
+//		textView.setInsets(Insets.make(padding, padding, padding, padding));
 		
 		addSubview(textView);
 		addSubview(startButton);
@@ -59,7 +58,7 @@ public class ScriptView extends View {
 	
 	@Override
 	public void setSize(int width, int height) {
-		textView.setSize(width, height);
+		textView.setSize(width - padding * 2, height - padding * 2);
 		startButton.setLeft(width - startButton.getWidth());
 		super.setSize(width, height);
 	}
@@ -83,9 +82,9 @@ public class ScriptView extends View {
 	
 	@Override
 	protected void mouseClicked(MouseEvent e) {
-		if (textView.isKeyboardFocus() && e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
-			textView.resignKeyboardFocus();
-		}
+//		if (textView.isKeyboardFocus() && e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+//			textView.resignKeyboardFocus();
+//		}
 	}
 	
 	void run() {

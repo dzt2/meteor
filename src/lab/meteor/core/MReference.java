@@ -171,6 +171,8 @@ public class MReference extends MProperty {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(this.name).append(" : ").append(this.reference);
+		if (this.multi == Multiplicity.Multiple)
+			builder.append('*');
 		return builder.toString();
 	}
 	

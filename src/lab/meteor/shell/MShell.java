@@ -14,6 +14,7 @@ import lab.meteor.core.MPackage;
 import lab.meteor.core.MPrimitiveType;
 import lab.meteor.core.MReference;
 import lab.meteor.core.MReference.Multiplicity;
+import lab.meteor.core.script.MScriptHelper;
 import lab.meteor.core.MSymbol;
 import lab.meteor.core.MDataType;
 
@@ -24,6 +25,8 @@ public class MShell {
 	
 	List<IShellListener> listeners = new LinkedList<IShellListener>();
 	
+	IShowListener showListener;
+	
 	public MShell() {
 	}
 	
@@ -33,6 +36,10 @@ public class MShell {
 	
 	public void removeShellListener(IShellListener listener) {
 		listeners.remove(listener);
+	}
+	
+	public void setShowListener(IShowListener listener) {
+		showListener = listener;
 	}
 	
 	final static String CLASS = "class";
@@ -75,15 +82,6 @@ public class MShell {
 		}
 		if (enableConsolePrint)
 			System.out.println(em);
-	}
-	
-	private void printError(MShellException e) {
-//		String em = e.getMessage();
-//		for (IShellListener l : listeners) {
-//			l.printError(em);
-//		}
-//		if (enableConsolePrint)
-//			System.out.println(em);
 	}
 	
 	private void print(String content) {
@@ -172,9 +170,8 @@ public class MShell {
 							// create class People as Animal
 							try {
 								createClass(className.content, supName.content);
-								commandFinish(command, "succeeded.");
+								commandFinish(command, "");
 							} catch (MShellException e) {
-								printError(e);
 								commandFinish(command, e.getMessage());
 							}
 						} else { printError(tokenizer.loc, "keyword \'as\' is required."); return; }
@@ -182,9 +179,8 @@ public class MShell {
 						// create class People
 						try {
 							createClass(className.content, null);
-							commandFinish(command, "succeeded.");
+							commandFinish(command, "");
 						} catch (MShellException e) {
-							printError(e);
 							commandFinish(command, e.getMessage());
 						}
 					}
@@ -200,9 +196,8 @@ public class MShell {
 					// create enum Gender
 					try {
 						createEnum(enumName.content);
-						commandFinish(command, "succeeded.");
+						commandFinish(command, "");
 					} catch (MShellException e) {
-						printError(e);
 						commandFinish(command, e.getMessage());
 					}
 					break;
@@ -217,9 +212,8 @@ public class MShell {
 					// create package processes
 					try {
 						createPackage(pkgName.content);
-						commandFinish(command, "succeeded.");
+						commandFinish(command, "");
 					} catch (MShellException e) {
-						printError(e);
 						commandFinish(command, e.getMessage());
 					}
 					break;
@@ -251,22 +245,18 @@ public class MShell {
 							// create People.name : string
 							try {
 								createProperty(childName.content, parentName.content, typeName.content, multiple);
-								commandFinish(command, "succeeded.");
+								commandFinish(command, "");
 							} catch (MShellException e) {
-								printError(e);
 								commandFinish(command, e.getMessage());
 							}
-							System.out.println(parentName.content + "." + childName.content + " : " +
-									typeName.content + (multiple ? "*" : ""));
 						} else { printError(tokenizer.loc, "unknown part."); return; }
 					} else {
 						// symbol
 						// create Gender.Male
 						try {
 							createSymbol(childName.content, parentName.content);
-							commandFinish(command, "succeeded.");
+							commandFinish(command, "");
 						} catch (MShellException e) {
-							printError(e);
 							commandFinish(command, e.getMessage());
 						}
 					}
@@ -290,18 +280,16 @@ public class MShell {
 					// delete child of class or enum
 					try {
 						deleteChildElement(child.content, name.content);
-						commandFinish(command, "succeeded.");
+						commandFinish(command, "");
 					} catch (MShellException e) {
-						printError(e);
 						commandFinish(command, e.getMessage());
 					}
 				} else {
 					// delete class, enum or package
 					try {
 						deleteElement(name.content);
-						commandFinish(command, "succeeded.");
+						commandFinish(command, "");
 					} catch (MShellException e) {
-						printError(e);
 						commandFinish(command, e.getMessage());
 					}
 				}
@@ -321,9 +309,8 @@ public class MShell {
 					// only update class or enum or package name
 					try {
 						updateElementName(name.content, modify.content).save();
-						commandFinish(command, "succeeded.");
+						commandFinish(command, "");
 					} catch (MShellException e) {
-						printError(e);
 						commandFinish(command, e.getMessage());
 					}
 				} else if (next.type == TokenType.Dot) {
@@ -355,18 +342,16 @@ public class MShell {
 						try {
 							updateProperty(child.content, name.content, modify.content, 
 									typeName.content, multiple).save();
-							commandFinish(command, "succeeded.");
+							commandFinish(command, "");
 						} catch (MShellException e) {
-							printError(e);
 							commandFinish(command, e.getMessage());
 						}
 					} else {
 						// only update attribute / reference name / symbol name
 						try {
 							updateChildName(child.content, name.content, modify.content).save();
-							commandFinish(command, "succeeded.");
+							commandFinish(command, "");
 						} catch (MShellException e) {
-							printError(e);
 							commandFinish(command, e.getMessage());
 						}
 					}
@@ -391,9 +376,8 @@ public class MShell {
 				// move
 				try {
 					moveElement(name.content, targetName.content).save();
-					commandFinish(command, "succeeded.");
+					commandFinish(command, "");
 				} catch (MShellException e) {
-					printError(e);
 					commandFinish(command, e.getMessage());
 				}
 			}
@@ -408,7 +392,12 @@ public class MShell {
 				Token name = tokenizer.next();
 				if (name == null || name.type != TokenType.Identifier)
 				{ printError(tokenizer.loc, "name is required."); return; }
-				// TODO
+				try {
+					showElement(name.content);
+					commandFinish(command, "");
+				} catch (MShellException e) {
+					commandFinish(command, e.getMessage());
+				}
 				System.out.println("show " + name.content);
 			}
 			break;
@@ -416,16 +405,15 @@ public class MShell {
 			{
 				Token name = tokenizer.next();
 				if (name == null) {
-					print(getPrintString(currentPkg));
-					commandFinish(command, "succeeded.");
+					print(currentPkg.details());
+					commandFinish(command, "");
 				} else if (name.type != TokenType.Identifier)
 				{ printError(tokenizer.loc, "name is required."); return; }
 				else {
 					try {
 						printElement(name.content);
-						commandFinish(command, "succeeded.");
+						commandFinish(command, "");
 					} catch (MShellException e) {
-						printError(e);
 						commandFinish(command, e.getMessage());
 					}
 				}
@@ -434,15 +422,22 @@ public class MShell {
 		case Goto:
 			{
 				Token pkgName = tokenizer.next();
-				if (pkgName == null || pkgName.type != TokenType.Identifier)
-				{ printError(tokenizer.loc, "name is required."); return; }
-				// goto
-				try {
-					gotoPackege(pkgName.content);
-					commandFinish(command, "succeeded.");
-				} catch (MShellException e) {
-					printError(e);
-					commandFinish(command, e.getMessage());
+				if (pkgName == null) {
+					try {
+						gotoPackege("");
+						commandFinish(command, "");
+					} catch (MShellException e) {
+						commandFinish(command, e.getMessage());
+					}
+				}
+				else {
+					// goto
+					try {
+						gotoPackege(pkgName.content);
+						commandFinish(command, "");
+					} catch (MShellException e) {
+						commandFinish(command, e.getMessage());
+					}
 				}
 			}
 			break;
@@ -451,7 +446,6 @@ public class MShell {
 		default:
 			break;
 		}
-		
 	}
 	
 	public void setCurrentPackage(MPackage pkg) {
@@ -677,9 +671,11 @@ public class MShell {
 	private void gotoPackege(String name) throws MShellException {
 		if (name == null)
 			throw new MShellException("invalid name.");
-		if (name.equals(""))
+		if (name.equals("")) {
+			if (this.currentPkg == MPackage.DEFAULT_PACKAGE)
+				return;
 			this.currentPkg = this.currentPkg.getPackage();
-		else {
+		} else {
 			MElement e = findElement(name);
 			if (e == null || e.getElementType() != MElementType.Package)
 				throw new MShellException("package is not found.");
@@ -693,32 +689,17 @@ public class MShell {
 		MElement e = findElement(name);
 		if (e == null)
 			throw new MShellException("element is not found.");
-		if (e.getElementType() == MElementType.Package)
-			print(getPrintString((MPackage) e));
-		else if (e.getElementType() == MElementType.Class)
-			print(getPrintString((MClass) e));
-		else if (e.getElementType() == MElementType.Enum)
-			print(getPrintString((MEnum) e));
+		print(e.details());
 	}
 	
-	static String getPrintString(MClass cls) {
-		if (cls == null) {
-			return null;
-		}
-		return cls.details();
-	}
-	
-	static String getPrintString(MEnum enm) {
-		if (enm == null) {
-			return null;
-		}
-		return enm.details();
-	}
-	
-	static String getPrintString(MPackage pkg) {
-		if (pkg == null)
-			return null;
-		return pkg.details();
+	private void showElement(String name) throws MShellException {
+		if (name == null)
+			throw new MShellException("invalid name.");
+		MElement e = findElement(name);
+		if (e == null)
+			throw new MShellException("element is not found.");
+		if (showListener != null)
+			showListener.show(e);
 	}
 	
 	static class MShellException extends Exception {

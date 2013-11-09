@@ -6,30 +6,32 @@ import lab.meteor.visualize.shell.ShellView;
 import co.gongzh.snail.View;
 
 public class MainView extends View {
-	ShellView commandView;
+	ShellView shellView;
 	DiagramView diagramView;
 	ScriptView scriptView;
 	
 	public MainView() {
-		commandView = new ShellView();
+		shellView = new ShellView();
 		diagramView = new DiagramView();
 		scriptView = new ScriptView();
 		addSubview(diagramView);
-		addSubview(commandView);
+		addSubview(shellView);
 		addSubview(scriptView);
+		
+		shellView.getShell().setShowListener(diagramView);
 		scriptView.setSize(500, 300);
 	}
 	
 	@Override
 	public void setSize(int width, int height) {
 		diagramView.setSize(width, height);
-		commandView.setSize(width, 30);
-		commandView.setPosition(0, height - 30);
+		shellView.setSize(width, 30);
+		shellView.setPosition(0, height - 30);
 		super.setSize(width, height);
 	}
 	
 	public ShellView getCommandView() {
-		return commandView;
+		return shellView;
 	}
 	
 	public DiagramView getDiagramView() {

@@ -1,4 +1,4 @@
-package lab.meteor.shell;
+package lab.meteor.core.script;
 
 import java.util.LinkedList;
 import java.util.List;

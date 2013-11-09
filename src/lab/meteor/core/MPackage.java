@@ -195,7 +195,7 @@ public class MPackage extends MElement {
 	 * @return <code>true</code> if there is
 	 */
 	public boolean hasClass(String name) {
-		return this.getClasses().containsKey(name);
+		return this.classes().containsKey(name);
 	}
 
 	/**
@@ -204,7 +204,7 @@ public class MPackage extends MElement {
 	 * @return <code>true</code> if there is
 	 */
 	public boolean hasEnum(String name) {
-		return this.getEnumes().containsKey(name);
+		return this.enumes().containsKey(name);
 	}
 	
 	/**
@@ -213,7 +213,7 @@ public class MPackage extends MElement {
 	 * @return <code>true</code> if there is
 	 */
 	public boolean hasPackage(String name) {
-		return this.getPackages().containsKey(name);
+		return this.packages().containsKey(name);
 	}
 	
 	/**
@@ -222,11 +222,11 @@ public class MPackage extends MElement {
 	 * @return package, class or enum
 	 */
 	public MElement getChild(String name) {
-		MElement child = this.getPackages().get(name);
+		MElement child = this.packages().get(name);
 		if (child == null)
-			child = this.getClasses().get(name);
+			child = this.classes().get(name);
 		if (child == null)
-			child = this.getEnumes().get(name);
+			child = this.enumes().get(name);
 		return child;
 	}
 	
@@ -236,7 +236,7 @@ public class MPackage extends MElement {
 	 * @return The class
 	 */
 	public MClass getClazz(String name) {
-		return this.getClasses().get(name);
+		return this.classes().get(name);
 	}
 	
 	/**
@@ -245,7 +245,7 @@ public class MPackage extends MElement {
 	 * @return The enum
 	 */
 	public MEnum getEnum(String name) {
-		return this.getEnumes().get(name);
+		return this.enumes().get(name);
 	}
 	
 	/**
@@ -254,7 +254,7 @@ public class MPackage extends MElement {
 	 * @return The package
 	 */
 	public MPackage getPackage(String name) {
-		return this.getPackages().get(name);
+		return this.packages().get(name);
 	}
 	
 	/**
@@ -262,7 +262,7 @@ public class MPackage extends MElement {
 	 * @return All classes' names
 	 */
 	public String[] getClassNames() {
-		return this.getClasses().keySet().toArray(new String[0]);
+		return this.classes().keySet().toArray(new String[0]);
 	}
 	
 	/**
@@ -270,7 +270,7 @@ public class MPackage extends MElement {
 	 * @return All enumes' names
 	 */
 	public String[] getEnumNames() {
-		return this.getEnumes().keySet().toArray(new String[0]);
+		return this.enumes().keySet().toArray(new String[0]);
 	}
 	
 	/**
@@ -278,14 +278,14 @@ public class MPackage extends MElement {
 	 * @return All packages' names
 	 */
 	public String[] getPackageNames() {
-		return this.getPackages().keySet().toArray(new String[0]);
+		return this.packages().keySet().toArray(new String[0]);
 	}
 
 	/**
 	 * Get class map.
 	 * @return
 	 */
-	private Map<String, MClass> getClasses() {
+	private Map<String, MClass> classes() {
 		if (this.classes == null)
 			this.classes = new TreeMap<String, MClass>();
 		return this.classes;
@@ -295,7 +295,7 @@ public class MPackage extends MElement {
 	 * Get enum map.
 	 * @return
 	 */
-	private Map<String, MEnum> getEnumes() {
+	private Map<String, MEnum> enumes() {
 		if (this.enumes == null)
 			this.enumes = new TreeMap<String, MEnum>();
 		return this.enumes;
@@ -305,7 +305,7 @@ public class MPackage extends MElement {
 	 * Get package map.
 	 * @return
 	 */
-	private Map<String, MPackage> getPackages() {
+	private Map<String, MPackage> packages() {
 		if (this.packages == null)
 			this.packages = new TreeMap<String, MPackage>();
 		return this.packages;
@@ -316,7 +316,7 @@ public class MPackage extends MElement {
 	 * @param cls The class
 	 */
 	protected void addClass(MClass cls) {
-		this.getClasses().put(cls.getName(), cls);
+		this.classes().put(cls.getName(), cls);
 	}
 	
 	/**
@@ -324,7 +324,7 @@ public class MPackage extends MElement {
 	 * @param cls The class
 	 */
 	protected void removeClass(MClass cls) {
-		this.getClasses().remove(cls.getName());
+		this.classes().remove(cls.getName());
 	}
 	
 	/**
@@ -332,7 +332,7 @@ public class MPackage extends MElement {
 	 * @param enm The enum
 	 */
 	protected void addEnum(MEnum enm) {
-		this.getEnumes().put(enm.getName(), enm);
+		this.enumes().put(enm.getName(), enm);
 	}
 	
 	/**
@@ -340,7 +340,7 @@ public class MPackage extends MElement {
 	 * @param enm The enum
 	 */
 	protected void removeEnum(MEnum enm) {
-		this.getEnumes().remove(enm.getName());
+		this.enumes().remove(enm.getName());
 	}
 	
 	/**
@@ -348,7 +348,7 @@ public class MPackage extends MElement {
 	 * @param pkg The package
 	 */
 	protected void addPackage(MPackage pkg) {
-		this.getPackages().put(pkg.getName(), pkg);
+		this.packages().put(pkg.getName(), pkg);
 	}
 	
 	/**
@@ -356,7 +356,7 @@ public class MPackage extends MElement {
 	 * @param pkg The package
 	 */
 	protected void removePackage(MPackage pkg) {
-		this.getPackages().remove(pkg.getName());
+		this.packages().remove(pkg.getName());
 	}
 
 	private void link() {
@@ -427,21 +427,25 @@ public class MPackage extends MElement {
 	@Override
 	public String details() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Package(").append(id).append(")\n");
-		sb.append(toString()).append('\n');
+		if (this == MPackage.DEFAULT_PACKAGE) {
+			sb.append("Root Package\n");
+		} else {
+			sb.append("Package(").append(id).append(") - ");
+			sb.append(toString()).append(" {\n");
+		}
 		String[] names = getPackageNames();
 		for (String name : names) {
-			sb.append(name).append(" <P>\n");
+			sb.append("  package ").append(name).append("\n");
 		}
 		names = getClassNames();
 		for (String name : names) {
-			sb.append(name).append(" <C>\n");
+			sb.append("  class ").append(name).append("\n");
 		}
 		names = getEnumNames();
 		for (String name : names) {
-			sb.append(name).append(" <E>\n");
+			sb.append("  enum ").append(name).append("\n");
 		}
-		sb.setLength(sb.length() - 1);
+		sb.append("}");
 		return sb.toString();
 	}
 	

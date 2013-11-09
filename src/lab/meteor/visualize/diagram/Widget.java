@@ -3,9 +3,17 @@ package lab.meteor.visualize.diagram;
 import co.gongzh.snail.View;
 import co.gongzh.snail.util.Vector2D;
 
-public class Widget extends View {
+public abstract class Widget extends View {
 	
-	DiagramView diagramView;
+	protected DiagramView diagramView;
+	
+	public Widget(DiagramView v) {
+		this.diagramView = v;
+	}
+	
+	public DiagramView getDiagramView() {
+		return diagramView;
+	}
 	
 	public void setDiagramView(DiagramView diagramView) {
 		this.diagramView = diagramView;

@@ -215,6 +215,7 @@ public class MClass extends MElement implements MType {
 	 * Get the name of class.
 	 * @return name.
 	 */
+	@Override
 	public String getName() {
 		if (isDeleted())
 			return null;
@@ -227,6 +228,7 @@ public class MClass extends MElement implements MType {
 	 * to be unique, otherwise an exception will be thrown.
 	 * @param name the name of class.
 	 */
+	@Override
 	public void setName(String name) {
 		if (isDeleted())
 			return;
@@ -271,10 +273,10 @@ public class MClass extends MElement implements MType {
 		}
 		
 		if (this.superclass != null)
-			this.superclass.getSubclasses().remove(this);
+			this.superclass.subclasses().remove(this);
 		this.superclass = clazz;
 		if (this.superclass != null)
-			this.superclass.getSubclasses().add(this);
+			this.superclass.subclasses().add(this);
 		this.setChanged(ATTRIB_FLAG_SUPERCLASS);
 	}
 	
@@ -295,11 +297,15 @@ public class MClass extends MElement implements MType {
 		return false;
 	}
 	
+	public MClass[] getSubClasses() {
+		return subclasses().toArray(new MClass[0]);
+	}
+	
 	/**
 	 * Get all sub-classes.
 	 * @return the set of sub-classes.
 	 */
-	private Set<MClass> getSubclasses() {
+	private Set<MClass> subclasses() {
 		if (this.subclasses == null)
 			this.subclasses = new TreeSet<MClass>();
 		return this.subclasses;
@@ -390,7 +396,7 @@ public class MClass extends MElement implements MType {
 	public String[] getAttributeNames() {
 		if (isDeleted())
 			return null;
-		return this.getAttributes().keySet().toArray(new String[0]);
+		return this.attributes().keySet().toArray(new String[0]);
 	}
 	
 	/**
@@ -403,7 +409,7 @@ public class MClass extends MElement implements MType {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
-			names.addAll(cls.getAttributes().keySet());
+			names.addAll(cls.attributes().keySet());
 			cls = cls.superclass;
 		}
 		return names.toArray(new String[0]);
@@ -421,7 +427,7 @@ public class MClass extends MElement implements MType {
 
 		MClass cls = this;
 		while (cls != null) {
-			atb = cls.getAttributes().get(name);
+			atb = cls.attributes().get(name);
 			if (atb != null)
 				break;
 			cls = cls.superclass;
@@ -439,7 +445,7 @@ public class MClass extends MElement implements MType {
 			return false;
 		MClass cls = this;
 		while (cls != null) {
-			if (cls.getAttributes().containsKey(name))
+			if (cls.attributes().containsKey(name))
 				return true;
 			cls = cls.superclass;
 		}
@@ -450,7 +456,7 @@ public class MClass extends MElement implements MType {
 	 * Get the attributes.
 	 * @return the map from name to attribute.
 	 */
-	private Map<String, MAttribute> getAttributes() {
+	private Map<String, MAttribute> attributes() {
 		if (this.attributes == null)
 			this.attributes = new TreeMap<String, MAttribute>();
 		return this.attributes;
@@ -461,7 +467,7 @@ public class MClass extends MElement implements MType {
 	 * @param atb attribute.
 	 */
 	void addAttribute(MAttribute atb) {
-		this.getAttributes().put(atb.getName(), atb);
+		this.attributes().put(atb.getName(), atb);
 	}
 
 	/**
@@ -469,7 +475,7 @@ public class MClass extends MElement implements MType {
 	 * @param atb attribute.
 	 */
 	void removeAttribute(MAttribute atb) {
-		this.getAttributes().remove(atb.getName());
+		this.attributes().remove(atb.getName());
 	}
 	
 	/* 
@@ -485,7 +491,7 @@ public class MClass extends MElement implements MType {
 	public String[] getReferenceNames() {
 		if (isDeleted())
 			return null;
-		return this.getReferences().keySet().toArray(new String[0]);
+		return this.references().keySet().toArray(new String[0]);
 	}
 	
 	/**
@@ -498,7 +504,7 @@ public class MClass extends MElement implements MType {
 		Set<String> names = new TreeSet<String>();
 		MClass cls = this;
 		while (cls != null) {
-			names.addAll(cls.getReferences().keySet());
+			names.addAll(cls.references().keySet());
 			cls = cls.superclass;
 		}
 		return names.toArray(new String[0]);
@@ -516,7 +522,7 @@ public class MClass extends MElement implements MType {
 		
 		MClass cls = this;
 		while (cls != null) {
-			ref = cls.getReferences().get(name);
+			ref = cls.references().get(name);
 			if (ref != null)
 				break;
 			cls = cls.superclass;
@@ -534,7 +540,7 @@ public class MClass extends MElement implements MType {
 			return false;
 		MClass cls = this;
 		while (cls != null) {
-			if (cls.getReferences().containsKey(name))
+			if (cls.references().containsKey(name))
 				return true;
 			cls = cls.superclass;
 		}
@@ -545,7 +551,7 @@ public class MClass extends MElement implements MType {
 	 * Get the references.
 	 * @return the map from name to reference.
 	 */
-	private Map<String, MReference> getReferences() {
+	private Map<String, MReference> references() {
 		if (this.references == null)
 			this.references = new TreeMap<String, MReference>();
 		return this.references;
@@ -556,7 +562,7 @@ public class MClass extends MElement implements MType {
 	 * @param ref reference.
 	 */
 	void addReference(MReference ref) {
-		this.getReferences().put(ref.getName(), ref);
+		this.references().put(ref.getName(), ref);
 	}
 	
 	/**
@@ -564,7 +570,7 @@ public class MClass extends MElement implements MType {
 	 * @param ref reference.
 	 */
 	void removeReference(MReference ref) {
-		this.getReferences().remove(ref.getName());
+		this.references().remove(ref.getName());
 	}
 	
 	/*
@@ -573,11 +579,15 @@ public class MClass extends MElement implements MType {
 	 * ********************************
 	 */
 	
+	public MReference[] getUtilizers() {
+		return utilizers().toArray(new MReference[0]);
+	}
+	
 	/**
 	 * Utilizers are the references({@code MReference}) refer to this class.
 	 * @return the utilizers.
 	 */
-	private Set<MReference> getUtilizers() {
+	private Set<MReference> utilizers() {
 		if (this.utilizers == null)
 			this.utilizers = new TreeSet<MReference>();
 		return this.utilizers;
@@ -588,7 +598,7 @@ public class MClass extends MElement implements MType {
 	 * @param utilizer a reference.
 	 */
 	void addUtilizer(MReference utilizer) {
-		this.getUtilizers().add(utilizer);
+		this.utilizers().add(utilizer);
 	}
 	
 	/**
@@ -596,21 +606,21 @@ public class MClass extends MElement implements MType {
 	 * @param utilizer a reference.
 	 */
 	void removeUtilizer(MReference utilizer) {
-		this.getUtilizers().remove(utilizer);
+		this.utilizers().remove(utilizer);
 	}
 	
 	private void link() {
 		if (name != null)
 			this.parent.addClass(this);
 		if (this.superclass != null)
-			this.superclass.getSubclasses().add(this);
+			this.superclass.subclasses().add(this);
 	}
 	
 	private void unlink() {
 		if (name != null)
 			this.parent.removeClass(this);
 		if (this.superclass != null)
-			this.superclass.getSubclasses().remove(this);
+			this.superclass.subclasses().remove(this);
 	}
 	
 	/*
@@ -683,30 +693,30 @@ public class MClass extends MElement implements MType {
 	@Override
 	public String details() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Class(").append(id).append(")\n");
+		sb.append("Class(").append(id).append(") - ");
 		sb.append(toString());
 		if (getSuperClass() != null)
 			sb.append(" : ").append(getSuperClass().getName());
-		sb.append('\n');
+		sb.append(" {\n");
 		String[] atbnames = getAllAttributeNames();
 		for (String name : atbnames) {
 			MAttribute atb = getAttribute(name);
-			sb.append(atb.toString());
+			sb.append("  ").append(atb.toString());
 			if (atb.clazz == this)
-				sb.append(" <A>\n");
+				sb.append(" [a]\n");
 			else
-				sb.append(" <AI>\n");
+				sb.append(" [A]\n");
 		}
 		String[] refnames = getAllReferenceNames();
 		for (String name : refnames) {
 			MReference ref = getReference(name);
-			sb.append(ref.toString());
+			sb.append("  ").append(ref.toString());
 			if (ref.clazz == this)
-				sb.append(" <R>\n");
+				sb.append(" [r]\n");
 			else
-				sb.append(" <RI>\n");
+				sb.append(" [R]\n");
 		}
-		sb.setLength(sb.length() - 1);
+		sb.append("}");
 		return sb.toString();
 	}
 	

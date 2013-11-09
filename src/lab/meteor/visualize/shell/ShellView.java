@@ -22,10 +22,14 @@ public class ShellView extends View {
 	EditableTextView textView;
 	TextView prefixView;
 	
-	MShell shell;
+	final MShell shell;
 	
 	final static int padding = 4;
 	final static String defaultPrefix = "> ";
+	
+	public MShell getShell() {
+		return shell;
+	}
 	
 	public ShellView() {
 		shell = new MShell();
@@ -86,9 +90,9 @@ public class ShellView extends View {
 	
 	@Override
 	protected void mouseClicked(MouseEvent e) {
-		if (textView.isKeyboardFocus() && e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
-			textView.resignKeyboardFocus();
-		}
+//		if (textView.isKeyboardFocus() && e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+//			textView.resignKeyboardFocus();
+//		}
 	}
 
 }

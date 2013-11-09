@@ -367,6 +367,112 @@ public abstract class MElement implements Comparable<MElement> {
 		
 	}
 	
+	public class MTagSet implements Iterable<MTag> {
+	
+		Set<MElementPointer> pointers = new TreeSet<MElementPointer>();
+		final String name;
+		
+		private MTagSet(String name) {
+			this.name = name;
+		}
+		
+		void changed() {
+			changed_tags = true;
+		}
+		
+		public void add(MTag tag) {
+			if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
+				return;
+			if (!tag.name.equals(name))
+				return;
+			pointers.add(new MElementPointer(tag));
+			changed_tags = true;
+		}
+	
+		public void remove(MTag tag) {
+			if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
+				return;
+			if (!tag.name.equals(name))
+				return;
+			pointers.remove(new MElementPointer(tag));
+			changed_tags = true;
+		}
+		
+		public void clear() {
+			if (deleted || id == NULL_ID)
+				return;
+			for (MElementPointer pt : pointers) {
+				MTag tag = (MTag) pt.getElement();
+				if (tag != null && !tag.isDeleted())
+					tag.removeElement(MElement.this);
+			}
+			pointers.clear();
+			changed_tags = true;
+		}
+		
+		public boolean contains(MTag tag) {
+			if (deleted || id == NULL_ID)
+				return false;
+			return pointers.contains(new MElementPointer(tag));
+		}
+		
+		public boolean isEmpty() {
+			if (deleted || id == NULL_ID)
+				return true;
+			return pointers.isEmpty();
+		}
+		
+		public int size() {
+			if (deleted || id == NULL_ID)
+				return 0;
+			return pointers.size();
+		}
+		
+		@Override
+		public Iterator<MTag> iterator() {
+			return new Itr();
+		}
+		
+		private class Itr implements Iterator<MTag> {
+			
+			final Iterator<MElementPointer> it = pointers.iterator();
+			MElementPointer last;
+			
+			@Override
+			public boolean hasNext() {
+				if (deleted || id == NULL_ID)
+					return false;
+				return it.hasNext();
+			}
+	
+			@Override
+			public MTag next() {
+				if (deleted || id == NULL_ID)
+					return null;
+				last = it.next();
+				MTag tag = (MTag) last.getElement();
+				while (tag == null || tag.isDeleted()) {
+					it.remove();
+					last = it.next();
+					tag = (MTag) last.getElement();
+					changed_tags = true;
+				}
+				return tag;
+			}
+	
+			@Override
+			public void remove() {
+				if (deleted || id == NULL_ID)
+					return;
+				MTag tag = (MTag) last.getElement();
+				tag.removeElement(MElement.this);
+				it.remove();
+			}
+			
+		}
+		
+	}
+
 	/**
 	 * The tags.
 	 */
@@ -621,110 +727,4 @@ public abstract class MElement implements Comparable<MElement> {
 	}
 	
 	public static final int FULL_ATTRIB_FLAG = 0xFFFFFFFF;
-	
-	public class MTagSet implements Iterable<MTag> {
-
-		Set<MElementPointer> pointers = new TreeSet<MElementPointer>();
-		final String name;
-		
-		private MTagSet(String name) {
-			this.name = name;
-		}
-		
-		void changed() {
-			changed_tags = true;
-		}
-		
-		public void add(MTag tag) {
-			if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
-				return;
-			if (!tag.name.equals(name))
-				return;
-			pointers.add(new MElementPointer(tag));
-			changed_tags = true;
-		}
-
-		public void remove(MTag tag) {
-			if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
-				return;
-			if (!tag.name.equals(name))
-				return;
-			pointers.remove(new MElementPointer(tag));
-			changed_tags = true;
-		}
-		
-		public void clear() {
-			if (deleted || id == NULL_ID)
-				return;
-			for (MElementPointer pt : pointers) {
-				MTag tag = (MTag) pt.getElement();
-				if (tag != null && !tag.isDeleted())
-					tag.removeElement(MElement.this);
-			}
-			pointers.clear();
-			changed_tags = true;
-		}
-		
-		public boolean contains(MTag tag) {
-			if (deleted || id == NULL_ID)
-				return false;
-			return pointers.contains(new MElementPointer(tag));
-		}
-		
-		public boolean isEmpty() {
-			if (deleted || id == NULL_ID)
-				return true;
-			return pointers.isEmpty();
-		}
-		
-		public int size() {
-			if (deleted || id == NULL_ID)
-				return 0;
-			return pointers.size();
-		}
-		
-		@Override
-		public Iterator<MTag> iterator() {
-			return new Itr();
-		}
-		
-		private class Itr implements Iterator<MTag> {
-			
-			final Iterator<MElementPointer> it = pointers.iterator();
-			MElementPointer last;
-			
-			@Override
-			public boolean hasNext() {
-				if (deleted || id == NULL_ID)
-					return false;
-				return it.hasNext();
-			}
-
-			@Override
-			public MTag next() {
-				if (deleted || id == NULL_ID)
-					return null;
-				last = it.next();
-				MTag tag = (MTag) last.getElement();
-				while (tag == null || tag.isDeleted()) {
-					it.remove();
-					last = it.next();
-					tag = (MTag) last.getElement();
-					changed_tags = true;
-				}
-				return tag;
-			}
-
-			@Override
-			public void remove() {
-				if (deleted || id == NULL_ID)
-					return;
-				MTag tag = (MTag) last.getElement();
-				tag.removeElement(MElement.this);
-				it.remove();
-			}
-			
-		}
-		
-	}
 }

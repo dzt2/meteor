@@ -27,7 +27,7 @@ public class MPrimitiveType implements MDataType {
 	
 	private MNativeDataType nType;
 	
-	MPrimitiveType(MNativeDataType nType) {
+	private MPrimitiveType(MNativeDataType nType) {
 		this.nType = nType;
 		types.put(this.getTypeIdentifier(), this);
 	}
@@ -39,11 +39,6 @@ public class MPrimitiveType implements MDataType {
 	@Override
 	public String getName() {
 		return this.getTypeIdentifier();
-	}
-	
-	@Override
-	public void setName(String name) {
-		return;
 	}
 
 	@Override

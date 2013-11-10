@@ -1,20 +1,13 @@
 package lab.meteor.visualize;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Stroke;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
-import co.gongzh.snail.ViewContext;
-import co.gongzh.snail.ViewGraphics;
 import lab.meteor.core.MDatabase;
 import lab.meteor.dba.MongoDBAdapter;
-import lab.meteor.visualize.diagram.Line;
-import lab.meteor.visualize.diagram.widgets.ClassWidget;
-import lab.meteor.visualize.diagram.widgets.EnumWidget;
+import co.gongzh.snail.ViewContext;
 
 public class Launcher {
 

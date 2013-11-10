@@ -106,7 +106,10 @@ public abstract class Line extends Layer {
 	
 	@Override
 	public boolean isInside(Vector2D point) {
-		return box.contains(point.x, point.y);
+		if (box != null)
+			return box.contains(point.x, point.y);
+		else
+			return false;
 	}
 	
 	

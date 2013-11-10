@@ -398,7 +398,6 @@ public class MShell {
 				} catch (MShellException e) {
 					commandFinish(command, e.getMessage());
 				}
-				System.out.println("show " + name.content);
 			}
 			break;
 		case Print:

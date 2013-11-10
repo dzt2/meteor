@@ -95,4 +95,9 @@ public class EnumWidget extends BlockWidget implements IModelView<MEnum> {
 		return model;
 	}
 
+	@Override
+	protected void onClose() {
+		diagramView.removeEnum(model);
+	}
+
 }

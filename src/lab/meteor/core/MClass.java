@@ -228,7 +228,6 @@ public class MClass extends MElement implements MType {
 	 * to be unique, otherwise an exception will be thrown.
 	 * @param name the name of class.
 	 */
-	@Override
 	public void setName(String name) {
 		if (isDeleted())
 			return;

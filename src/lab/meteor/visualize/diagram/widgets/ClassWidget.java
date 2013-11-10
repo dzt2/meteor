@@ -158,4 +158,9 @@ public class ClassWidget extends BlockWidget implements IModelView<MClass> {
 		return model;
 	}
 
+	@Override
+	protected void onClose() {
+		diagramView.removeClass(model);
+	}
+
 }

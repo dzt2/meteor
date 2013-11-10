@@ -69,7 +69,7 @@ public class MPackage extends MElement {
 		
 		this.initialize();
 		this.name = name;
-		this.parent = DEFAULT_PACKAGE;
+		this.parent = pkg;
 		link();
 		
 		MDatabase.getDB().createElement(this);
@@ -136,6 +136,8 @@ public class MPackage extends MElement {
 	 * @param name The name
 	 */
 	public void setName(String name) {
+		if (this.id == MPackage.DEFAULT_PACKAGE.id)
+			return;
 		if (name.equals(this.name))
 			return;
 		if (this.parent.hasChild(name))
@@ -161,6 +163,8 @@ public class MPackage extends MElement {
 	 * @param pkg
 	 */
 	public void setPackage(MPackage pkg) {
+		if (this.id == MPackage.DEFAULT_PACKAGE.id)
+			return;
 		if (pkg == null)
 			pkg = DEFAULT_PACKAGE;
 		if (pkg == this.parent)
@@ -168,6 +172,13 @@ public class MPackage extends MElement {
 		if (pkg.hasChild(this.name))
 			throw new MException(MException.Reason.ELEMENT_NAME_CONFILICT);
 		
+		// check loop
+		MPackage p = pkg;
+		while (p != null && p != this) {
+			p = p.getPackage();
+		}
+		if (p == this)
+			throw new MException(MException.Reason.PACKAGE_LOOP);
 		this.parent.removePackage(this);
 		this.parent = pkg;
 		this.parent.addPackage(this);
@@ -428,7 +439,7 @@ public class MPackage extends MElement {
 	public String details() {
 		StringBuilder sb = new StringBuilder();
 		if (this == MPackage.DEFAULT_PACKAGE) {
-			sb.append("Root Package\n");
+			sb.append("Root Package {\n");
 		} else {
 			sb.append("Package(").append(id).append(") - ");
 			sb.append(toString()).append(" {\n");

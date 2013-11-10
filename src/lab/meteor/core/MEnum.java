@@ -80,7 +80,6 @@ public class MEnum extends MElement implements MDataType {
 		return this.name;
 	}
 	
-	@Override
 	public void setName(String name) throws MException {
 		if (isDeleted())
 			return;

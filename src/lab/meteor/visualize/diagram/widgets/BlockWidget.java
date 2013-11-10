@@ -28,11 +28,14 @@ public abstract class BlockWidget extends Widget implements Linable {
 	Vector2D pos0;
 	
 	ListView listView;
-	View contentView;
+//	View contentView;
 	TextView titleView;
-	View resizeView;
-	Animation resizeAnimation;
+	ResizeButton resizeButton;
+	CloseButton closeButton;
 //	ShadowDecorator shadowDecorator;
+	
+	Animation fadeInAnimation = new FadeInAnimation();
+	Animation fadeOutAnimation = new FadeOutAnimation();
 	
 	final static int margin = 2;
 	final static int titleHeight = 30;
@@ -62,72 +65,35 @@ public abstract class BlockWidget extends Widget implements Linable {
 			}
 		});
 		
-		contentView = new View() {
-			@Override
-			protected void repaintView(ViewGraphics g) {
-				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g.setColor(getBorderColor());
-				g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);	
-			}
-		};
-		contentView.setBackgroundColor(null);
+//		contentView = new View() {
+//			@Override
+//			protected void repaintView(ViewGraphics g) {
+//				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//				g.setColor(getBorderColor());
+//				g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);	
+//			}
+//		};
+//		contentView.setBackgroundColor(null);
 		
-		resizeView = new View() {
-			{
-				setAlpha(0);
-				setBackgroundColor(null);
-			}
-			Animation resizeAnimation;
-			@Override
-			protected void repaintView(ViewGraphics g) {
-				g.drawImage(Resources.IMG_RESIZE, 0, 0, getWidth(), getHeight());
-			}
+		resizeButton = new ResizeButton(this);
+		closeButton = new CloseButton();
+		closeButton.addEventHandler(MOUSE_CLICKED, new EventHandler() {
 			
 			@Override
-			protected void mouseEntered() {
-				if (resizeAnimation != null)
-					resizeAnimation.cancel();
-				resizeAnimation = new ResizeFadeInAnimation();
-				resizeAnimation.commit();
+			public void handle(View sender, Key key, Object arg) {
+				fadeOutAnimation.commit();
 			}
-			
-			@Override
-			protected void mouseExited() {
-				if (resizeAnimation != null)
-					resizeAnimation.cancel();
-				resizeAnimation = new ResizeFadeOutAnimation();
-				resizeAnimation.commit();
-			}
-			
-			Vector2D pos0;
-			
-			@Override
-			protected void mousePressed(MouseEvent e) {
-				pos0 = e.getPosition(this);
-				e.handle();
-			}
-			
-			@Override
-			protected void mouseDragged(MouseEvent e) {
-				Vector2D diff = Vector2D.subtract(e.getPosition(this), pos0);
-				Vector2D newSize = Vector2D.add(BlockWidget.this.getSize(), diff);
-				BlockWidget.this.setSize(newSize);
-				e.handle();
-			}
-			
-			@Override
-			protected void mouseReleased(MouseEvent e) {
-				e.handle();
-			}
-			
-		};
-		resizeView.setSize(16, 16);
+		});
 		
 //		addSubview(shadowDecorator);
-		addSubview(contentView);
+//		addSubview(contentView);
 		addSubview(listView);
 		addSubview(titleView);
-		addSubview(resizeView);
+		addSubview(resizeButton);
+		addSubview(closeButton);
+		
+		setAlpha(0);
+		fadeInAnimation.commit();
 	}
 	
 	public String getTitle() {
@@ -149,8 +115,16 @@ public abstract class BlockWidget extends Widget implements Linable {
 		listView.setPosition(margin, titleView.getHeight() + margin);
 		listView.setSize(width - margin * 2, height - titleView.getHeight() - margin * 2);
 //		shadowDecorator.setSize(width, height);
-		contentView.setSize(width, height);
-		resizeView.setPosition(width - resizeView.getWidth(), height - resizeView.getHeight());
+//		contentView.setSize(width, height);
+		resizeButton.setPosition(width - resizeButton.getWidth(), height - resizeButton.getHeight());
+		closeButton.setPosition(width - closeButton.getWidth()/2, -closeButton.getHeight()/2);
+	}
+	
+	@Override
+	protected void repaintView(ViewGraphics g) {
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setColor(getBorderColor());
+		g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 	}
 	
 	@Override
@@ -237,31 +211,36 @@ public abstract class BlockWidget extends Widget implements Linable {
 		lines.remove(line);
 	}
 	
-	private class ResizeFadeInAnimation extends Animation {
+	protected abstract void onClose();
+	
+	private class FadeInAnimation extends Animation {
 
-		public ResizeFadeInAnimation() {
+		public FadeInAnimation() {
 			super(0.2f);
 		}
 		
 		@Override
 		protected void animate(float progress) {
-			resizeView.setAlpha(progress);
+			setAlpha(progress);
 		}
 		
 	}
 	
-	private class ResizeFadeOutAnimation extends Animation {
+	private class FadeOutAnimation extends Animation {
 
-		public ResizeFadeOutAnimation() {
-			super(0.2f);
+		public FadeOutAnimation() {
+			super(0.3f);
 		}
 		
 		@Override
 		protected void animate(float progress) {
-			resizeView.setAlpha(1.0f - progress);
+			setAlpha(1.0f - progress);
 		}
-
 		
+		@Override
+		protected void completed(boolean canceled) {
+			onClose();
+		}
 	}
 	
 }

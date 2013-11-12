@@ -284,7 +284,7 @@ public class MClass extends MElement implements MType {
 	 * @param clazz another class
 	 * @return {@code true} if is sub-class.
 	 */
-	public boolean asSubClass(MClass clazz) {
+	public boolean isKindOf(MClass clazz) {
 		if (isDeleted())
 			return false;
 		

@@ -20,7 +20,7 @@ import lab.meteor.visualize.diagram.lines.LinkEnumLine;
 import lab.meteor.visualize.diagram.lines.UniLinkLine;
 import lab.meteor.visualize.resource.Resources;
 
-public class ClassWidget extends BlockWidget implements IModelView<MClass> {
+public class ClassWidget extends DetailedBlockWidget implements IModelView<MClass> {
 	
 	MClass model;
 	

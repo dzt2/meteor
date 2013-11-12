@@ -9,7 +9,6 @@ import java.util.List;
 import lab.meteor.visualize.diagram.DiagramView;
 import lab.meteor.visualize.diagram.Linable;
 import lab.meteor.visualize.diagram.Line;
-import lab.meteor.visualize.diagram.ListView;
 import lab.meteor.visualize.diagram.Widget;
 import lab.meteor.visualize.resource.Resources;
 import co.gongzh.snail.Animation;
@@ -27,8 +26,7 @@ public abstract class BlockWidget extends Widget implements Linable {
 
 	Vector2D pos0;
 	
-	ListView listView;
-//	View contentView;
+	View contentView;
 	TextView titleView;
 	ResizeButton resizeButton;
 	CloseButton closeButton;
@@ -37,15 +35,13 @@ public abstract class BlockWidget extends Widget implements Linable {
 	Animation fadeInAnimation = new FadeInAnimation();
 	Animation fadeOutAnimation = new FadeOutAnimation();
 	
-	final static int margin = 2;
-	final static int titleHeight = 30;
 	List<Line> lines = new LinkedList<Line>();
 	
 	public BlockWidget(DiagramView v) {
 		super(v);
 		setClipped(false);
 		titleView = new TextView();
-		listView = new ListView();
+		
 //		shadowDecorator = new ShadowDecorator();
 		
 		titleView.setPosition(1, 1);
@@ -55,15 +51,6 @@ public abstract class BlockWidget extends Widget implements Linable {
 		titleView.setInsets(Insets.make(5, 5, 5, 5));
 		titleView.setTextAlignment(Alignment.CENTER_CENTER);
 		titleView.setBreakIterator(BreakIterator.getCharacterInstance());
-		titleView.addEventHandler(TextView.TEXT_LAYOUT_CHANGED, new EventHandler() {
-			
-			@Override
-			public void handle(View sender, Key key, Object arg) {
-				titleView.setSize(getWidth() - 2, titleView.getPreferredHeight());
-				listView.setPosition(margin, titleView.getHeight() + margin);
-				listView.setSize(getWidth() - margin * 2, getHeight() - titleView.getHeight() - margin * 2);
-			}
-		});
 		
 //		contentView = new View() {
 //			@Override
@@ -73,7 +60,9 @@ public abstract class BlockWidget extends Widget implements Linable {
 //				g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);	
 //			}
 //		};
-//		contentView.setBackgroundColor(null);
+		contentView = new View();
+		contentView.setBackgroundColor(null);
+		contentView.setClipped(true);
 		
 		resizeButton = new ResizeButton(this);
 		closeButton = new CloseButton();
@@ -86,8 +75,7 @@ public abstract class BlockWidget extends Widget implements Linable {
 		});
 		
 //		addSubview(shadowDecorator);
-//		addSubview(contentView);
-		addSubview(listView);
+		addSubview(contentView);
 		addSubview(titleView);
 		addSubview(resizeButton);
 		addSubview(closeButton);
@@ -112,10 +100,8 @@ public abstract class BlockWidget extends Widget implements Linable {
 	public void setSize(int width, int height) {
 		super.setSize(width, height);
 		titleView.setSize(width - 2, titleView.getPreferredHeight());
-		listView.setPosition(margin, titleView.getHeight() + margin);
-		listView.setSize(width - margin * 2, height - titleView.getHeight() - margin * 2);
 //		shadowDecorator.setSize(width, height);
-//		contentView.setSize(width, height);
+		contentView.setSize(width, height);
 		resizeButton.setPosition(width - resizeButton.getWidth(), height - resizeButton.getHeight());
 		closeButton.setPosition(width - closeButton.getWidth()/2, -closeButton.getHeight()/2);
 	}
@@ -209,6 +195,16 @@ public abstract class BlockWidget extends Widget implements Linable {
 	@Override
 	public void removeLine(Line line) {
 		lines.remove(line);
+	}
+	
+	@Override
+	public boolean isInside(Vector2D point) {
+		int minx = getWidth() - closeButton.getWidth()/2;
+		int miny = -closeButton.getHeight()/2;
+		int maxx = minx + closeButton.getWidth();
+		int maxy = miny + closeButton.getHeight();
+		return super.isInside(point) || 
+				(point.x >= minx && point.x <= maxx && point.y >= miny && point.y <= maxy);
 	}
 	
 	protected abstract void onClose();

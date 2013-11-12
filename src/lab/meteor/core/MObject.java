@@ -64,7 +64,7 @@ public class MObject extends MElement implements MNotifiable {
 			MClass cls = (MClass) class_pt.getElement();
 			if (cls == null)
 				throw new MException(MException.Reason.ELEMENT_MISSED);
-			return cls.asSubClass(clazz);
+			return cls.isKindOf(clazz);
 		}
 	}
 	

@@ -14,7 +14,7 @@ import lab.meteor.visualize.diagram.Line;
 import lab.meteor.visualize.diagram.lines.LinkEnumLine;
 import lab.meteor.visualize.resource.Resources;
 
-public class EnumWidget extends BlockWidget implements IModelView<MEnum> {
+public class EnumWidget extends DetailedBlockWidget implements IModelView<MEnum> {
 
 	MEnum model;
 	

@@ -17,7 +17,6 @@ import co.gongzh.snail.ResizableImage;
 
 public class Resources {
 	
-	public static final ResizableImage IMG_BLOCK_SHADOW;
 	public static final Image IMG_RESIZE;
 	public static final Image IMG_CLOSE;
 
@@ -49,7 +48,6 @@ public class Resources {
 	public static final Stroke STROKE_LINES;
 	
 	static {
-		IMG_BLOCK_SHADOW = new ResizableImage(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("shadow.png"), 3, 4, 190, 132);
 		IMG_RESIZE = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("resize.png"));
 		IMG_CLOSE = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("close.png"));
 		

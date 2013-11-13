@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-public class DataColumnCollection {
+public class DataColumnCollection implements Iterable<DataColumn> {
 
     final Map<String, DataColumn> nameMap;
 
@@ -109,7 +109,7 @@ public class DataColumnCollection {
 	    return c;
 	}
 
-	public DataColumn newColumn(String name) throws Exception {
+	public DataColumn newColumn(String name) {
 	    return new DataColumn(name, this);
 	}
 

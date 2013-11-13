@@ -31,8 +31,7 @@ public class ScriptView extends View {
 		startButton = new View() {
 			@Override
 			protected void repaintView(ViewGraphics g) {
-				g.setColor(Color.blue);
-				g.fillRect(0, 0, getWidth(), getHeight());
+				g.drawImage(Resources.IMG_RUN, 0, 0, getWidth(), getHeight());
 			}
 			
 			@Override
@@ -41,7 +40,8 @@ public class ScriptView extends View {
 			}
 			
 		};
-		startButton.setSize(15, 15);
+		startButton.setBackgroundColor(null);
+		startButton.setSize(16, 16);
 		
 		textView.setPosition(padding, padding);
 		textView.setDefaultTextColor(Color.white);

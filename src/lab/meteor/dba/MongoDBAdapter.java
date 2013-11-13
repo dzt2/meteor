@@ -919,7 +919,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	
 	private static DataSet dbObjectToDataSet(DBObject obj) {
 		DataSet ds = new DataSet();
-		BasicDBList list = (BasicDBList) obj.get(KEY_LIST);
+		BasicDBList list = (BasicDBList) obj.get(KEY_SET);
 		Iterator<Object> it = list.iterator();
 		while (it.hasNext()) {
 			Object value = it.next();

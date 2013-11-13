@@ -156,7 +156,7 @@ public class MObject extends MElement implements MNotifiable {
 		MAttribute atb = cls.getAttribute(name);
 		if (atb == null)
 			throw new MException(MException.Reason.ATTRIBUTE_NOT_FOUND);
-		if (!MUtility.checkType(atb.getDataType(), obj))
+		if (!MUtility.checkInputType(atb.getDataType(), obj))
 			throw new MException(MException.Reason.INVALID_VALUE_TYPE);
 		
 		this.setAttribute(atb, obj);
@@ -307,7 +307,7 @@ public class MObject extends MElement implements MNotifiable {
 		load();
 		Object o = this.getValues().get(atb.id);
 		if (o != null) {
-			if (!MUtility.checkType(atb.getDataType(), o)) {
+			if (!MUtility.checkOutputType(atb.getDataType(), o)) {
 				this.setAttribute(atb, null);
 			}
 		}
@@ -433,7 +433,7 @@ public class MObject extends MElement implements MNotifiable {
 			// if attribute
 			if (type == MElementType.Attribute) {
 				MAttribute atb = MDatabase.getDB().getAttribute(id);
-				if (!MUtility.checkType(atb.getDataType(), value)) {
+				if (!MUtility.checkInputType(atb.getDataType(), value)) {
 					changeFlag = true;
 				}
 				fromDBObject(this, atb, value, id);

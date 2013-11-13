@@ -126,7 +126,7 @@ public class MUtility {
 	 * @param value the value to be checked.
 	 * @return true if matches
 	 */
-	public static boolean checkType(MDataType type, Object value) {
+	public static boolean checkInputType(MDataType type, Object value) {
 		if (value == null)
 			return true;
 		MNativeDataType nType = type.getNativeDataType();
@@ -171,6 +171,89 @@ public class MUtility {
 			break;
 		case Dictionary:
 			if (value == MCollection.Factory.Dictionary)
+				return true;
+			break;
+		case Binary:
+			if (value instanceof MBinary)
+				return true;
+			break;
+		case Regex:
+			if (value instanceof Pattern)
+				return true;
+			break;
+		case Integer:
+			if (value instanceof java.lang.Integer)
+				return true;
+			break;
+		case Int64:
+			if (value instanceof java.lang.Long)
+				return true;
+			break;
+		case Code:
+			if (value instanceof MCode)
+				return true;
+			break;
+		case Ref:
+			if (value instanceof MRef)
+				return true;
+			break;
+		default:
+			return false;
+		}
+		return false;
+	}
+	
+	/**
+	 * Check the value matches with the type.
+	 * @param type a instance of MType, i.e. MPrimitiveType or MEnum.
+	 * @param value the value to be checked.
+	 * @return true if matches
+	 */
+	public static boolean checkOutputType(MDataType type, Object value) {
+		if (value == null)
+			return true;
+		MNativeDataType nType = type.getNativeDataType();
+		switch (nType) {
+		case Any:
+			MPrimitiveType t = classes.get(value.getClass());
+			if (t != null)
+				return true;
+			if (value instanceof MSymbol)
+				return true;
+			break;
+		case Number:
+			if (value instanceof java.lang.Number)
+				return true;
+			break;
+		case Boolean:
+			if (value instanceof java.lang.Boolean)
+				return true;
+			break;
+		case String:
+			if (value instanceof java.lang.String)
+				return true;
+			break;
+		case DateTime:
+			if (value instanceof java.util.Date)
+				return true;
+			break;
+		case Enum:
+			if (value instanceof MSymbol) {
+				MSymbol sym = (MSymbol) value;
+				if (sym.getEnum() == type)
+					return true;
+			}
+			break;
+		case List:
+			if (value instanceof MList)
+				return true;
+			break;
+		case Set:
+			if (value instanceof MSet)
+				return true;
+			break;
+		case Dictionary:
+			if (value instanceof MDictionary)
 				return true;
 			break;
 		case Binary:

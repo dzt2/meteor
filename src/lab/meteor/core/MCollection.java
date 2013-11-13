@@ -225,6 +225,7 @@ public abstract class MCollection {
 					sb.append(((MCollection)o).toString(intent+1));
 				} else
 					sb.append(o.toString());
+				sb.append("\n");
 			}
 			
 		});

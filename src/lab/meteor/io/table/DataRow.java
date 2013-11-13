@@ -1,6 +1,6 @@
 package lab.meteor.io.table;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DataRow {
@@ -9,10 +9,11 @@ public class DataRow {
 
     final DataRowCollection rows;
 
-    private Map<DataColumn, Object> itemMap = new HashMap<DataColumn, Object>();
+    private Map<DataColumn, Object> values;
 
     DataRow(DataRowCollection rows) {
         this.rows = rows;
+        values = new LinkedHashMap<DataColumn, Object>();
     }
 
     public int getIndex() {
@@ -27,30 +28,30 @@ public class DataRow {
 	}
 
 	public Object getValue(DataColumn column) {
-		return itemMap.get(column);
+		return values.get(column);
 	}
 
 	public Object getValue(int columnIndex) {
 		DataColumn c = rows.table.columns.get(columnIndex);
-	    return itemMap.get(c);
+	    return values.get(c);
 	}
 
 	public Object getValue(String columnName) {
 		DataColumn c = rows.table.columns.get(columnName);
-	    return itemMap.get(c);
+	    return values.get(c);
 	}
 
 	public boolean setValue(DataColumn column, Object value) {
 		if (column == null ||
 				column.columns.table != rows.table ||
 				column.index == -1) return false;
-	    itemMap.put(column, value);
+	    values.put(column, value);
 	    return true;
 	}
 
 	public boolean setValue(int index, Object value) {
 		DataColumn c = rows.table.columns.get(index);
-		itemMap.put(c, value);
+		values.put(c, value);
 		return true;
     }
 
@@ -59,9 +60,9 @@ public class DataRow {
     }
 
     public void copyFrom(DataRow row) {
-        this.itemMap.clear();
-        for (DataColumn c : row.itemMap.keySet()) {
-            this.itemMap.put(c, row.getValue(c));
+        this.values.clear();
+        for (DataColumn c : row.values.keySet()) {
+            this.values.put(c, row.getValue(c));
         }
     }
 

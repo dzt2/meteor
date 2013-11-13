@@ -4,14 +4,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-public class DataRowCollection {
+public class DataRowCollection implements Iterable<DataRow> {
 
-	List<DataRow> rows = new Vector<DataRow>();
+	List<DataRow> rows;
 	
 	final DataTable table;
 
 	DataRowCollection(DataTable table) {
 		this.table = table;
+		rows = new Vector<DataRow>();
 	}
 	
 	public DataRow newRow() {

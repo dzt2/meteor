@@ -13,12 +13,12 @@ import javax.imageio.ImageIO;
 import lab.meteor.visualize.Launcher;
 import co.gongzh.snail.Image;
 import co.gongzh.snail.Image.ImageSourceLoader;
-import co.gongzh.snail.ResizableImage;
 
 public class Resources {
 	
 	public static final Image IMG_RESIZE;
 	public static final Image IMG_CLOSE;
+	public static final Image IMG_RUN;
 
 	public static final Color COLOR_CLASS_TITLE_BG;
 	public static final Color COLOR_ENUM_TITLE_BG;
@@ -50,6 +50,7 @@ public class Resources {
 	static {
 		IMG_RESIZE = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("resize.png"));
 		IMG_CLOSE = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("close.png"));
+		IMG_RUN = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("run.png"));
 		
 		COLOR_CLASS_TITLE_BG = new Color(0xffbfdad9);
 		COLOR_CLASS_BORDER = new Color(0xff658a86);

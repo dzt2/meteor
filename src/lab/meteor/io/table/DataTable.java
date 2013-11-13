@@ -53,4 +53,12 @@ public final class DataTable {
         return rows.get(row).setValue(colName, value);
     }
     
+    public DataRow newRow() {
+    	return rows.newRow();
+    }
+    
+    public DataColumn newColumn(String name) {
+    	return columns.newColumn(name);
+    }
+    
 }

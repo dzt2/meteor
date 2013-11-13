@@ -163,6 +163,13 @@ public abstract class MElement implements Comparable<MElement> {
 		MDatabase.getDB().addElementInCache(this);
 	}
 	
+	@Override
+	protected void finalize() throws Throwable {
+		save();
+		saveTags();
+		super.finalize();
+	}
+	
 	/**
 	 * If the element is loaded from database.
 	 * @return
@@ -516,6 +523,8 @@ public abstract class MElement implements Comparable<MElement> {
 			return;
 		if (!loaded_tags)
 			throw new MException(MException.Reason.FORBIDEN_SAVE_BEFORE_LOAD);
+		
+		// TODO save the "elements" attributes of its tags.
 		MDatabase.getDB().saveElementTags(this);
 		changed_tags = false;
 	}

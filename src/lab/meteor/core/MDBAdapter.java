@@ -1,8 +1,8 @@
 package lab.meteor.core;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import lab.meteor.core.MElement.MElementType;
 
@@ -192,7 +192,7 @@ public interface MDBAdapter {
 	 * @author Qiang
 	 *
 	 */
-	public static class DataSet extends TreeSet<Object> {
+	public static class DataSet extends HashSet<Object> {
 		private static final long serialVersionUID = 8312477680744554417L;
 	}
 	

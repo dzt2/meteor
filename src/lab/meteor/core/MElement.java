@@ -315,6 +315,9 @@ public abstract class MElement implements Comparable<MElement> {
 	 */
 	protected void setChanged(int flag) {
 		changed_flag |= flag;
+		if (MDatabase.getDB().isAutoSave()) {
+			MDatabase.getDB().autoSave(this);
+		}
 	}
 
 	/**
@@ -383,17 +386,13 @@ public abstract class MElement implements Comparable<MElement> {
 			this.name = name;
 		}
 		
-		void changed() {
-			changed_tags = true;
-		}
-		
 		public void add(MTag tag) {
 			if (deleted || id == NULL_ID || tag == null || tag.isDeleted())
 				return;
 			if (!tag.name.equals(name))
 				return;
 			pointers.add(new MElementPointer(tag));
-			changed_tags = true;
+			MElement.this.tagsChanged();
 		}
 	
 		public void remove(MTag tag) {
@@ -402,7 +401,7 @@ public abstract class MElement implements Comparable<MElement> {
 			if (!tag.name.equals(name))
 				return;
 			pointers.remove(new MElementPointer(tag));
-			changed_tags = true;
+			MElement.this.tagsChanged();
 		}
 		
 		public void clear() {
@@ -414,7 +413,7 @@ public abstract class MElement implements Comparable<MElement> {
 					tag.removeElement(MElement.this);
 			}
 			pointers.clear();
-			changed_tags = true;
+			MElement.this.tagsChanged();
 		}
 		
 		public boolean contains(MTag tag) {
@@ -458,12 +457,15 @@ public abstract class MElement implements Comparable<MElement> {
 					return null;
 				last = it.next();
 				MTag tag = (MTag) last.getElement();
+				boolean isChanged = false;
 				while (tag == null || tag.isDeleted()) {
 					it.remove();
 					last = it.next();
 					tag = (MTag) last.getElement();
-					changed_tags = true;
+					isChanged = true;
 				}
+				if (isChanged)
+					MElement.this.tagsChanged();
 				return tag;
 			}
 	
@@ -494,6 +496,13 @@ public abstract class MElement implements Comparable<MElement> {
 	 * A state of tags.
 	 */
 	private boolean changed_tags = false;
+	
+	private void tagsChanged() {
+		changed_tags = true;
+		if (MDatabase.getDB().isAutoSave()) {
+			MDatabase.getDB().autoSaveTags(this);
+		}
+	}
 	
 	/**
 	 * Forcibly load tags from database.
@@ -582,7 +591,7 @@ public abstract class MElement implements Comparable<MElement> {
 				tag.removeElement(this);
 		}
 		tags.pointers.clear();
-		this.changed_tags = true;
+		tagsChanged();
 	}
 	
 	/**
@@ -604,7 +613,7 @@ public abstract class MElement implements Comparable<MElement> {
 			it.remove();
 			getTags().remove(name);
 		}
-		changed_tags = true;
+		tagsChanged();
 		return tag;
 	}
 	
@@ -657,7 +666,7 @@ public abstract class MElement implements Comparable<MElement> {
 			this.getTags().put(name, tags);
 		}
 		tags.pointers.add(new MElementPointer(id, MElementType.Tag));
-		changed_tags = true;
+		tagsChanged();
 	}
 
 	/**
@@ -672,7 +681,7 @@ public abstract class MElement implements Comparable<MElement> {
 		if (tags == null)
 			return;
 		tags.pointers.remove(new MElementPointer(id, MElementType.Tag));
-		changed_tags = true;
+		tagsChanged();
 	}
 
 	/**

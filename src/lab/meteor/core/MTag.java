@@ -104,9 +104,13 @@ public class MTag extends MElement implements MNotifiable {
 		super.delete();
 	}
 	
+	@Override
+	protected void finalize() throws Throwable {
+		saveElements();
+		super.finalize();
+	}
+	
 	public String getName() {
-//		if (!isLoaded())
-//			load(ATTRIB_FLAG_NAME);
 		return this.name;
 	}
 	
@@ -149,7 +153,7 @@ public class MTag extends MElement implements MNotifiable {
 		if (elements.contains(ep))
 			return;
 		elements.add(ep);
-		changed_elements = true;
+		elementsChanged();
 	}
 	
 	void removeElement(MElement e) {
@@ -160,10 +164,12 @@ public class MTag extends MElement implements MNotifiable {
 		if (!elements.contains(ep))
 			return;
 		elements.remove(ep);
-		changed_elements = true;
 		
-		if (elements.size() == 0)
+		if (elements.size() == 0) {
 			delete();
+			return;
+		}
+		elementsChanged();
 	}
 	
 	void relink(String oldName, String newName) {
@@ -236,6 +242,13 @@ public class MTag extends MElement implements MNotifiable {
 	private boolean loaded_elements = false;
 	
 	private boolean changed_elements = false;
+	
+	private void elementsChanged() {
+		changed_elements = true;
+		if (MDatabase.getDB().isAutoSave()) {
+			MDatabase.getDB().autoSaveTags(this);
+		}
+	}
 	
 	/**
 	 * Forcibly load the target elements of tag from database.

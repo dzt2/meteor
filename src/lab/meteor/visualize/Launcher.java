@@ -39,6 +39,7 @@ public class Launcher {
 		connector.open();
 		MDatabase.getDB().setDBAdapter(new MongoDBAdapter(connector.getDB()));
 		MDatabase.getDB().initialize();
+		MDatabase.getDB().setAutoSave(true);
 		
 		// standard Swing
 		getFrame();

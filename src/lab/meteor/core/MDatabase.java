@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lab.meteor.core.MElement.MElementType;
+import lab.meteor.core.cache.MAutoSaveQueue;
 import lab.meteor.core.cache.MCaches;
 
 public class MDatabase {
@@ -38,6 +39,10 @@ public class MDatabase {
 	
 	private MCaches cache;
 	
+	private boolean isAutoSave = false;
+	private MAutoSaveQueue<MElement> autoSaveContent;
+	private MAutoSaveQueue<MElement> autoSaveTags;
+	
 	/*
 	 * ********************************
 	 *           CONSTRUCTOR
@@ -48,7 +53,53 @@ public class MDatabase {
 	 */
 	private MDatabase() {
 		cache = new MCaches();
+		autoSaveContent = new MAutoSaveQueue<MElement>() {
+
+			@Override
+			protected void save(MElement e) {
+				e.save();
+			}
+			
+		};
+		autoSaveTags = new MAutoSaveQueue<MElement>() {
+
+			@Override
+			protected void save(MElement e) {
+				e.saveTags();
+				if (e instanceof MTag)
+					((MTag) e).saveElements();
+			}
+			
+		};
 		dbAdapter = null;
+	}
+	
+	public boolean isAutoSave() {
+		return isAutoSave;
+	}
+	
+	public void setAutoSave(boolean autoSave) {
+		autoSaveContent.setEnable(autoSave);
+		autoSaveTags.setEnable(autoSave);
+		this.isAutoSave = autoSave;
+	}
+	
+	/**
+	 * Auto saving will periodically save the elements requires to saved. This method
+	 * set the cycle.
+	 * @param millis the length of time of interval in milliseconds to next auto saving.
+	 */
+	public void setAutoSaveCycle(long millis) {
+		autoSaveContent.setSaveCycle(millis);
+		autoSaveTags.setSaveCycle(millis);
+	}
+	
+	void autoSave(MElement e) {
+		autoSaveContent.offer(e);
+	}
+	
+	void autoSaveTags(MElement e) {
+		autoSaveTags.offer(e);
 	}
 	
 	/*

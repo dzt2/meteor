@@ -37,7 +37,6 @@ class MGCCache<T> {
 		cache = new HashMap<Long, MCacheReference<T>>();
 		gcQueue = new ReferenceQueue<T>();
 		ClearHandler ch = new ClearHandler();
-		ch.setDaemon(true);
 		ch.start();
 	}
 	
@@ -97,6 +96,11 @@ class MGCCache<T> {
 	
 	private class ClearHandler extends Thread {
 		
+		ClearHandler() {
+			super("Meteor-GC-Handler");
+			setDaemon(true);
+		}
+		
 		public void run() {
 			for(;;) {
 				try {
@@ -106,7 +110,7 @@ class MGCCache<T> {
 						cache.remove(g.id);
 					}
 				} catch (InterruptedException e) {
-					/**
+					/*
 					 * do nothing
 					 */
 				}

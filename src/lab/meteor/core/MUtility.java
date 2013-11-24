@@ -1,5 +1,6 @@
 package lab.meteor.core;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -285,4 +286,30 @@ public class MUtility {
 		}
 		return false;
 	}
+
+	public static int stringToInteger(String str) {
+		return Integer.parseInt(str);
+	}
+	
+	public static long stringToInt64(String str) {
+		return Long.parseLong(str);
+	}
+	
+	public static boolean stringToBoolean(String str) {
+		return Boolean.parseBoolean(str);
+	}
+	
+	public static double stringToNumber(String str) {
+		return Double.parseDouble(str);
+	}
+	
+	public static java.util.Date stringToDateTime(String str, String format) {
+		java.text.DateFormat df = new java.text.SimpleDateFormat(format);
+		try {
+			return df.parse(str);
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
 }

@@ -125,6 +125,7 @@ public interface MDBAdapter {
 	public static class ObjectDBInfo extends DBInfo {
 		public long class_id;
 		public DataDict values = new DataDict();
+		public DataDict deleteKeys = new DataDict();
 		ObjectDBInfo() { super(); }
 		ObjectDBInfo(int flag) { super(flag); }
 	}

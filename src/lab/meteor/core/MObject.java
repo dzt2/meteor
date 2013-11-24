@@ -16,7 +16,7 @@ import lab.meteor.core.MReference.Multiplicity;
  *
  */
 public class MObject extends MElement implements MNotifiable {
-
+	
 	private Map<Long, Object> values = null;
 	
 	MElementPointer class_pt = new MElementPointer();
@@ -461,6 +461,7 @@ public class MObject extends MElement implements MNotifiable {
 					}
 				}
 			} else {
+				getRemovedProperties().add(id);
 				changeFlag = true;
 			}
 		}
@@ -488,6 +489,11 @@ public class MObject extends MElement implements MNotifiable {
 						Object o = MCollection.toDBObject(value);
 						objDBInfo.values.put(MUtility.stringID(id), o);
 					}
+				}
+			}
+			if (this.removedProperties != null) {
+				for (Long id : this.removedProperties) {
+					objDBInfo.deleteKeys.put(MUtility.stringID(id), null);
 				}
 			}
 		}
@@ -677,6 +683,13 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	Set<Long> changedProperties = new TreeSet<Long>();
+	private Set<Long> removedProperties;
+	
+	private Set<Long> getRemovedProperties() {
+		if (removedProperties == null)
+			removedProperties = new TreeSet<Long>();
+		return removedProperties;
+	}
 	
 	public void setChanged(MElementPointer property) {
 		changedProperties.add(property.getID());

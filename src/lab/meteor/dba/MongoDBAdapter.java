@@ -598,6 +598,7 @@ public class MongoDBAdapter implements MDBAdapter {
 	public void updateObject(ObjectDBInfo obj) {
 		DBCollection col = db.getCollection(classIDToString(obj.class_id));
 		DBObject o = new BasicDBObject();
+		DBObject d = new BasicDBObject();
 		DBObject que = new BasicDBObject();
 		que.put("_id", obj.id);
 		
@@ -610,9 +611,16 @@ public class MongoDBAdapter implements MDBAdapter {
 			Object value = entry.getValue();
 			o.put("p" + entry.getKey(), objectToDBObject(value));
 		}
+		it = obj.deleteKeys.entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<String, Object> entry = it.next();
+			o.put("p" + entry.getKey(), null);
+		}
+		
 		// TODO
 		DBObject set = new BasicDBObject();
 		set.put("$set", o);
+		set.put("$unset", d);
 		col.update(que, set);
 	}
 	

@@ -71,8 +71,10 @@ public class MShell {
 		for (IShellListener l : listeners) {
 			l.onCommandFinished(command, message);
 		}
-		if (enableConsolePrint)
-			System.out.println(message);
+		if (enableConsolePrint) {
+			if (message != null && !message.equals(""))
+				System.out.println(message);
+		}
 	}
 
 	private void printError(int loc, String message) {
@@ -384,7 +386,44 @@ public class MShell {
 			break;
 		case Opposite:
 			{
-				System.out.println("not support yet.");
+				Token name1 = tokenizer.next();
+				if (name1 == null || name1.type != TokenType.Identifier)
+				{ printError(tokenizer.loc, "class name is required."); return; }
+				
+				Token next = tokenizer.next();
+				if (next == null || next.type != TokenType.Dot)
+				{ printError(tokenizer.loc, "opposite op needs reference."); return; }
+				
+				Token child1 = tokenizer.next();
+				if (child1 == null || child1.type != TokenType.Identifier)
+				{ printError(tokenizer.loc, "opposite op needs name of reference."); return; }
+				
+				Token name2 = tokenizer.next();
+				if (name2 != null) {
+					if (name2.type != TokenType.Identifier)
+					{ printError(tokenizer.loc, "2nd class name is required."); return; }
+					
+					next = tokenizer.next();
+					if (next == null || next.type != TokenType.Dot)
+					{ printError(tokenizer.loc, "opposite op needs 2nd reference."); return; }
+					
+					Token child2 = tokenizer.next();
+					if (child2 == null || child2.type != TokenType.Identifier)
+					{ printError(tokenizer.loc, "opposite op needs name of 2nd reference."); return; }
+					try {
+						oppositeReference(name1.content, child1.content, name2.content, child2.content);
+						commandFinish(command, "");
+					} catch (MShellException e) {
+						commandFinish(command, e.getMessage());
+					}
+				} else {
+					try {
+						oppositeReference(name1.content, child1.content, null, null);
+						commandFinish(command, "");
+					} catch (MShellException e) {
+						commandFinish(command, e.getMessage());
+					}
+				}
 			}
 			break;
 		case Show:
@@ -665,6 +704,28 @@ public class MShell {
 		else if (e.getElementType() == MElementType.Enum)
 			((MEnum) e).setPackage(pkg);
 		return e;
+	}
+	
+	private void oppositeReference(String name1, String child1, String name2, String child2) throws MShellException {
+		if (name1 == null || child1 == null)
+			throw new MShellException("invalid name.");
+		MElement e = findElement(name1);
+		if (e == null || e.getElementType() != MElementType.Class)
+			throw new MShellException("class is not found.");
+		MReference ref = ((MClass) e).getReference(child1);
+		if (ref == null)
+			throw new MShellException("reference is not found.");
+		if (name2 != null) {
+			e = findElement(name2);
+			if (e == null || e.getElementType() != MElementType.Class)
+				throw new MShellException("2nd class is not found.");
+			MReference ref2 = ((MClass) e).getReference(child2);
+			if (ref2 == null)
+				throw new MShellException("2nd reference is not found.");
+			ref.setOpposite(ref2);
+		} else {
+			ref.setOpposite(null);
+		}
 	}
 	
 	private void gotoPackege(String name) throws MShellException {

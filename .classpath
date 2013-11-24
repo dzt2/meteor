@@ -8,5 +8,6 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/Snail GUI"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/Java SE 7 [1.7.0_25]"/>
+	<classpathentry kind="lib" path="lib/javacsv.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,5 +1,8 @@
 package lab.meteor.test;
 
+import java.util.Date;
+
+import lab.meteor.core.MUtility;
 import lab.meteor.io.table.DataRow;
 import lab.meteor.io.table.DataTable;
 
@@ -7,6 +10,11 @@ import lab.meteor.io.table.DataTable;
 public class Test {
 	
 	public static void main(String[] args) {
+		Date date = MUtility.stringToDateTime("2012-01-22 12:22:10", "yyyy-MM-dd HH:mm:ss");
+		System.out.println(date);
+	}
+	
+	public static void tablemain(String[] args) {
 		DataTable table = new DataTable("Test");
 		table.getColumns().add(table.getColumns().newColumn("index"));
 		table.getColumns().add(table.getColumns().newColumn("name"));

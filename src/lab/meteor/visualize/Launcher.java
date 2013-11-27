@@ -50,7 +50,7 @@ public class Launcher {
 		mainView.setHeight(600);
 		mainView.setPosition(0, 0);
 		
-		ViewContext context = new ViewContext(frame.getContentPane());
+		final ViewContext context = new ViewContext(frame.getContentPane());
 		context.setRootView(mainView);
 		mainView.getViewContext().getSwingContainer().requestFocus();
 	}

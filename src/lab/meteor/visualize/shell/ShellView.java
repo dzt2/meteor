@@ -51,7 +51,7 @@ public class ShellView extends View {
 			}
 		};
 		
-		setBackgroundColor(Resources.COLOR_COMMAND_BG);
+		setBackgroundColor(Resources.COLOR_SHELL_BG);
 		textView.setPosition(padding, padding);
 		textView.setBackgroundColor(null);
 		textView.setDefaultFont(Resources.FONT_COMMAND);

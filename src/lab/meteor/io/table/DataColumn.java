@@ -1,6 +1,6 @@
 package lab.meteor.io.table;
 
-public class DataColumn {
+public class DataColumn extends DataTagable {
 	 
     final DataColumnCollection columns;
  
@@ -56,4 +56,5 @@ public class DataColumn {
 	public DataTable getTable() {
 	    return this.columns.table;
 	}
+	
 }

@@ -19,6 +19,8 @@ public class Resources {
 	public static final Image IMG_RESIZE;
 	public static final Image IMG_CLOSE;
 	public static final Image IMG_RUN;
+	public static final Image IMG_SCRIPT;
+	public static final Image IMG_IMPORT;
 
 	public static final Color COLOR_CLASS_TITLE_BG;
 	public static final Color COLOR_ENUM_TITLE_BG;
@@ -38,7 +40,7 @@ public class Resources {
 	public static final Color COLOR_ENUM_NAME;
 	public static final Color COLOR_PACKAGE_NAME;
 	
-	public static final Color COLOR_COMMAND_BG;
+	public static final Color COLOR_SHELL_BG;
 	
 	public static final Font FONT_PROPERTY;
 	public static final Font FONT_CLASS_ENUM;
@@ -51,6 +53,8 @@ public class Resources {
 		IMG_RESIZE = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("resize.png"));
 		IMG_CLOSE = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("close.png"));
 		IMG_RUN = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("run.png"));
+		IMG_SCRIPT = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("script.png"));
+		IMG_IMPORT = new Image(Launcher.getFrame().getGraphicsConfiguration(), new ImageLoader("import.png"));
 		
 		COLOR_CLASS_TITLE_BG = new Color(0xffbfdad9);
 		COLOR_CLASS_BORDER = new Color(0xff658a86);
@@ -70,7 +74,7 @@ public class Resources {
 		COLOR_ENUM_NAME = new Color(94, 108, 34);
 		COLOR_PACKAGE_NAME = new Color(0xff695e1f);
 		
-		COLOR_COMMAND_BG = new Color(0, 0, 0, 200);
+		COLOR_SHELL_BG = new Color(0, 0, 0, 200);
 		
 		FONT_PROPERTY = new Font("Consolas", Font.PLAIN, 12);
 		FONT_CLASS_ENUM = new Font("Corbel", Font.PLAIN, 14);

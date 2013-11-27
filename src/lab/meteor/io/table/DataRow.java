@@ -3,7 +3,7 @@ package lab.meteor.io.table;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class DataRow {
+public class DataRow extends DataTagable {
 
     int index = -1;
 

@@ -118,6 +118,7 @@ public class ListView extends View {
 			}
 		};
 //		clipView.setPaintingEnabled(false);
+		clipView.setBackgroundColor(null);
 		clipView.setClipped(true);
 		addSubview(clipView);
 		
@@ -254,7 +255,7 @@ public class ListView extends View {
 	public void setSize(int width, int height) {
 		super.setSize(width, height);
 		if (clipView != null) {
-			View.scaleViewWithMarginToSuperView(clipView, 2);
+			View.scaleViewWithMarginToSuperView(clipView, 0);
 		}
 		if (contentView != null) {
 			limitContentViewTop();

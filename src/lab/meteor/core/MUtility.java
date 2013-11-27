@@ -1,6 +1,9 @@
 package lab.meteor.core;
 
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -287,24 +290,48 @@ public class MUtility {
 		return false;
 	}
 
-	public static int stringToInteger(String str) {
-		return Integer.parseInt(str);
+	public static Integer stringToInteger(String str) {
+		Integer rst = null;
+		try {
+			rst = Integer.parseInt(str);
+		} catch (Exception e) {
+			// do nothing
+		}
+		return rst;
 	}
 	
-	public static long stringToInt64(String str) {
-		return Long.parseLong(str);
+	public static Long stringToInt64(String str) {
+		Long rst = null;
+		try {
+			rst = Long.parseLong(str);
+		} catch (Exception e) {
+			// do nothing
+		}
+		return rst;
 	}
 	
-	public static boolean stringToBoolean(String str) {
-		return Boolean.parseBoolean(str);
+	public static Boolean stringToBoolean(String str) {
+		Boolean rst = null;
+		try {
+			rst = Boolean.parseBoolean(str);
+		} catch (Exception e) {
+			// do nothing
+		}
+		return rst;
 	}
 	
-	public static double stringToNumber(String str) {
-		return Double.parseDouble(str);
+	public static Double stringToNumber(String str) {
+		Double rst = null;
+		try {
+			rst = Double.parseDouble(str);
+		} catch (Exception e) {
+			// do nothing
+		}
+		return rst;
 	}
 	
-	public static java.util.Date stringToDateTime(String str, String format) {
-		java.text.DateFormat df = new java.text.SimpleDateFormat(format);
+	public static Date stringToDateTime(String str, String format) {
+		DateFormat df = new SimpleDateFormat(format);
 		try {
 			return df.parse(str);
 		} catch (ParseException e) {

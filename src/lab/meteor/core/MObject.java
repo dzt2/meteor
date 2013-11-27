@@ -390,6 +390,7 @@ public class MObject extends MElement implements MNotifiable {
 			return;
 		MObjectSet set = (MObjectSet) this.getReference(ref);
 		set.pointers.add(new MElementPointer(obj));
+		this.setChanged(ref);
 	}
 	
 	private void removeReference(MReference ref, MObject obj) {
@@ -398,6 +399,7 @@ public class MObject extends MElement implements MNotifiable {
 			return;
 		MObjectSet set = (MObjectSet) this.getReference(ref);
 		set.pointers.remove(new MElementPointer(obj));
+		this.setChanged(ref);
 	}
 	
 	private void setReference(MReference ref, MObject obj) {
@@ -656,12 +658,17 @@ public class MObject extends MElement implements MNotifiable {
 			if (type == MElementType.Attribute) {
 				MAttribute a = MDatabase.getDB().getAttribute(id);
 				sb.append(a.name).append(" : ");
-				sb.append(this.values.get(id).toString()).append("\n");
+				Object v = this.values.get(id);
+				if (a.getDataType().getNativeDataType() == MNativeDataType.Enum) {
+					sb.append(((MElementPointer) v).getElement().toString()).append("\n");
+				} else {
+					sb.append(v.toString()).append("\n");
+				}
 			} else {
 				MReference r = MDatabase.getDB().getReference(id);
 				if (r.getMultiplicity() == Multiplicity.Multiple) {
 					MObjectSet set = (MObjectSet)this.values.get(r.id);
-					sb.append("\n  {\n");
+					sb.append("{\n");
 					for (MElementPointer pt : set.pointers) {
 						sb.append("    ").append(pt.getElement().toString()).append("\n");
 					}

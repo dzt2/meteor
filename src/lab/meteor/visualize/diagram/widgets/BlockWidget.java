@@ -199,12 +199,8 @@ public abstract class BlockWidget extends Widget implements Linable {
 	
 	@Override
 	public boolean isInside(Vector2D point) {
-		int minx = getWidth() - closeButton.getWidth()/2;
-		int miny = -closeButton.getHeight()/2;
-		int maxx = minx + closeButton.getWidth();
-		int maxy = miny + closeButton.getHeight();
 		return super.isInside(point) || 
-				(point.x >= minx && point.x <= maxx && point.y >= miny && point.y <= maxy);
+				closeButton.isInside(closeButton.transformPointFromSuperView(point));
 	}
 	
 	protected abstract void onClose();

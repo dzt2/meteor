@@ -358,6 +358,8 @@ public class MScriptHelper {
 	 * @return
 	 */
 	public static MElement getElement(String identifier) {
+		if (identifier.equals(""))
+			return MPackage.DEFAULT_PACKAGE;
 		return getElement(identifier, MPackage.DEFAULT_PACKAGE);
 	}
 	

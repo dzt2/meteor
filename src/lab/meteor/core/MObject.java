@@ -666,9 +666,10 @@ public class MObject extends MElement implements MNotifiable {
 				}
 			} else {
 				MReference r = MDatabase.getDB().getReference(id);
+				sb.append(r.name).append(" : ");
 				if (r.getMultiplicity() == Multiplicity.Multiple) {
 					MObjectSet set = (MObjectSet)this.values.get(r.id);
-					sb.append("{\n");
+					sb.append("\n  {\n");
 					for (MElementPointer pt : set.pointers) {
 						sb.append("    ").append(pt.getElement().toString()).append("\n");
 					}

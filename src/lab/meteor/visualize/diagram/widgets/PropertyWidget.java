@@ -43,6 +43,21 @@ public class PropertyWidget extends ItemWidget implements IModelView<MProperty> 
 		if (model.getElementType() == MElementType.Attribute) {
 			MAttribute a = (MAttribute) model;
 			if (a.getDataType().getNativeDataType() == MNativeDataType.Enum)
+				return Resources.COLOR_ENUM_TYPE;
+			else
+				return Resources.COLOR_PRIMITIVE_TYPE;
+		} else {
+			return Resources.COLOR_CLASS_TYPE;
+		}
+	}
+	
+	@Override
+	protected Color getIconColor() {
+		if (model == null)
+			return Color.black;
+		if (model.getElementType() == MElementType.Attribute) {
+			MAttribute a = (MAttribute) model;
+			if (a.getDataType().getNativeDataType() == MNativeDataType.Enum)
 				return Resources.COLOR_ENUM_TITLE_BG;
 			else
 				return Resources.COLOR_PRIMITIVE_TYPE;

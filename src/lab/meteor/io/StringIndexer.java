@@ -41,4 +41,10 @@ public class StringIndexer {
 	public void append(String key, MObject obj) {
 		map.put(key, obj);
 	}
+	
+	public void debugPrint() {
+		for (String key : map.keySet()) {
+			System.out.println(key);
+		}
+	}
 }

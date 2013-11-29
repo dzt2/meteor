@@ -57,7 +57,8 @@ public class MDatabase {
 
 			@Override
 			protected void save(MElement e) {
-				e.save();
+				if (e.isLoaded())
+					e.save();
 			}
 			
 		};

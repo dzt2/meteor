@@ -44,6 +44,7 @@ public abstract class ItemWidget extends Widget implements Linable {
 	}
 	
 	protected abstract Color getTypeColor();
+	protected abstract Color getIconColor();
 		
 	@Override
 	protected void repaintView(ViewGraphics g) {
@@ -53,7 +54,7 @@ public abstract class ItemWidget extends Widget implements Linable {
 			g.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, 5, 5);
 		}
 		
-		g.setColor(getTypeColor());
+		g.setColor(getIconColor());
 		int offx = (textOffX - dotSize) / 2;
 		int offy = (getHeight() - dotSize) / 2;
 		drawDot(g, offx, offy, dotSize);

@@ -77,7 +77,7 @@ public class Resources {
 		COLOR_SHELL_BG = new Color(0, 0, 0, 200);
 		
 		FONT_PROPERTY = new Font("Consolas", Font.PLAIN, 12);
-		FONT_CLASS_ENUM = new Font("Corbel", Font.PLAIN, 14);
+		FONT_CLASS_ENUM = new Font("Corbel", Font.PLAIN, 15);
 		FONT_COMMAND = new Font("Andale Mono", Font.PLAIN, 14);
 		FONT_CMD_PRINT = new Font("Andale Mono", Font.PLAIN, 12);
 		

@@ -21,6 +21,8 @@ public class DataTableView extends View {
 	int headerHeight = 30;
 	int rowHeight = 25;
 	
+	static final int MAX_ROW = 100;
+	
 	View contentView;
 	ListView listView;
 	Color borderColor = new Color(120, 120, 120);
@@ -55,7 +57,8 @@ public class DataTableView extends View {
 			columnWidths[i] = 100;
 		}
 		headerView.rebuild();
-		for (int i = 0; i < table.getTotalCount(); i++) {
+		int max = MAX_ROW > table.getTotalCount() ? table.getTotalCount() : MAX_ROW;
+		for (int i = 0; i < max; i++) {
 			DataRowView rv = new DataRowView(table.getRows().get(i), this);
 			rv.setSize(getWidth(), rowHeight);
 			addRow(rv);

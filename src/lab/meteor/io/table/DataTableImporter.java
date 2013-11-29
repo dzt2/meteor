@@ -92,7 +92,7 @@ public class DataTableImporter implements Importer<DataTable> {
 					r.state = ResultState.Error;
 					return;
 				}
-				StringIndexer si = new StringIndexer(cls, p2.getName());
+				StringIndexer si = new StringIndexer(((MReference)p).getReference(), p2.getName());
 				column.setTag("index", si);
 			}
 		}
@@ -125,8 +125,12 @@ public class DataTableImporter implements Importer<DataTable> {
 				String raw = (String) row.getValue(j);
 				Object content = null;
 				MProperty pp = (MProperty) data.getColumns().get(j).getTag("property");
-				if (pp.getType() == MPrimitiveType.Integer) {
+				if (pp.getType() == MPrimitiveType.String) {
+					content = raw;
+				} else if (pp.getType() == MPrimitiveType.Integer) {
 					content = MUtility.stringToInteger(raw);
+				} else if (pp.getType() == MPrimitiveType.Boolean) {
+					content = MUtility.stringToBoolean(raw);
 				} else if (pp.getType() == MPrimitiveType.Int64) {
 					content = MUtility.stringToInt64(raw);
 				} else if (pp.getType() == MPrimitiveType.Binary) {
@@ -144,6 +148,7 @@ public class DataTableImporter implements Importer<DataTable> {
 				} else {
 					r.state = ResultState.Error;
 					r.message = "fatel error.";
+					System.out.println(pp.getType());
 					throw new RuntimeException("DataTable Importer: not support data type.");
 				}
 				if (content != null) {

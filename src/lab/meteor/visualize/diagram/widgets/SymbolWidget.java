@@ -42,4 +42,9 @@ public class SymbolWidget extends ItemWidget implements IModelView<MSymbol> {
 		g.fillRect(offx, offy, dotSize, dotSize / 2);
 	}
 
+	@Override
+	protected Color getIconColor() {
+		return Resources.COLOR_ENUM_TITLE_BG;
+	}
+
 }

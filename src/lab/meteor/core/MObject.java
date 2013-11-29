@@ -173,7 +173,7 @@ public class MObject extends MElement implements MNotifiable {
 			throw new MException(MException.Reason.REFERENCE_NOT_FOUND);
 		if (ref.getMultiplicity() == Multiplicity.Multiple)
 			return;
-		if (!obj.isInstanceOf(ref.getOwner()))
+		if (!obj.isInstanceOf(ref.getReference()))
 			throw new MException(MException.Reason.INVALID_VALUE_CLASS);
 		
 		oppositeWhenSet(ref, obj);
@@ -409,7 +409,7 @@ public class MObject extends MElement implements MNotifiable {
 		if (obj == null)
 			this.getValues().remove(ref.id);
 		else
-			this.getValues().put(ref.id, obj);
+			this.getValues().put(ref.id, new MElementPointer(obj));
 		this.setChanged(ref);
 	}
 	

@@ -24,6 +24,8 @@ public class ImportDialog extends View {
 	DoButton doButton;
 	CloseButton closeButton;
 	
+	TextView titleView;
+	
 	Animation showAnimation = new ShowAnimation(0.4f);
 	Animation hiddenAnimation = new HiddenAnimation(0.4f);
 	
@@ -59,6 +61,11 @@ public class ImportDialog extends View {
 		errorView.setAlpha(0);
 		errorView.setHeight(0);
 		addSubview(errorView);
+		titleView = new TextView();
+		titleView.setDefaultTextColor(Color.white);
+		titleView.setText("Import CSV File");
+		titleView.setHeight(30);
+		
 		setSize(500, 70);
 		doButton.addEventHandler(MOUSE_CLICKED, new EventHandler() {
 
@@ -66,6 +73,7 @@ public class ImportDialog extends View {
 			public void handle(View sender, Key key, Object arg) {
 				String url = urlView.getPlainText();
 				try {
+					System.out.println(url);
 					CsvFileLoader cfi = new CsvFileLoader(url);
 					DataTable table = cfi.loadTable();
 					TableImportView tiv = new TableImportView();

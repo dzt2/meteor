@@ -144,7 +144,7 @@ public class TableImportView extends View {
 				case Warning:
 					showWarning(dti.getResult().getMessage());
 					DataTable table = tableView.getModel();
-					for (int i = 0; i < table.getTotalCount(); i++) {
+					for (int i = 0; i < count(); i++) {
 						DataRow row = table.getRows().get(i);
 						if (row.hasTag("error"))
 							tableView.getRowView(i).setIndexColor(Color.red);

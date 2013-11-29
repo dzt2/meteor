@@ -292,6 +292,7 @@ public class MClass extends MElement implements MType {
 		do {
 			if (cp == clazz)
 				return true;
+			cp = cp.superclass;
 		} while (cp != null);
 		return false;
 	}

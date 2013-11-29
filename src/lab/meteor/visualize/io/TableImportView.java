@@ -6,9 +6,10 @@ import lab.meteor.core.MElement;
 import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MPackage;
 import lab.meteor.core.script.MScriptHelper;
+import lab.meteor.io.DataTableImporter;
+import lab.meteor.io.ImportListener;
 import lab.meteor.io.table.DataRow;
 import lab.meteor.io.table.DataTable;
-import lab.meteor.io.table.DataTableImporter;
 import lab.meteor.visualize.diagram.widgets.ResizeButton;
 import lab.meteor.visualize.table.DataTableView;
 import co.gongzh.snail.Animation;
@@ -22,7 +23,7 @@ import co.gongzh.snail.util.Alignment;
 import co.gongzh.snail.util.Insets;
 import co.gongzh.snail.util.Vector2D;
 
-public class TableImportView extends View {
+public class TableImportView extends View implements ImportListener {
 	TextView titleView;
 	DoButton importButton;
 	DoButton cancelButton;
@@ -37,6 +38,8 @@ public class TableImportView extends View {
 	
 	Animation showAnimation = new ShowAnimation(0.4f);
 	Animation closeAnimation = new CloseAnimation(0.4f);
+	
+	boolean isImporting = false;
 	
 	public TableImportView() {
 		setBackgroundColor(new Color(0, 0, 0, 200));
@@ -129,31 +132,46 @@ public class TableImportView extends View {
 
 			@Override
 			public void handle(View sender, Key key, Object arg) {
-				MElement e = MScriptHelper.getElement(packageText.getPlainText());
+				if (isImporting) {
+					return;
+				}
+				final MElement e = MScriptHelper.getElement(packageText.getPlainText());
 				if (e == null || e.getElementType() != MElementType.Package) {
 					showError("package is not found.");
 					return;
 				}
-				DataTableImporter dti = new DataTableImporter();
-				dti.setPackage((MPackage) e);
-				dti.importData(tableView.getModel());
-				switch (dti.getResult().getResultState()) {
-				case Error:
-					showError(dti.getResult().getMessage());
-					break;
-				case Warning:
-					showWarning(dti.getResult().getMessage());
-					DataTable table = tableView.getModel();
-					for (int i = 0; i < count(); i++) {
-						DataRow row = table.getRows().get(i);
-						if (row.hasTag("error"))
-							tableView.getRowView(i).setIndexColor(Color.red);
+				Thread t = new Thread() {
+					@Override
+					public void run() {
+						isImporting = true;
+						DataTableImporter dti = new DataTableImporter();
+						dti.addListener(TableImportView.this);
+						dti.setPackage((MPackage) e);
+						dti.importData(tableView.getModel());
+						showProgress("preparing to import...");
+						switch (dti.getResult().getResultState()) {
+						case Error:
+							showError(dti.getResult().getMessage());
+							break;
+						case Warning:
+							showWarning(dti.getResult().getMessage());
+							DataTable table = tableView.getModel();
+							for (int i = 0; i < count(); i++) {
+								DataRow row = table.getRows().get(i);
+								if (row.hasTag("error"))
+									tableView.getRowView(i).setIndexColor(Color.red);
+							}
+							break;
+						case Success:
+							showFinish(dti.getResult().getMessage());
+							break;
+						}
+						dti.removeListener(TableImportView.this);
+						isImporting = false;
 					}
-					break;
-				case Success:
-					showFinish(dti.getResult().getMessage());
-					break;
-				}
+				};
+				t.start();
+				
 			}
 			
 		});
@@ -231,6 +249,19 @@ public class TableImportView extends View {
 		resultView.setBackgroundColor(new Color(142, 218, 96));
 		resultView.setText(message);
 		resultView.setTextColor(new Color(77, 122, 50));
+	}
+	
+	public void showProgress(String message) {
+		resultView.setBackgroundColor(null);
+		resultView.setText(message);
+		resultView.setTextColor(Color.white);
+	}
+
+	@Override
+	public void onProgress(int currentStep, int allStep) {
+		if (currentStep % 10 == 0)
+			showProgress(String.format("%d / %d", currentStep, allStep));
+//		resultView.setNeedsRepaint();
 	}
 	
 }

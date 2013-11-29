@@ -1,4 +1,4 @@
-package lab.meteor.io.table;
+package lab.meteor.io;
 
 import lab.meteor.core.MClass;
 import lab.meteor.core.MEnum;
@@ -10,10 +10,11 @@ import lab.meteor.core.MElement.MElementType;
 import lab.meteor.core.MReference;
 import lab.meteor.core.MReference.Multiplicity;
 import lab.meteor.core.MUtility;
-import lab.meteor.io.Importer;
-import lab.meteor.io.StringIndexer;
+import lab.meteor.io.table.DataColumn;
+import lab.meteor.io.table.DataRow;
+import lab.meteor.io.table.DataTable;
 
-public class DataTableImporter implements Importer<DataTable> {
+public class DataTableImporter extends Importer<DataTable> {
 
 	MPackage pkg;
 	
@@ -33,6 +34,7 @@ public class DataTableImporter implements Importer<DataTable> {
 	
 	@Override
 	public void importData(DataTable data) {
+		int errorCount = 0;
 		boolean createMode = false;
 		DataColumn firstColumn = data.getColumns().get(0);
 		if (firstColumn.getName().contains("(new)"))
@@ -101,8 +103,7 @@ public class DataTableImporter implements Importer<DataTable> {
 			if (si != null)
 				si.build();
 		}
-		r.state = ResultState.Success;
-		r.message = "finished.";
+		
 		StringIndexer sindex = (StringIndexer) data.getColumns().get(0).getTag("index");
 		for (int i = 0; i < data.getTotalCount(); i++) {
 			DataRow row = data.getRows().get(i);
@@ -116,8 +117,7 @@ public class DataTableImporter implements Importer<DataTable> {
 					sindex.append(idname, obj);
 				} else {
 					row.setTag("error", 0);
-					r.state = ResultState.Warning;
-					r.message = "there are some problems while importing.";
+					errorCount++;
 					continue;
 				}
 			}
@@ -164,13 +164,20 @@ public class DataTableImporter implements Importer<DataTable> {
 					}
 				} else {
 					row.setTag("error", null);
-					r.state = ResultState.Warning;
-					r.message = "there are some problems while importing.";
+					errorCount++;
 				}
 			}
+			this.makeProgress(i, data.getTotalCount());
 		}
 		for (int i = 0; i < data.getColumns().size(); i++) {
 			data.getColumns().get(i).clearTags();
+		}
+		if (errorCount == 0) {
+			r.state = ResultState.Success;
+			r.message = "finished.";
+		} else {
+			r.state = ResultState.Warning;
+			r.message = "there are " + errorCount + " problems while importing.";
 		}
 	}
 

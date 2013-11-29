@@ -418,7 +418,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 
 	@Override
-	void loadFromDBInfo(DBInfo dbInfo) {
+	synchronized void loadFromDBInfo(DBInfo dbInfo) {
 		boolean changeFlag = false;
 		
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
@@ -473,7 +473,7 @@ public class MObject extends MElement implements MNotifiable {
 	}
 	
 	@Override
-	void saveToDBInfo(DBInfo dbInfo) {
+	synchronized void saveToDBInfo(DBInfo dbInfo) {
 		MDBAdapter.ObjectDBInfo objDBInfo = (MDBAdapter.ObjectDBInfo) dbInfo;
 		objDBInfo.id = this.id;
 		objDBInfo.class_id = this.class_pt.getID();
@@ -492,11 +492,13 @@ public class MObject extends MElement implements MNotifiable {
 						objDBInfo.values.put(MUtility.stringID(id), o);
 					}
 				}
+				changedProperties.clear();
 			}
 			if (this.removedProperties != null) {
 				for (Long id : this.removedProperties) {
 					objDBInfo.deleteKeys.put(MUtility.stringID(id), null);
 				}
+				removedProperties.clear();
 			}
 		}
 	}

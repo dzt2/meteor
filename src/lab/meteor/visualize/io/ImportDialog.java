@@ -73,7 +73,6 @@ public class ImportDialog extends View {
 			public void handle(View sender, Key key, Object arg) {
 				String url = urlView.getPlainText();
 				try {
-					System.out.println(url);
 					CsvFileLoader cfi = new CsvFileLoader(url);
 					DataTable table = cfi.loadTable();
 					TableImportView tiv = new TableImportView();

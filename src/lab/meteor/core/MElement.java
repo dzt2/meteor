@@ -121,7 +121,7 @@ public abstract class MElement implements Comparable<MElement> {
 	/**
 	 * A state of element.
 	 */
-	private boolean loaded = false;
+	protected boolean loaded = false;
 	
 	/**
 	 * A state of element.
@@ -605,6 +605,7 @@ public abstract class MElement implements Comparable<MElement> {
 		loadTags();
 		
 		MTagSet tags = getTags().get(name);
+		// TODO
 		if (tags == null || tags.size() != 1)
 			return null;
 		Iterator<MTag> it = tags.iterator();
@@ -638,8 +639,13 @@ public abstract class MElement implements Comparable<MElement> {
 		if (deleted || id == NULL_ID)
 			return null;
 		loadTags();
-
-		return getTags().get(name);
+		
+		MTagSet tags = this.getTags().get(name);
+		if (tags == null) {
+			tags = new MTagSet(name);
+			this.getTags().put(name, tags);
+		}
+		return tags;
 	}
 
 	/**

@@ -21,7 +21,7 @@ public class DataTableView extends View {
 	int headerHeight = 30;
 	int rowHeight = 25;
 	
-	static final int MAX_ROW = 100;
+	static final int MAX_ROW = 200;
 	
 	View contentView;
 	ListView listView;

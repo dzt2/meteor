@@ -32,6 +32,14 @@ public class StringIndexer {
 			Object o = obj.get(property);
 			map.put((String) o, obj);
 		}
+		for (MClass cls : clazz.getSubClasses()) {
+			it = cls.objectsIterator();
+			while (it.hasNext()) {
+				MObject obj = it.next();
+				Object o = obj.get(property);
+				map.put((String) o, obj);
+			}
+		}
 	}
 	
 	public MObject find(String key) {

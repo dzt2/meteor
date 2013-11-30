@@ -18,12 +18,6 @@ public class DataTableImporter extends Importer<DataTable> {
 
 	MPackage pkg;
 	
-	Result r = new Result();
-	
-	public Result getResult() {
-		return r;
-	}
-	
 	public void setPackage(MPackage pkg) {
 		this.pkg = pkg;
 	}
@@ -33,7 +27,7 @@ public class DataTableImporter extends Importer<DataTable> {
 	}
 	
 	@Override
-	public void importData(DataTable data) {
+	protected void importData(DataTable data) {
 		int errorCount = 0;
 		boolean createMode = false;
 		DataColumn firstColumn = data.getColumns().get(0);
@@ -163,11 +157,16 @@ public class DataTableImporter extends Importer<DataTable> {
 						}
 					}
 				} else {
-					row.setTag("error", null);
+					row.setTag("error", 0);
 					errorCount++;
 				}
 			}
 			this.makeProgress(i, data.getTotalCount());
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				
+			}
 		}
 		for (int i = 0; i < data.getColumns().size(); i++) {
 			data.getColumns().get(i).clearTags();
@@ -179,26 +178,7 @@ public class DataTableImporter extends Importer<DataTable> {
 			r.state = ResultState.Warning;
 			r.message = "there are " + errorCount + " problems while importing.";
 		}
-	}
-
-	public class Result {
-		private Result() {  }
-		String message;
-		ResultState state;
-		
-		public String getMessage() {
-			return message;
-		}
-		
-		public ResultState getResultState() {
-			return state;
-		}
-	}
-	
-	public enum ResultState {
-		Error,
-		Warning,
-		Success
+		this.finished();
 	}
 	
 }

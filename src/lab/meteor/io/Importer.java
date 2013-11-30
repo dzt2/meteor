@@ -4,11 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Importer<T> {
-	public abstract void importData(T data);
+	
+	public void doImport(final T data) {
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				importData(data);
+			}
+		};
+		t.start();
+	}
+	
+	protected abstract void importData(T data);
 	
 	protected void makeProgress(int step, int allSteps) {
 		for (ImportListener l : listeners) {
-			l.onProgress(step, allSteps);
+			l.onProgress(this, step, allSteps);
+		}
+	}
+	
+	protected void finished() {
+		for (ImportListener l : listeners) {
+			l.onFinished(this);
 		}
 	}
 	
@@ -19,5 +36,31 @@ public abstract class Importer<T> {
 	
 	public void removeListener(ImportListener listener) {
 		listeners.remove(listener);
+	}
+	
+	Result r = new Result();
+	
+	public Result getResult() {
+		return r;
+	}
+	
+	public class Result {
+		private Result() {  }
+		String message;
+		ResultState state;
+		
+		public String getMessage() {
+			return message;
+		}
+		
+		public ResultState getResultState() {
+			return state;
+		}
+	}
+	
+	public enum ResultState {
+		Error,
+		Warning,
+		Success
 	}
 }

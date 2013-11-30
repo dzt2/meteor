@@ -42,10 +42,10 @@ public class MTag extends MElement implements MNotifiable {
 			this.value = value;
 		}
 		
-		target.addTag(this);
-		
 		MDatabase.getDB().createElement(this);
 		MDatabase.getDB().saveTagElements(this);
+		// this must be called after create operation.
+		target.addTag(this);
 	}
 	
 	public MTag(Collection<MElement> targets, String name) {
@@ -78,13 +78,13 @@ public class MTag extends MElement implements MNotifiable {
 			this.value = value;
 		}
 		
-		for (MElement target : targets) {
-			target.addTag(this);
-		}
-		
 		MDatabase.getDB().createElement(this);
 		MDatabase.getDB().saveTagElements(this);
 		
+		// this must be called after create operation.
+		for (MElement target : targets) {
+			target.addTag(this);
+		}
 	}
 	
 	/**

@@ -467,7 +467,12 @@ public class MObject extends MElement implements MNotifiable {
 				changeFlag = true;
 			}
 		}
-		
+		/*
+		 * If auto-saving is on, the setChanged method will invoke the saving operation, but
+		 * it's forbidden to save before the object is loaded. So it's required to set loaded
+		 * right now.
+		 */
+		this.loaded = true;
 		if (changeFlag)
 			this.setChanged(ATTRIB_FLAG_VALUES);
 	}

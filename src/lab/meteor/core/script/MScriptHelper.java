@@ -385,4 +385,8 @@ public class MScriptHelper {
 		return pt;
 	}
 	
+	public void test() throws Exception {
+		throw new Exception("test");
+	}
+	
 }

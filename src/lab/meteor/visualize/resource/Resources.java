@@ -42,6 +42,13 @@ public class Resources {
 	
 	public static final Color COLOR_SHELL_BG;
 	
+	public static final Color COLOR_ERROR_BG;
+	public static final Color COLOR_WARNING_BG;
+	public static final Color COLOR_SUCCESS_BG;
+	public static final Color COLOR_ERROR_TEXT;
+	public static final Color COLOR_WARNING_TEXT;
+	public static final Color COLOR_SUCCESS_TEXT;
+	
 	public static final Font FONT_PROPERTY;
 	public static final Font FONT_CLASS_ENUM;
 	public static final Font FONT_COMMAND;
@@ -76,6 +83,13 @@ public class Resources {
 		
 		COLOR_SHELL_BG = new Color(0, 0, 0, 200);
 		
+		COLOR_ERROR_BG = Color.red;
+		COLOR_ERROR_TEXT = new Color(115, 39, 39);
+		COLOR_WARNING_BG = new Color(216, 203, 51);
+		COLOR_WARNING_TEXT = new Color(115, 109, 39);
+		COLOR_SUCCESS_BG = new Color(142, 218, 96);
+		COLOR_SUCCESS_TEXT = new Color(77, 122, 50);
+
 		FONT_PROPERTY = new Font("Consolas", Font.PLAIN, 12);
 		FONT_CLASS_ENUM = new Font("Corbel", Font.PLAIN, 15);
 		FONT_COMMAND = new Font("Andale Mono", Font.PLAIN, 14);

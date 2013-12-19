@@ -52,8 +52,11 @@ public class MEnum extends MElement implements MDataType {
 		super(id, MElementType.Enum);
 	}
 
+	private boolean isDeleting = false;
+	
 	@Override
 	public void delete() throws MException {
+		isDeleting = true;
 		// delete symbols
 		if (this.symbols != null) {
 			for (MSymbol sym : this.symbols.values()) {
@@ -71,6 +74,7 @@ public class MEnum extends MElement implements MDataType {
 		// package
 		this.parent.removeEnum(this);
 		super.delete();
+		isDeleting = false;
 	}
 	
 	@Override
@@ -106,6 +110,8 @@ public class MEnum extends MElement implements MDataType {
 	}
 	
 	protected void removeSymbol(MSymbol sym) {
+		if (isDeleting)
+			return;
 		this.symbols().remove(sym.getName());
 	}
 	

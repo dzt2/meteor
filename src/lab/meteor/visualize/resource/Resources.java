@@ -41,6 +41,7 @@ public class Resources {
 	public static final Color COLOR_PACKAGE_NAME;
 	
 	public static final Color COLOR_SHELL_BG;
+	public static final Color COLOR_SCRIPT_BG;
 	
 	public static final Color COLOR_ERROR_BG;
 	public static final Color COLOR_WARNING_BG;
@@ -82,6 +83,7 @@ public class Resources {
 		COLOR_PACKAGE_NAME = new Color(0xff695e1f);
 		
 		COLOR_SHELL_BG = new Color(0, 0, 0, 200);
+		COLOR_SCRIPT_BG = new Color(220, 220, 220, 200);
 		
 		COLOR_ERROR_BG = Color.red;
 		COLOR_ERROR_TEXT = new Color(115, 39, 39);

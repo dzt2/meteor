@@ -75,7 +75,7 @@ public class ImportDialog extends View {
 				try {
 					CsvFileLoader cfi = new CsvFileLoader(url);
 					DataTable table = cfi.loadTable();
-					TableImportView tiv = new TableImportView();
+					TableImportWindow tiv = new TableImportWindow();
 					tiv.setAlpha(0);
 					tiv.setTitle(url);
 					tiv.setDataTable(table);

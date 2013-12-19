@@ -89,8 +89,11 @@ public class MPackage extends MElement {
 	 * ********************************
 	 */
 	
+	private boolean isDeleting = false;
+	
 	@Override
 	public void delete() {
+		isDeleting = true;
 		// delete classes
 		if (this.classes != null) {
 			for (MClass cls : this.classes.values()) {
@@ -115,6 +118,7 @@ public class MPackage extends MElement {
 		
 		unlink();
 		super.delete();
+		isDeleting = false;
 	}
 	
 	/* 
@@ -335,6 +339,8 @@ public class MPackage extends MElement {
 	 * @param cls The class
 	 */
 	protected void removeClass(MClass cls) {
+		if (isDeleting)
+			return;
 		this.classes().remove(cls.getName());
 	}
 	
@@ -351,6 +357,8 @@ public class MPackage extends MElement {
 	 * @param enm The enum
 	 */
 	protected void removeEnum(MEnum enm) {
+		if (isDeleting)
+			return;
 		this.enumes().remove(enm.getName());
 	}
 	
@@ -367,6 +375,8 @@ public class MPackage extends MElement {
 	 * @param pkg The package
 	 */
 	protected void removePackage(MPackage pkg) {
+		if (isDeleting)
+			return;
 		this.packages().remove(pkg.getName());
 	}
 

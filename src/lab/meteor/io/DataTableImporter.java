@@ -39,17 +39,20 @@ public class DataTableImporter extends Importer<DataTable> {
 		if (cls == null) {
 			r.message = "class is not found.";
 			r.state = ResultState.Error;
+			this.finished();
 			return;
 		}
 		MProperty p = cls.getProperty(tokens[1]);
 		if (p == null) {
 			r.message = "property at column 0 is not found.";
 			r.state = ResultState.Error;
+			this.finished();
 			return;
 		}
 		if (p.getType() != MPrimitiveType.String) {
 			r.message = "type of property at column 0 should be string.";
 			r.state = ResultState.Error;
+			this.finished();
 			return;
 		}
 		firstColumn.getColumns().get(0).setTag("index", new StringIndexer(cls, p.getName()));
@@ -61,12 +64,14 @@ public class DataTableImporter extends Importer<DataTable> {
 			if (!tokens[0].equals(cls.getName())) {
 				r.message = "class in each column is inconsistence.";
 				r.state = ResultState.Error;
+				this.finished();
 				return;
 			}
 			p = cls.getProperty(tokens[1]);
 			if (p == null) {
 				r.message = "property at column " + i + " is not found.";
 				r.state = ResultState.Error;
+				this.finished();
 				return;
 			}
 			column.setTag("property", p);
@@ -75,17 +80,20 @@ public class DataTableImporter extends Importer<DataTable> {
 					r.message = "it's necessary point out the index"
 							+ " property of reference property, at column " + i + ".";
 					r.state = ResultState.Error;
+					this.finished();
 					return;
 				}
 				MProperty p2 = ((MReference) p).getReference().getProperty(tokens[2]);
 				if (p2 == null) {
 					r.message = "index property at column " + i + " is not found.";
 					r.state = ResultState.Error;
+					this.finished();
 					return;
 				}
 				if (p2.getType() != MPrimitiveType.String) {
 					r.message = "index property should be string type.";
 					r.state = ResultState.Error;
+					this.finished();
 					return;
 				}
 				StringIndexer si = new StringIndexer(((MReference)p).getReference(), p2.getName());

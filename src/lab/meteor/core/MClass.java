@@ -132,6 +132,8 @@ public class MClass extends MElement implements MType {
 	 * ********************************
 	 */
 	
+	private boolean isDeleting = false;
+	
 	/**
 	 * Delete all MElement associated with this class, include attributes, 
 	 * references, the references refer to this class. If there is(are) sub-class(es),
@@ -140,6 +142,7 @@ public class MClass extends MElement implements MType {
 	 */
 	@Override
 	public void delete() {
+		isDeleting = true;
 		// delete attributes
 		if (this.attributes != null) {
 			for (MAttribute atb : this.attributes.values()) {
@@ -171,6 +174,7 @@ public class MClass extends MElement implements MType {
 		unlink();
 		MDatabase.getDB().deleteAllObjects(this);
 		super.delete();
+		isDeleting = false;
 	}
 	
 	public Iterator<MObject> objectsIterator() {
@@ -377,6 +381,8 @@ public class MClass extends MElement implements MType {
 	}
 	
 	protected void removeProperty(MProperty p) {
+		if (isDeleting)
+			return;
 		if (p.getElementType() == MElementType.Attribute)
 			removeAttribute((MAttribute) p);
 		else if (p.getElementType() == MElementType.Reference)
@@ -475,6 +481,8 @@ public class MClass extends MElement implements MType {
 	 * @param atb attribute.
 	 */
 	void removeAttribute(MAttribute atb) {
+		if (isDeleting)
+			return;
 		this.attributes().remove(atb.getName());
 	}
 	
@@ -570,6 +578,8 @@ public class MClass extends MElement implements MType {
 	 * @param ref reference.
 	 */
 	void removeReference(MReference ref) {
+		if (isDeleting)
+			return;
 		this.references().remove(ref.getName());
 	}
 	

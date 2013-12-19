@@ -26,7 +26,7 @@ import co.gongzh.snail.util.Alignment;
 import co.gongzh.snail.util.Insets;
 import co.gongzh.snail.util.Vector2D;
 
-public class TableImportView extends View implements ImportListener {
+public class TableImportWindow extends View implements ImportListener {
 	TextView titleView;
 	DoButton importButton;
 	DoButton cancelButton;
@@ -44,7 +44,7 @@ public class TableImportView extends View implements ImportListener {
 	
 	boolean isImporting = false;
 	
-	public TableImportView() {
+	public TableImportWindow() {
 		setBackgroundColor(new Color(0, 0, 0, 200));
 		titleView = new TextView();
 		titleView.setHeight(30);
@@ -104,7 +104,7 @@ public class TableImportView extends View implements ImportListener {
 			@Override
 			public void handle(View sender, Key key, Object arg) {
 				MouseEvent e = (MouseEvent) arg;
-				pos0 = e.getPosition(TableImportView.this);
+				pos0 = e.getPosition(TableImportWindow.this);
 				e.handle();
 			}
 			
@@ -116,7 +116,7 @@ public class TableImportView extends View implements ImportListener {
 			public void handle(View sender, Key key, Object arg) {
 				MouseEvent e = (MouseEvent) arg;
 				Vector2D sub = Vector2D.subtract(e.getPosition(getSuperView()), pos0);
-				TableImportView.this.setPosition(sub);
+				TableImportWindow.this.setPosition(sub);
 				e.handle();
 			}
 			
@@ -147,7 +147,7 @@ public class TableImportView extends View implements ImportListener {
 				isImporting = true;
 				showProgress("Importing...");
 				DataTableImporter dti = new DataTableImporter();
-				dti.addListener(TableImportView.this);
+				dti.addListener(TableImportWindow.this);
 				dti.setPackage((MPackage) e);
 				dti.doImport(tableView.getModel());
 				
@@ -267,7 +267,6 @@ public class TableImportView extends View implements ImportListener {
 						DataRow row = table.getRows().get(i);
 						if (row.hasTag("error")) {
 							tableView.getRowView(i).setIndexColor(Color.red);
-							System.out.println(i);
 						}
 					}
 					showWarning(im.getResult().getMessage());

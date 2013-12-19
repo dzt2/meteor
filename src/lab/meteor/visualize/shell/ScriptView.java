@@ -126,12 +126,12 @@ public class ScriptView extends View {
 		startButton.setSize(32, 32);
 		
 		textView.setPosition(0, padding);
-		textView.setDefaultTextColor(Color.white);
+		textView.setDefaultTextColor(Color.BLACK);
 		textView.setDefaultFont(Resources.FONT_CMD_PRINT);
-		textView.getCaretView().setBackgroundColor(Color.white);
+		textView.getCaretView().setBackgroundColor(Color.DARK_GRAY);
 		textView.setBreakIterator(BreakIterator.getLineInstance());
 		textView.setTextAlignment(Alignment.LEFT_TOP);
-		textView.setBackgroundColor(Resources.COLOR_SHELL_BG);
+		textView.setBackgroundColor(Resources.COLOR_SCRIPT_BG);
 		textView.setInsets(Insets.make(5, 5, 5, 5));
 		
 		addSubview(titleBarView);

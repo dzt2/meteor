@@ -162,6 +162,7 @@ public abstract class MCollection {
 			}
 			value = dict;
 		}
+		
 		if (parent instanceof MList) {
 			((MList) parent).list.add(value);
 		} else if (parent instanceof MSet) {

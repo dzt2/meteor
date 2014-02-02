@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/mongo-java-driver-2.11.2.jar" sourcepath="lib/mongo-java-driver-2.11.2-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/meteor/lib/mongo-java-driver-2.11.2-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/Snail GUI"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/Java SE 7 [1.7.0_25]"/>
-	<classpathentry kind="lib" path="lib/javacsv.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/软件工具/gongzhang.co/co.jar"/>
+	<classpathentry kind="lib" path="C:/MongoDB/java_mongodb/mongo-2.10.1.jar"/>
+	<classpathentry kind="lib" path="C:/软件开发/CSV Library/javacsv.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

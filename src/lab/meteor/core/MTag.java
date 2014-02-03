@@ -20,6 +20,7 @@ public class MTag extends MElement implements MNotifiable {
 		this(target, name, null);
 	}
 	
+	// Target is the element for storing tags and name-value is the map to search tags.
 	public MTag(MElement target, String name, Object value) {
 		super(MElementType.Tag);
 		
@@ -52,6 +53,7 @@ public class MTag extends MElement implements MNotifiable {
 		this(targets, name, null);
 	}
 	
+	// Add all target in targets with name-value tags
 	public MTag(Collection<MElement> targets, String name, Object value) {
 		super(MElementType.Tag);
 		
@@ -81,7 +83,7 @@ public class MTag extends MElement implements MNotifiable {
 		MDatabase.getDB().createElement(this);
 		MDatabase.getDB().saveTagElements(this);
 		
-		// this must be called after create operation.
+		// this must be called after create operation. !!!
 		for (MElement target : targets) {
 			target.addTag(this);
 		}
@@ -138,6 +140,7 @@ public class MTag extends MElement implements MNotifiable {
 		if (value instanceof MElement) {
 			this.value = new MElementPointer((MElement) value);
 		} else if (value instanceof MCollection.Factory) {
+			//?????
 			this.value = MCollection.createCollection((MCollection.Factory) value, this, null);
 		} else {
 			this.value = value;
@@ -166,12 +169,14 @@ public class MTag extends MElement implements MNotifiable {
 		elements.remove(ep);
 		
 		if (elements.size() == 0) {
+			//!!! At the very first time, elements.size() == 0!!!
 			delete();
 			return;
 		}
 		elementsChanged();
 	}
 	
+	// changed the name in elements whose tags has "this" tag!
 	void relink(String oldName, String newName) {
 		for (MElementPointer pt : this.elements) {
 			MElement e = MDatabase.getDB().getElementInCache(pt.getID());

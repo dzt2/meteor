@@ -47,7 +47,7 @@ public interface MDBAdapter {
 	 */
 	public static class PackageDBInfo extends DBInfo {
 		public String name;
-		public long package_id;
+		public long package_id;	//??
 		PackageDBInfo() { super(); }
 		PackageDBInfo(int flag) { super(flag); }
 	}
@@ -72,8 +72,8 @@ public interface MDBAdapter {
 	
 	public static class AttributeDBInfo extends DBInfo {
 		public String name;
-		public String type_id;
-		public long class_id;
+		public String type_id;	//???type
+		public long class_id;	//owner
 		AttributeDBInfo() { super(); }
 		AttributeDBInfo(int flag) { super(flag); }
 	}
@@ -147,6 +147,7 @@ public interface MDBAdapter {
 	void updateTag(TagDBInfo tag);
 	void deleteTag(TagDBInfo tag);
 	
+	// Difference between tag_element and element_tag ?
 	void loadTagElements(long id, IDList list);
 	void saveTagElements(long id, IDList list);
 	

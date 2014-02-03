@@ -308,6 +308,7 @@ public class MObject extends MElement implements MNotifiable {
 		Object o = this.getValues().get(atb.id);
 		if (o != null) {
 			if (!MUtility.checkOutputType(atb.getDataType(), o)) {
+				// override the old data if the old data is not consistency with its data type.
 				this.setAttribute(atb, null);
 			}
 		}

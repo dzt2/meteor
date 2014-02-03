@@ -4,7 +4,7 @@ import lab.meteor.core.MDBAdapter.DBInfo;
 
 public class MReference extends MProperty {
 
-	private MClass reference;
+	private MClass reference;	//Type
 	private Multiplicity multi;
 	
 	private MReference opposite = null;

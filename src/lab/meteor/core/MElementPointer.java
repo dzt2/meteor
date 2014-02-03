@@ -81,6 +81,9 @@ public class MElementPointer implements Comparable<MElementPointer> {
 	
 	/**
 	 * Get pointed element.
+	 * I can get Object in DataBase from an Element Pointer!
+	 * (1) MElementPointer p=new MElementPointer(id,etype);
+	 * (2) p.getElement();
 	 * @return
 	 */
 	public MElement getElement() {

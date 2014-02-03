@@ -484,6 +484,10 @@ public abstract class MElement implements Comparable<MElement> {
 
 	/**
 	 * The tags.
+	 * An Element has 0...n tags which has name-value, here tags is a name-tag map.
+	 * In tag, Tag.value is an element pointer which points to the element the tag points to!
+	 * In tag, [Tag]a.elements is a set whose element has the tag a in its tags.
+	 * 
 	 */
 	private Map<String, MTagSet> tags;
 	
@@ -664,6 +668,7 @@ public abstract class MElement implements Comparable<MElement> {
 	 * @param id Tag's ID.
 	 */
 	void addTag(String name, long id) {
+		
 		if (name == null)
 			return;
 		MTagSet tags = this.getTags().get(name);

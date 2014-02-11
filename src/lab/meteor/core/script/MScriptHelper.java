@@ -23,6 +23,7 @@ public class MScriptHelper {
 	}
 	
 	public Iterator<MObject> objectItr(String className) throws MScriptException {
+		// Here className is a all-path name: p1::p2::p3::c
 		MElement e = getElement(className);
 		if (e == null || e.getElementType() != MElementType.Class)
 			throw new MScriptException("class is not found.");
@@ -218,6 +219,7 @@ public class MScriptHelper {
 		}
 	}
 	
+	// process the token and generate its object.
 	private Object find(Object it, Token t) throws MScriptException {
 		if (t.type == TokenType.Dot) {
 			if (!(it instanceof MObject))
@@ -294,6 +296,7 @@ public class MScriptHelper {
 			StringBuilder sb = new StringBuilder();
 			char ch = cur();
 			if (isWordChar(ch)) {
+				// process dom.dom1... and get dom
 				sb.append(ch);
 				loc++;
 				while (isWordChar(ch = cur())) {
@@ -302,8 +305,10 @@ public class MScriptHelper {
 				}
 				if (ch == '.')
 					loc++;
-				type = TokenType.Dot;
-			} else if (ch == '[') {
+				type = TokenType.Dot;	// What is the end.
+			} 
+			else if (ch == '[') {
+				// process [string]. and get string
 				loc++;
 				while (isWordChar(ch = cur())) {
 					sb.append(ch);
@@ -313,12 +318,15 @@ public class MScriptHelper {
 					loc++;
 				else
 					throw new MScriptException("wrong expression.");
+				// after [string] must follow a dot
 				if (cur() == '.')
 					loc++;
 				else if (cur() != '[' && cur() != '<')
 					throw new MScriptException("wrong expression.");
 				type = TokenType.Bracket;
-			} else if (ch == '<')  {
+			} 
+			else if (ch == '<')  {
+				// process <string>. and get string
 				loc++;
 				while (isWordChar(ch = cur())) {
 					sb.append(ch);

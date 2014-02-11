@@ -56,6 +56,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		this.db = db;
 	}
 	
+	// Element Collection is used for storing map of ID-Type.
 	private void writeElementType(long id, MElementType type) {
 		DBCollection eleCol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject typeObj = new BasicDBObject();
@@ -73,6 +74,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		ecol.insert(obj);
 	}
 	
+	// Argument id is the Object's id, and return the id of Object's class.
 	private long readObjectClass(long id) {
 		DBCollection ecol = db.getCollection(COLLECT_NAME_ELEMENT);
 		DBObject que = new BasicDBObject();
@@ -162,6 +164,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		ecol.remove(que);
 	}
 	
+	// load Class Information into ClassDBInfo
 	@Override
 	public void loadClass(ClassDBInfo cls) {
 		DBCollection col = db.getCollection(COLLECT_NAME_CLASS);
@@ -326,7 +329,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		if (ref.isFlagged(MReference.ATTRIB_FLAG_NAME))
 			fields.put("name", true);
 		if (ref.isFlagged(MReference.ATTRIB_FLAG_REFERENCE))
-			fields.put("reference", true);
+			fields.put("reference", true);	//type
 		if (ref.isFlagged(MReference.ATTRIB_FLAG_MULTIPLICITY))
 			fields.put("multiplicity", true);
 		if (ref.isFlagged(MReference.ATTRIB_FLAG_OPPOSITE))
@@ -554,6 +557,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		ecol.remove(que);
 	}
 
+	// object!
 	@Override
 	public void loadObject(ObjectDBInfo obj) {
 		long cls_id = readObjectClass(obj.id);
@@ -574,8 +578,10 @@ public class MongoDBAdapter implements MDBAdapter {
 			Iterator<String> it = o.keySet().iterator();
 			while (it.hasNext()) {
 				String key = it.next();
+				// Ignore the Object Id which is given in object DBInfo
 				if (key.equals("_id"))
 					continue;
+				//remove key's first char '_'???
 				String k = key.substring(1);
 				obj.values.put(k, dbObjectToObject(o.get(key)));
 			}
@@ -590,6 +596,7 @@ public class MongoDBAdapter implements MDBAdapter {
 		String class_id = classIDToString(obj.class_id);
 		DBCollection col = db.getCollection(class_id);
 		DBObject o = new BasicDBObject();
+		// Only create an "empty" object.
 		o.put("_id", obj.id);
 		col.insert(o);
 	}

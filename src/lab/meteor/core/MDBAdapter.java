@@ -47,7 +47,7 @@ public interface MDBAdapter {
 	 */
 	public static class PackageDBInfo extends DBInfo {
 		public String name;
-		public long package_id;	//??
+		public long package_id;	//The package which owns this package.
 		PackageDBInfo() { super(); }
 		PackageDBInfo(int flag) { super(flag); }
 	}

@@ -11,6 +11,7 @@ public class MScriptEngine {
 	public final ScriptEngine getScriptEngine() {
 		ScriptEngine se = sem.getEngineByName("javascript");
 		MScriptHelper helper = new MScriptHelper();
+		// context
 		se.getBindings(ScriptContext.ENGINE_SCOPE).put("me", helper);
 		setBindings();
 		return se;

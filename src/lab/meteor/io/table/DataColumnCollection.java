@@ -124,9 +124,11 @@ public class DataColumnCollection implements Iterable<DataColumn> {
     		return;
     	else if (oldIndex < newIndex) {
     		for (int i = oldIndex; i < newIndex; i++) {
+    			// remove
     			columns.get(i).index = i;
     		}
     	} else {
+    		// add
     		for (int i = oldIndex; i > newIndex; i--) {
     			columns.get(i).index = i;
     		}

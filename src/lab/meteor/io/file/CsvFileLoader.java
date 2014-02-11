@@ -24,12 +24,15 @@ public class CsvFileLoader implements TableLoader {
 	@Override
 	public DataTable loadTable() throws IOException {
 		DataTable table = new DataTable();
+		// For Column
 		reader.readHeaders();
 		String[] headers = reader.getHeaders();
 		for (String header : headers) {
 			DataColumn column = table.newColumn(header);
 			table.getColumns().add(column);
 		}
+		
+		// For Rows
 		while (reader.readRecord()) {
 			String[] values = reader.getValues();
 			DataRow row = table.newRow();

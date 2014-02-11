@@ -7,6 +7,16 @@ public class MReference extends MProperty {
 	private MClass reference;	//Type
 	private Multiplicity multi;
 	
+	//opposite is a two-side association concept, if A.a refer to B object, then
+	// this System assumes that B has a reference b(B.b) point to A.
+	/*
+	 *	For example: 
+	 *	Class Car{Person driver;}
+	 *	Class Person{Car car;}
+	 *	So there are following equations:
+	 *	(1) Reference Car.driver.opposite =  Reference Person.car;
+	 *	(2) Object[Car].driver.opposite_obj = Object[Car]
+	 */
 	private MReference opposite = null;
 	
 	public static enum Multiplicity {

@@ -18,6 +18,11 @@ public abstract class Importer<T> {
 	protected abstract void importData(T data);
 	
 	protected void makeProgress(int step, int allSteps) {
+		/*
+		 *	step: ?
+		 *	all steps: ? 
+		 * 
+		 */
 		for (ImportListener l : listeners) {
 			l.onProgress(this, step, allSteps);
 		}

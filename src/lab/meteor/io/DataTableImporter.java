@@ -33,6 +33,7 @@ public class DataTableImporter extends Importer<DataTable> {
 		DataColumn firstColumn = data.getColumns().get(0);
 		if (firstColumn.getName().contains("(new)"))
 			createMode = true;
+		// first formation: class.property
 		String first = firstColumn.getName().split(" ", 2)[0];
 		String[] tokens = first.split("\\.");
 		MClass cls = pkg.getClazz(tokens[0]);
@@ -49,17 +50,23 @@ public class DataTableImporter extends Importer<DataTable> {
 			this.finished();
 			return;
 		}
+		// property must be primitive type.
 		if (p.getType() != MPrimitiveType.String) {
 			r.message = "type of property at column 0 should be string.";
 			r.state = ResultState.Error;
 			this.finished();
 			return;
 		}
+		// tag stores index - class.property map which map the object.property_value to MObject
 		firstColumn.getColumns().get(0).setTag("index", new StringIndexer(cls, p.getName()));
 		
+		// tag stores property - property metaobject. 
 		firstColumn.setTag("property", p);
+		
 		for (int i = 1; i < data.getColumns().size(); i++) {
 			DataColumn column = data.getColumns().get(i);
+			
+			//column.getName() formation: class.reference.attribute
 			tokens = column.getName().split("\\.");
 			if (!tokens[0].equals(cls.getName())) {
 				r.message = "class in each column is inconsistence.";
@@ -83,6 +90,8 @@ public class DataTableImporter extends Importer<DataTable> {
 					this.finished();
 					return;
 				}
+				
+				
 				MProperty p2 = ((MReference) p).getReference().getProperty(tokens[2]);
 				if (p2 == null) {
 					r.message = "index property at column " + i + " is not found.";
@@ -96,10 +105,13 @@ public class DataTableImporter extends Importer<DataTable> {
 					this.finished();
 					return;
 				}
+				// create a map for reference's class(type)'s attribute
 				StringIndexer si = new StringIndexer(((MReference)p).getReference(), p2.getName());
 				column.setTag("index", si);
 			}
 		}
+		
+		
 		for (int i = 0; i < data.getColumns().size(); i++) {
 			StringIndexer si = (StringIndexer) data.getColumns().get(i).getTag("index");
 			if (si != null)
@@ -111,6 +123,7 @@ public class DataTableImporter extends Importer<DataTable> {
 			DataRow row = data.getRows().get(i);
 			String idname = (String) row.getValue(0);
 			MObject obj = sindex.find(idname);
+			
 			if (obj == null) {
 				if (createMode) {
 					obj = new MObject(cls);
@@ -123,7 +136,9 @@ public class DataTableImporter extends Importer<DataTable> {
 					continue;
 				}
 			}
+			
 			for (int j = 1; j < data.getColumns().size(); j++) {
+				//!!! row has the same length values as the colunmn
 				String raw = (String) row.getValue(j);
 				Object content = null;
 				MProperty pp = (MProperty) data.getColumns().get(j).getTag("property");
@@ -157,6 +172,7 @@ public class DataTableImporter extends Importer<DataTable> {
 					if (pp.getElementType() == MElementType.Attribute)
 						obj.set(pp.getName(), content);
 					else {
+						// If the property of column is a reference.
 						MReference r = (MReference) pp;
 						if (r.getMultiplicity() == Multiplicity.Multiple) {
 							obj.getReferences(pp.getName()).add((MObject) content);

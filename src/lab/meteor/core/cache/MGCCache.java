@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 class MGCCache<T> {
 	
+	// A Java Reference Management Queue Object!
 	private static class MCacheReference<U> extends SoftReference<U> {
 
 		long id;
@@ -40,6 +41,7 @@ class MGCCache<T> {
 		ch.start();
 	}
 	
+	// T == Element
 	public void add(long id, T e) {
 		MCacheReference<T> r = new MCacheReference<T>(e, id, gcQueue);
 		synchronized (lock) {

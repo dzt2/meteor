@@ -7,6 +7,11 @@ import java.util.Set;
 
 public abstract class MAutoSaveQueue<T> {
 	
+	// saveCycle is a long argument which is the milsecond of system to check
+	// When saveCycleMillis reached, the System will check the queue which stores
+	// elements without using, and remove it. If there is no elements for removing,
+	// then the System will wait another saveCycleMillis. So when there are unuseless
+	// elements the system will quickly remove it, as its name: autosave.
 	long saveCycleMillis;
 	
 	Queue<T> queue = new LinkedList<T>();

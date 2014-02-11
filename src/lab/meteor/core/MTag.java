@@ -47,6 +47,8 @@ public class MTag extends MElement implements MNotifiable {
 		MDatabase.getDB().saveTagElements(this);
 		// this must be called after create operation.
 		target.addTag(this);
+		
+		//this.elements.add(new MElementPointer(target));
 	}
 	
 	public MTag(Collection<MElement> targets, String name) {
@@ -86,6 +88,7 @@ public class MTag extends MElement implements MNotifiable {
 		// this must be called after create operation. !!!
 		for (MElement target : targets) {
 			target.addTag(this);
+			//this.elements.add(new MElementPointer(target));
 		}
 	}
 	

@@ -6,6 +6,7 @@ public class DataColumn extends DataTagable {
  
     String name;
   
+    // The position or index of this column in its Column Collection!
     int index = -1;
  
     DataColumn(DataColumnCollection columns) {

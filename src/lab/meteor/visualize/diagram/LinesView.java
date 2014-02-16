@@ -4,6 +4,7 @@ import co.gongzh.snail.layer.LayeredView;
 
 public class LinesView extends LayeredView {
 	
+	// Lines' Viewer
 	DiagramView diagramView;
 	
 	public void addLine(Line line) {

@@ -28,6 +28,7 @@ public abstract class Line extends Layer {
 	private Rectangle box; // used to detect mouse pick-up
 	private AffineTransform boxTransform;
 	
+	// Two-Side Association
 	public void setStart(Linable start) {
 		if (this.start != null)
 			this.start.removeLine(this);

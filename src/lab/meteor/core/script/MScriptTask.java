@@ -68,7 +68,10 @@ public class MScriptTask {
 	
 	protected void started() { }
 	protected void completed() { }
-	protected void interrupted(int line, int column, String message) { }
+	protected void interrupted(int line, int column, String message) {
+		// Process the code line exception: line and column is the position error happened.
+		// message is the error information.
+	}
 	protected void canceled() {  }
 
 }

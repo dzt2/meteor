@@ -137,9 +137,11 @@ public class MShell {
 	
 	public void parseCommand(String command) {
 		Tokenizer tokenizer = new Tokenizer(command);
+		
 		tokenizer.inOperation = true;
 		Token op = tokenizer.next();
 		tokenizer.inOperation = false;
+		
 		switch (op.type) {
 		case Create:
 			int optype = 0;
@@ -485,6 +487,7 @@ public class MShell {
 			break;
 		}
 	}
+
 	
 	public void setCurrentPackage(MPackage pkg) {
 		this.currentPkg = pkg;
@@ -528,19 +531,30 @@ public class MShell {
 	}
 	
 	private MProperty createProperty(String name, String parentName, String typeName, boolean multiple) throws MShellException {
+		/*
+		 *	name: The attribute or reference name
+		 *	type: The attribute or reference type
+		 *	parantName: The class where attribute is. 
+		 * 	multibiltiy is a bool to tell whether the attribute is multible.
+		 */
 		if (name == null || parentName == null || typeName == null)
 			throw new MShellException("invalid name.");
+		
 		MClass parent = null;
 		MElement e = findElement(parentName);
 		if (e == null || e.getElementType() != MElementType.Class)
 			throw new MShellException("class is not found.");
 		parent = (MClass) e;
+		
 		if (parent.hasProperty(name))
 			throw new MShellException("the name has been used in the class.");
+		
+		// process type
 		if (MPrimitiveType.isPrimitiveTypeIdentifier(typeName)) {
 			MDataType type = MPrimitiveType.getPrimitiveType(typeName);
 			return new MAttribute(parent, name, type);
-		} else {
+		}
+		else {
 			e = findElement(typeName);
 			System.out.println(typeName);
 			if (e == null || (e.getElementType() != MElementType.Class &&
@@ -560,6 +574,7 @@ public class MShell {
 	}
 	
 	private MSymbol createSymbol(String name, String parentName) throws MShellException {
+		// parent is the parent Enum of enum... ??? enum has parent?
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
 		MEnum parent = null;
@@ -580,6 +595,7 @@ public class MShell {
 	}
 	
 	private void deleteChildElement(String name, String parentName) throws MShellException {
+		// Delete for Class or Enum
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
 		MElement e = findElement(parentName);
@@ -602,6 +618,7 @@ public class MShell {
 	}
 	
 	private MElement updateElementName(String name, String newName) throws MShellException {
+		// Update for Class, Package, Enumeration.
 		if (name == null || newName == null)
 			throw new MShellException("invalid name.");
 		MElement e = findElement(name);
@@ -617,6 +634,7 @@ public class MShell {
 	}
 	
 	private MElement updateChildName(String name, String parentName, String newName) throws MShellException {
+		// Update for Class.Attribute, Class.Referencce, Enumeration.Symbol.
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
 		MElement e = findElement(parentName);
@@ -625,6 +643,7 @@ public class MShell {
 		if (e.getElementType() != MElementType.Class && e.getElementType() != MElementType.Enum) {
 			throw new MShellException("class or enum is not found.");
 		}
+		
 		if (e.getElementType() == MElementType.Class) {
 			MProperty p = ((MClass) e).getProperty(name);
 			p.setName(newName);
@@ -668,7 +687,8 @@ public class MShell {
 					r.setReference((MClass) e);
 					r.setMultiplicity(multiple ? Multiplicity.Multiple: Multiplicity.One);
 					return r;
-				} else {
+				} 
+				else {
 					p.delete();
 					return new MReference(cls, newName, (MClass) e, 
 						multiple ? Multiplicity.Multiple: Multiplicity.One);
@@ -688,15 +708,18 @@ public class MShell {
 	}
 	
 	private MElement moveElement(String name, String parentName) throws MShellException {
+		// Parent is a package, name is a class or enumeration or package.
 		if (name == null || parentName == null)
 			throw new MShellException("invalid name.");
 		MElement e = findElement(name);
 		if (e == null)
 			throw new MShellException("element is not found.");
+		
 		MElement parent = findElement(parentName);
 		if (parent == null || parent.getElementType() != MElementType.Package)
 			throw new MShellException("target package is not found.");
 		MPackage pkg = (MPackage) parent;
+		
 		if (e.getElementType() == MElementType.Package)
 			((MPackage) e).setPackage(pkg);
 		else if (e.getElementType() == MElementType.Class)
@@ -872,6 +895,7 @@ public class MShell {
 		}
 				
 		Token next() {
+			// poll will remove the head item.
 			if (buffer.size() != 0)
 				return buffer.poll();
 			else
@@ -879,7 +903,9 @@ public class MShell {
 		}
 		
 		Token peek() {
+			// peek will return not remove the head.
 			if (buffer.size() == 0) {
+				// add
 				buffer.offer(nextToken());
 			}
 			return buffer.peek();
@@ -898,6 +924,7 @@ public class MShell {
 		}
 		
 		char peekChar(int skip) {
+			// skip to the later.
 			if (loc+skip == command.length())
 				return 0;
 			return command.charAt(loc+skip);
@@ -913,6 +940,8 @@ public class MShell {
 				if (word.charAt(i) != command.charAt(start + i))
 					return false;
 			}
+			
+			// Not Good!!!
 			if (start + i == command.length() || !isWord(command.charAt(start + i))) {
 				return true;
 			} else

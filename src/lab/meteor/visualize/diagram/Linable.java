@@ -3,6 +3,7 @@ package lab.meteor.visualize.diagram;
 import co.gongzh.snail.util.Vector2D;
 
 public interface Linable {
+	// Lines Manager
 	
 	void addLine(Line line);
 	void removeLine(Line line);

@@ -88,11 +88,13 @@ public class MScriptHelper {
 			t = tn.next();
 			if (it == null)
 				throw new MScriptException("interupt with null value.");
+			// For d.d1.d2, this program will return the d2 as a Mobject object.
 			it = find(it, t);
 		}
 		return it;
 	}
 	
+	// MObject is the object to set values, exp express the name of attribute or reference or index of the object to be set.
 	public void set(MObject obj, String exp, Object value) throws MScriptException {
 		Tokenizer tn = new Tokenizer(exp);
 		Object it = obj;
@@ -151,6 +153,7 @@ public class MScriptHelper {
 		}
 	}
 	
+	// add only used for set object's list attribute. So the exp must be an index of List or Dictionary.
 	public void add(MObject obj, String exp, MObject value) throws MScriptException {
 		if (value == null)
 			return;
@@ -185,6 +188,7 @@ public class MScriptHelper {
 		}
 	}
 	
+	// To remove a value from a List or Dictionary reference which is addressed by exp.
 	public void remove(MObject obj, String exp, MObject value) throws MScriptException {
 		if (value == null)
 			return;
@@ -296,7 +300,7 @@ public class MScriptHelper {
 			StringBuilder sb = new StringBuilder();
 			char ch = cur();
 			if (isWordChar(ch)) {
-				// process dom.dom1... and get dom
+				// process d.d1... and get d as an MObject.
 				sb.append(ch);
 				loc++;
 				while (isWordChar(ch = cur())) {
@@ -308,7 +312,7 @@ public class MScriptHelper {
 				type = TokenType.Dot;	// What is the end.
 			} 
 			else if (ch == '[') {
-				// process [string]. and get string
+				// process [string]. and get string as a List or Dictionary Index.
 				loc++;
 				while (isWordChar(ch = cur())) {
 					sb.append(ch);
@@ -326,7 +330,7 @@ public class MScriptHelper {
 				type = TokenType.Bracket;
 			} 
 			else if (ch == '<')  {
-				// process <string>. and get string
+				// process <string>. and get string as a Tag Object
 				loc++;
 				while (isWordChar(ch = cur())) {
 					sb.append(ch);

@@ -8,6 +8,7 @@ public class MScriptEngine {
 	
 	private ScriptEngineManager sem;
 	
+	// The Script Engine where get from will contain a MScriptHelper in its context.
 	public final ScriptEngine getScriptEngine() {
 		ScriptEngine se = sem.getEngineByName("javascript");
 		MScriptHelper helper = new MScriptHelper();

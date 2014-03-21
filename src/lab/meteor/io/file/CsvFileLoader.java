@@ -37,6 +37,7 @@ public class CsvFileLoader implements TableLoader {
 			String[] values = reader.getValues();
 			DataRow row = table.newRow();
 			for (int i = 0; i < values.length; i++) {
+				System.out.println(values[i]);
 				row.setValue(i, values[i]);
 			}
 			table.getRows().add(row);

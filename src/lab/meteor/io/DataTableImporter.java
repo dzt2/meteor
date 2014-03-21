@@ -28,6 +28,7 @@ public class DataTableImporter extends Importer<DataTable> {
 	
 	@Override
 	protected void importData(DataTable data) {
+		//System.out.println(data.getColumns().get(1).getName());
 		int errorCount = 0;
 		boolean createMode = false;
 		DataColumn firstColumn = data.getColumns().get(0);
@@ -35,6 +36,7 @@ public class DataTableImporter extends Importer<DataTable> {
 			createMode = true;
 		// first formation: class.property
 		String first = firstColumn.getName().split(" ", 2)[0];
+		//System.out.println(first);
 		String[] tokens = first.split("\\.");
 		MClass cls = pkg.getClazz(tokens[0]);
 		if (cls == null) {

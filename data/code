@@ -1,0 +1,91 @@
+function combine(HLR,LLR){
+	map = {};
+	itor = HLR.objectsIterator();
+	while(itor.hasNext()){
+  		hlr = itor.next();
+  		llrs=hlr.get("llr");
+  		l_itor = llrs.iterator();
+  		arr = new Array(llrs.size());
+  		var i = 0;
+  		while(l_itor.hasNext()){
+   			llr = l_itor.next();
+   			arr[i] = llr.get("rid");
+   			i = i+1;
+  		}
+  		map[hlr.get("rid")] = arr;
+	}
+
+	itor = LLR.objectsIterator();
+	while(itor.hasNext()){
+  		llr = itor.next();
+  		hlrs=llr.get("hlr");
+  		h_itor = hlrs.iterator();
+ 		var i = 0;
+  		arr = new Array(hlrs.size());
+  		while(h_itor.hasNext()){
+    			hlr = h_itor.next();
+    			arr[i]=hlr.get("rid");
+    			i=i+1;
+  		}
+		map[llr.get("rid")]=arr;
+	}
+
+	return map;
+}
+
+function printMap(map){
+	for(var key in map){
+  		arr = map[key];
+  		for(var i = 0;i<arr.length;i++){
+    			print("< "+key+": "+arr[i]+" > ");
+  		}
+  		print("\n");
+	}
+}
+
+function filter(map) {
+  	nmap ={};
+  	for (var key in map){
+
+    		tmp = nmap[key];
+    		if(tmp == undefined) tmp = new Array();
+    		arr = map[key];
+    		for (var i =0; i<arr.length; i++){   
+
+      			value = arr[i];
+      			if(map[value] != undefined){
+        			narr = map[value];
+        			for(var k=0;k<narr.length; k++)
+          				if(narr[k].equals(key)){
+             					tmp[tmp.length]=narr[k];
+          				}
+      			}
+    		}
+  		nmap[key] = tmp;
+	}
+  	return nmap;
+}
+
+
+function check_traceability(nmap, HLR){
+	itor = HLR.objectsIterator();
+	while(itor.hasNext()){
+		hlr = itor.next();
+		if(nmap[hlr.get("rid")].length==0)
+  			print(hlr.get("rid")+" is not traceable!\n")
+	}
+}
+
+
+
+
+
+
+p = me.findPackage("dzt2");
+HLR = p.getClazz("HLR");
+LLR = p.getClazz("LLR");
+
+map = combine(HLR,LLR);
+nmap = filter(map);
+check_traceability(nmap, HLR);
+print("finished!\n");

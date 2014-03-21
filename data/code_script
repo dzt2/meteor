@@ -1,0 +1,69 @@
+function combine(HLR,LLR) {
+	map = {};
+	itor = HLR.objectsIterator();
+	while(itor.hasNext()){
+		hlr = itor.next();
+		llrs = hlr.get("llr");
+		l_itor = llrs.iterator();
+		arr = new Array(llrs.size());
+		i=0;
+		while(l_itor.hasNext()){
+			llr = l_itor.next();
+			arr[i] = llr.get("rid");
+			i=i+1;
+		}
+		map[hlr.get("rid")]=arr;
+	}
+
+	itor = LLR.objectsIterator();
+	while(itor.hasNext()){
+		llr = itor.next();
+		hlrs = llr.get("hlr");
+		h_itor = hlrs.iterator();
+		arr = new Array(hlrs.size());
+		i=0;
+		while(h_itor.hasNext()){
+			hlr = h_itor.next();
+			arr[i] = hlr.get("rid");
+			i=i+1;
+		}
+		map[llr.get("rid")]=arr;
+	}
+	
+	return map;
+}
+
+function filter(map) {
+	nmap={};
+	for(var key in map){
+		arr = map[key];
+		for(var i = 0; i<arr.length; i++){
+			value_key = arr[i];
+			if(map[value_key] == undefined) continue;
+			nmap[key]=value_key;
+			nmap[value_key]=key;	
+		}
+	}
+	return nmap;
+}
+
+function check_traceability(R, M){
+	itor = R.objectsIterator();
+	while(itor.hasNext()){
+		r = itor.next();
+		if(M[r.get("rid")] == undefined){
+			print(r.get("rid") +" cannot trace to any requirements.");
+		}
+	}
+}
+
+p = me.findPackage("dzt2");
+HLR = p.getClazz("HLR");
+LLR = p.getClazz("LLR");
+
+map = combine(HLR,LLR);
+nmap= filter(map);
+check_traceability(HLR,nmap);
+
+
+

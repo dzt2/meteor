@@ -1,0 +1,4 @@
+Requirement.name (new),Requirement.safetyLevel,Requirement.type
+HRA-1,A,Functional
+HRA-2,B,Safety
+HRA-3,A,Reliability

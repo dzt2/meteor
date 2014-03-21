@@ -1,0 +1,8 @@
+p = me.findPackage("dzt2");
+HLR = p.getClazz("HLR");
+
+itor = HLR.objectsIterator();
+while(itor.hasNext()){
+	hlr = itor.next();
+	print(hlr.get("rid")+"\n");
+}

@@ -1,4 +1,4 @@
-p = me.findPackage("dzt2");
+p = me.findPackage("evidence");
 HLR = p.getClazz("HLR");
 
 itor = HLR.objectsIterator();

@@ -68,12 +68,17 @@ function filter(map) {
 
 
 function check_traceability(nmap, HLR){
+	count = 0;
 	itor = HLR.objectsIterator();
 	while(itor.hasNext()){
 		hlr = itor.next();
-		if(nmap[hlr.get("rid")].length==0)
+		if(nmap[hlr.get("rid")].length==0){
   			print(hlr.get("rid")+" is not traceable!\n")
+			count = count+1;
+		}
 	}
+
+	return count;
 }
 
 
@@ -81,11 +86,13 @@ function check_traceability(nmap, HLR){
 
 
 
-p = me.findPackage("dzt2");
+p = me.findPackage("evidence");
 HLR = p.getClazz("HLR");
 LLR = p.getClazz("LLR");
 
 map = combine(HLR,LLR);
 nmap = filter(map);
-check_traceability(nmap, HLR);
+count = check_traceability(nmap, HLR);
+if(count==0) print("Safety Claim is passed\n");
+else print("Safety Claim is not passed\n");
 print("finished!\n");

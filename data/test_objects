@@ -1,0 +1,8 @@
+p = me.findPackage("test");
+HLR = p.getClazz("HLR");
+LLR = p.getClazz("LLR");
+
+itor = LLR.objectsIterator();
+while(itor.hasNext()){
+    println(itor.next().get("rid"));
+}

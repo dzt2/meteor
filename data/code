@@ -3,7 +3,7 @@ function combine(HLR,LLR){
 	itor = HLR.objectsIterator();
 	while(itor.hasNext()){
   		hlr = itor.next();
-  		llrs=hlr.get("llr");
+  		llrs=hlr.get("llrs");
   		l_itor = llrs.iterator();
   		arr = new Array(llrs.size());
   		var i = 0;
@@ -18,7 +18,7 @@ function combine(HLR,LLR){
 	itor = LLR.objectsIterator();
 	while(itor.hasNext()){
   		llr = itor.next();
-  		hlrs=llr.get("hlr");
+  		hlrs=llr.get("hlrs");
   		h_itor = hlrs.iterator();
  		var i = 0;
   		arr = new Array(hlrs.size());
@@ -86,7 +86,7 @@ function check_traceability(nmap, HLR){
 
 
 
-p = me.findPackage("evidence");
+p = me.findPackage("test");
 HLR = p.getClazz("HLR");
 LLR = p.getClazz("LLR");
 

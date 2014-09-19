@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/软件工具/gongzhang.co/co.jar"/>
-	<classpathentry kind="lib" path="C:/MongoDB/java_mongodb/mongo-2.10.1.jar"/>
-	<classpathentry kind="lib" path="C:/软件开发/CSV Library/javacsv.jar"/>
+	<classpathentry kind="lib" path="jars/co.jar"/>
+	<classpathentry kind="lib" path="jars/javacsv.jar"/>
+	<classpathentry kind="lib" path="jars/mongo-2.10.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -72,7 +72,7 @@ function check_traceability(nmap, HLR){
 	itor = HLR.objectsIterator();
 	while(itor.hasNext()){
 		hlr = itor.next();
-		if(nmap[hlr.get("rid")].length==0){
+		if(hlr.get("rid")!=null&&nmap[hlr.get("rid")].length==0){
   			print(hlr.get("rid")+" is not traceable!\n")
 			count = count+1;
 		}
@@ -80,10 +80,6 @@ function check_traceability(nmap, HLR){
 
 	return count;
 }
-
-
-
-
 
 
 p = me.findPackage("test");

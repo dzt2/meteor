@@ -1,7 +1,7 @@
-HLR.rid (new),HLR.type
-hlr1,Functional
-hlr2,Functional
-hlr3,Safety
-hlr4,Reliability
-hlr5,Functional
+HLR.id (new),HLR.accurate,HLR.unambiguous,HLR.detailed
+HRA01,true,true,false
+HRA02,true,true,true
+HRA03,true,true,true
+HRB01,true,true,true
+HRB02,true,false,false
 

@@ -1,6 +1,6 @@
-LLR.rid (new)
-llr1
-llr2
-llr3
-llr4
-llr5
+LLR.id (new),LLR.accurate,LLR.detailed
+LRA1,true,true
+LRA2,true,true
+LRA3,true,true
+LRA4,true,true
+LRB1,true,false
